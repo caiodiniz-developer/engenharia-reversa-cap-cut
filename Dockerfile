@@ -20,6 +20,7 @@ RUN pnpm --filter @editor/web build
 FROM nginx:1.27-alpine AS web
 COPY --from=web-build /app/apps/web/dist /usr/share/nginx/html
 COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
+COPY deploy/security-headers.conf /etc/nginx/security-headers.conf
 EXPOSE 80
 
 FROM base AS api
