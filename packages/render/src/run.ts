@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import type { Project } from '@editor/core';
@@ -72,7 +72,9 @@ export async function renderProject(
   outputBase: string,
   handlers: RunHandlers = {},
 ): Promise<{ file: string; plan: RenderPlan }> {
-  const tmpDir = await mkdtemp(path.join(env.tmpRoot ?? os.tmpdir(), 'render-'));
+  const root = env.tmpRoot ?? os.tmpdir();
+  await mkdir(root, { recursive: true });
+  const tmpDir = await mkdtemp(path.join(root, 'render-'));
   try {
     // A extensão depende do codec, então planejamos com um nome provisório e ajustamos.
     const ext = (opts.codec ?? 'h264') === 'vp9' ? 'webm' : 'mp4';
