@@ -14,3 +14,4 @@ export * from './ops/tracks';
 export * from './ops/clips';
 export * from './ops/advanced';
 export { assertTrackValid } from './ops/helpers';
+export * from './textdraw';
