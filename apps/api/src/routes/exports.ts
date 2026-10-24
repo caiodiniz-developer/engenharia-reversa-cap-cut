@@ -4,7 +4,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { migrateProject, projectDuration } from '@editor/core';
 import { HttpError, h, json, notFound, ownedProject, parse, requireAuth, type AppContext } from '../http';
-import { sanitizeFilename, signResource, verifyResource } from '../security';
+import { contentDisposition, sanitizeFilename, signResource, verifyResource } from '../security';
 
 const MAX_PIXELS = 3840 * 2160;
 const MAX_CLIPS = 3000;
@@ -115,7 +115,7 @@ export function exportRoutes(ctx: AppContext): Router {
       const ext = path.extname(e.outputKey);
       res.setHeader('Content-Type', ext === '.webm' ? 'video/webm' : 'video/mp4');
       res.setHeader('Content-Length', size);
-      res.setHeader('Content-Disposition', `attachment; filename="${sanitizeFilename(e.project.name)}${ext}"`);
+      res.setHeader('Content-Disposition', contentDisposition(`${sanitizeFilename(e.project.name)}${ext}`));
       await pipeline(ctx.store.stream(e.outputKey), res);
     }),
   );

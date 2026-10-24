@@ -61,3 +61,13 @@ export function sanitizeFilename(name: string): string {
   const clean = base.replace(/[^\p{L}\p{N}._ -]/gu, '_').replace(/^\.+/, '').slice(0, 120);
   return clean || 'arquivo';
 }
+
+/**
+ * Cabeçalho Content-Disposition seguro (RFC 6266 / 5987): `filename` só com ASCII (fallback) e
+ * `filename*` com o nome original em UTF-8. Cabeçalhos HTTP não podem carregar caracteres arbitrários.
+ */
+export function contentDisposition(filename: string, type: 'attachment' | 'inline' = 'attachment'): string {
+  const fallback = filename.replace(/[^\x20-\x7e]/g, '_').replace(/["\\]/g, '_');
+  const encoded = encodeURIComponent(filename).replace(/['()*]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`);
+  return `${type}; filename="${fallback}"; filename*=UTF-8''${encoded}`;
+}
