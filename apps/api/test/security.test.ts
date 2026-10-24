@@ -3,7 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { Readable } from 'node:stream';
 import { afterAll, describe, expect, it } from 'vitest';
-import { hashPassword, sanitizeFilename, signResource, signToken, verifyPassword, verifyResource, verifyToken } from '../src/security';
+import { contentDisposition, hashPassword, sanitizeFilename, signResource, signToken, verifyPassword, verifyResource, verifyToken } from '../src/security';
 import { LocalObjectStore } from '../src/storage';
 import { loadConfig } from '../src/config';
 
@@ -56,6 +56,16 @@ describe('nomes de arquivo', () => {
     expect(sanitizeFilename('.bashrc')).toBe('bashrc');
     expect(sanitizeFilename('')).toBe('arquivo');
     expect(sanitizeFilename('x'.repeat(500)).length).toBe(120);
+  });
+});
+
+describe('Content-Disposition', () => {
+  it('mantém o cabeçalho ASCII e carrega o nome real em filename* (RFC 6266)', () => {
+    expect(contentDisposition('relatório final.mp4')).toBe(`attachment; filename="relat_rio final.mp4"; filename*=UTF-8''relat%C3%B3rio%20final.mp4`);
+    expect(contentDisposition('a"b\\c.mp4')).toContain('filename="a_b_c.mp4"');
+    expect(contentDisposition("it's (1)*.mp4")).toContain("filename*=UTF-8''it%27s%20%281%29%2A.mp4");
+    // Todo caractere do valor final é ASCII imprimível: seguro para qualquer servidor/proxy.
+    for (const name of ['日本語.mp4', 'emoji 🎬.mp4', 'ção\n.mp4']) expect(contentDisposition(name)).toMatch(/^[\x20-\x7e]+$/);
   });
 });
 

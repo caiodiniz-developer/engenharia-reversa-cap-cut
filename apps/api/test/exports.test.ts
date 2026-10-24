@@ -56,7 +56,11 @@ describe('exportação', () => {
       res.on('end', () => cb(null, Buffer.concat(chunks)));
     });
     expect(file.status).toBe(200);
-    expect(file.headers['content-disposition']).toMatch(/attachment; filename="Meu Vídeo_ final_"?\.mp4"|attachment; filename="Meu V.*\.mp4"/);
+    // Nome com acento e pontuação do projeto: ASCII no fallback e UTF-8 em filename*.
+    const disposition = file.headers['content-disposition'] as string;
+    expect(disposition).toMatch(/^[\x20-\x7e]+$/);
+    expect(disposition).toContain('attachment; filename="Meu V_deo_ final_.mp4"');
+    expect(disposition).toContain("filename*=UTF-8''Meu%20V%C3%ADdeo_%20final_.mp4");
     const out = path.join(t.dir, 'baixado.mp4');
     await writeFile(out, file.body as Buffer);
 
