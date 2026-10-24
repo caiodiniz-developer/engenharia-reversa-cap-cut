@@ -79,7 +79,7 @@ export async function renderProject(
     // A extensão depende do codec, então planejamos com um nome provisório e ajustamos.
     const ext = (opts.codec ?? 'h264') === 'vp9' ? 'webm' : 'mp4';
     const output = `${outputBase}.${ext}`;
-    const plan = await buildRenderPlan(project, opts, { resolveMedia: env.resolveMedia, tmpDir }, output);
+    const plan = await buildRenderPlan(project, opts, { resolveMedia: env.resolveMedia, tmpDir, signal: handlers.signal }, output);
     await runFfmpeg(plan, handlers);
     return { file: output, plan };
   } finally {

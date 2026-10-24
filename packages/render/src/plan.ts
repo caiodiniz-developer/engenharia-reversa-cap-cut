@@ -3,7 +3,12 @@ import path from 'node:path';
 import {
   clipEnd,
   effectsToFfmpeg,
+  mixLut,
   projectDuration,
+  resolveLut,
+  serializeCube,
+  escapeFilterPath,
+  type EffectInstance,
   type CaptionClip,
   type Clip,
   type MediaClip,
@@ -14,6 +19,7 @@ import {
 import { audioChain } from './audio';
 import { ffmpegPath } from './binaries';
 import { isAnimated, keyframeExpr, num } from './expr';
+import { ffmpegRun } from './media';
 import { measureText, renderTextPng } from './textimage';
 
 export type VideoCodec = 'h264' | 'h265' | 'vp9';
@@ -37,6 +43,8 @@ export interface RenderEnv {
   resolveMedia(mediaId: string): string;
   /** Diretório temporário exclusivo desta renderização. */
   tmpDir: string;
+  /** Cancela também as passadas de análise (ex.: estabilização) anteriores ao FFmpeg principal. */
+  signal?: AbortSignal;
 }
 
 export interface RenderPlan {
@@ -93,6 +101,22 @@ export async function buildRenderPlan(
   const frame = { width: W, height: H };
 
   await mkdir(env.tmpDir, { recursive: true });
+
+  // LUTs: grava cada .cube (já misturado com a identidade conforme a intensidade) para o filtro lut3d.
+  const lutFiles = new Map<string, string>();
+  for (const t of project.tracks)
+    for (const c of t.clips) {
+      if (c.type !== 'media') continue;
+      for (const fx of c.effects) {
+        if (!fx.enabled || fx.type !== 'lut') continue;
+        const lut = resolveLut(project.luts, fx.ref);
+        if (!lut) throw new RenderError(`LUT "${fx.ref ?? '?'}" não encontrada ou inválida`);
+        const file = path.join(env.tmpDir, `lut_${lutFiles.size}.cube`);
+        await writeFile(file, serializeCube(mixLut(lut, fx.params.intensity ?? 1)));
+        lutFiles.set(fx.id, file);
+      }
+    }
+  const fxCtx = { width: W, height: H, lutPath: (fx: EffectInstance) => lutFiles.get(fx.id) };
 
   const inputs: string[][] = [];
   const filters: string[] = [];
@@ -181,7 +205,16 @@ export async function buildRenderPlan(
     });
   }
 
-  function addMediaClip(clip: MediaClip, trackKind: string, hidden: boolean, muted: boolean): void {
+  let stabIdx = 0;
+  /** Passada 1 do vidstab: analisa o trecho usado e grava o arquivo de transformações. */
+  async function stabilizeDetect(file: string, clip: MediaClip): Promise<string> {
+    const trf = path.join(env.tmpDir, `stab_${stabIdx++}.trf`);
+    const used = clip.duration * clip.speed;
+    await ffmpegRun(['-y', '-ss', num(clip.sourceIn), '-t', num(used + 0.1), '-i', file, '-vf', `vidstabdetect=shakiness=6:accuracy=15:result='${escapeFilterPath(trf)}'`, '-an', '-f', 'null', '-'], 30 * 60_000, env.signal);
+    return trf;
+  }
+
+  async function addMediaClip(clip: MediaClip, trackKind: string, hidden: boolean, muted: boolean): Promise<void> {
     const asset = project.media[clip.mediaId];
     if (!asset) throw new RenderError(`Mídia ${clip.mediaId} não encontrada no projeto`);
     const file = env.resolveMedia(clip.mediaId);
@@ -204,6 +237,10 @@ export async function buildRenderPlan(
     if (isVisual) {
       const t = clip.transform;
       const c: string[] = ['setpts=PTS-STARTPTS'];
+      if (clip.stabilize > 0 && asset.kind === 'video' && !clip.freeze) {
+        const trf = await stabilizeDetect(file, clip);
+        c.push(`vidstabtransform=input='${escapeFilterPath(trf)}':smoothing=${Math.round(clip.stabilize)}:optzoom=1`);
+      }
       if (clip.freeze) {
         c.push('trim=end_frame=1', 'setpts=PTS-STARTPTS', `tpad=stop_mode=clone:stop_duration=${num(dur)}`);
       } else if (asset.kind === 'video') {
@@ -227,10 +264,10 @@ export async function buildRenderPlan(
       c.push(`scale=${even(baseW)}:${even(baseH)}`);
       const persp = transformChain(c, clip, t, even(baseW), even(baseH), null);
 
-      const opaque = effectsToFfmpeg(clip.effects, { width: W, height: H }, false);
+      const opaque = effectsToFfmpeg(clip.effects, fxCtx, false);
       if (opaque.length) c.push('format=rgb24', ...opaque);
       c.push('format=rgba');
-      const keyed = effectsToFfmpeg(clip.effects, { width: W, height: H }, true);
+      const keyed = effectsToFfmpeg(clip.effects, fxCtx, true);
       c.push(...keyed);
       if (persp) c.push(...persp);
 
@@ -354,7 +391,7 @@ export async function buildRenderPlan(
     const sorted = [...track.clips].sort((a, b) => a.start - b.start);
     for (const clip of sorted) {
       if (opts.range && (clipEnd(clip) <= opts.range.start || clip.start >= opts.range.end)) continue;
-      if (clip.type === 'media') addMediaClip(clip, track.kind, track.hidden, track.muted);
+      if (clip.type === 'media') await addMediaClip(clip, track.kind, track.hidden, track.muted);
       else if (!track.hidden) await addTextClip(clip, textIdx++);
     }
   }

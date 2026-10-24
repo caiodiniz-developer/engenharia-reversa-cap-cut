@@ -6,8 +6,8 @@ import { ffmpegPath } from './binaries';
 const execFileAsync = promisify(execFile);
 
 /** Executa o ffmpeg com argumentos fixos (sem shell) e devolve stderr (onde ele escreve análises). */
-export async function ffmpegRun(args: string[], timeoutMs = 10 * 60_000): Promise<{ stdout: string; stderr: string }> {
-  return execFileAsync(ffmpegPath(), ['-hide_banner', '-nostdin', ...args], { maxBuffer: 64 * 1024 * 1024, timeout: timeoutMs });
+export async function ffmpegRun(args: string[], timeoutMs = 10 * 60_000, signal?: AbortSignal): Promise<{ stdout: string; stderr: string }> {
+  return execFileAsync(ffmpegPath(), ['-hide_banner', '-nostdin', ...args], { maxBuffer: 64 * 1024 * 1024, timeout: timeoutMs, signal });
 }
 
 export interface TestVideoOptions {
