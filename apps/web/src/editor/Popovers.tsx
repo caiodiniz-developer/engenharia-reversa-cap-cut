@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Modal, ProgressBar } from '../components/controls';
 import { Icon } from '../components/Icon';
 import { formatRelative } from '../lib/format';
@@ -63,6 +63,27 @@ export function HistoryList({ onDone }: { onDone: () => void }) {
   );
 }
 
+/** Uso de memória do JavaScript (apenas navegadores baseados em Chromium expõem isso). */
+function MemoryMeter() {
+  const [mb, setMb] = useState<{ used: number; limit: number } | null>(null);
+  useEffect(() => {
+    const read = () => {
+      const m = (performance as unknown as { memory?: { usedJSHeapSize: number; jsHeapSizeLimit: number } }).memory;
+      if (m) setMb({ used: m.usedJSHeapSize / 1048576, limit: m.jsHeapSizeLimit / 1048576 });
+    };
+    read();
+    const t = setInterval(read, 3000);
+    return () => clearInterval(t);
+  }, []);
+  if (!mb) return null;
+  const high = mb.used > mb.limit * 0.7;
+  return (
+    <p className={`border-t border-line px-3 py-2 text-2xs ${high ? 'text-danger' : 'text-mute'}`} data-testid="memory">
+      Memória do navegador: {mb.used.toFixed(0)} MB{high ? ' — alta; feche abas ou reduza o zoom/efeitos do preview' : ''}
+    </p>
+  );
+}
+
 export function JobsList() {
   const jobs = useJobs((s) => s.jobs);
   const connected = useJobs((s) => s.connected);
@@ -105,6 +126,7 @@ export function JobsList() {
           ))}
         </ul>
       )}
+      <MemoryMeter />
     </div>
   );
 }
