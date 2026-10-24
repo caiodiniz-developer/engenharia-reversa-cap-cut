@@ -53,8 +53,13 @@ export function useShortcuts(openHelp: () => void): void {
         return;
       }
       if (isTyping(e.target)) return;
-      // Botões/controles focados tratam Enter/Espaço por conta própria.
-      if ((e.key === ' ' || e.key === 'Enter') && (e.target as HTMLElement).closest?.('button, [role="button"], a, [role="tab"], [role="menuitem"], [role="radio"]')) return;
+      const target = e.target as HTMLElement;
+      // Em diálogos o teclado pertence ao diálogo.
+      if (target.closest?.('[role="dialog"]')) return;
+      // Enter é do controle focado. Espaço é "reproduzir/pausar" em qualquer lugar do editor
+      // (como nos editores de vídeo): tira o foco do botão para não acioná-lo também.
+      if (e.key === 'Enter' && target.closest?.('button, [role="button"], a, [role="tab"], [role="menuitem"], [role="radio"]')) return;
+      if (e.key === ' ' && target.closest?.('button')) (target as HTMLElement).blur();
 
       if (mod && key === 'z') {
         e.preventDefault();
