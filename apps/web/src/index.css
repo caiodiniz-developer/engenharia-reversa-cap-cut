@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: 14 16 19;
+  --panel: 21 24 29;
+  --panel-2: 27 31 38;
+  --line: 40 45 54;
+  --ink: 230 232 235;
+  --mute: 139 147 161;
+  --accent: 53 208 196;
+  --playhead: 255 90 60;
+  --danger: 240 82 82;
+  --ok: 72 199 142;
+  --clip-video: 56 108 176;
+  --clip-audio: 47 133 90;
+  --clip-text: 183 121 31;
+  --clip-caption: 128 90 213;
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-bg font-sans text-ink antialiased;
+  overflow: hidden;
+  font-size: 13px;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--line)) transparent;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-line bg-panel2 px-3 text-xs font-medium text-ink transition-colors hover:border-mute/50 hover:bg-line/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-40;
+  }
+  .btn-primary {
+    @apply border-accent bg-accent text-bg hover:bg-accent/90 hover:border-accent;
+  }
+  .btn-icon {
+    @apply inline-flex h-7 w-7 items-center justify-center rounded-md text-mute transition-colors hover:bg-line/70 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-30;
+  }
+  .btn-icon[aria-pressed='true'] {
+    @apply bg-accent/15 text-accent;
+  }
+  .field {
+    @apply h-8 w-full rounded-md border border-line bg-bg px-2 text-xs text-ink outline-none transition-colors placeholder:text-mute/60 focus:border-accent;
+  }
+  .label {
+    @apply mb-1 block text-2xs font-medium uppercase tracking-wide text-mute;
+  }
+  .panel-title {
+    @apply px-3 py-2 text-2xs font-semibold uppercase tracking-wider text-mute;
+  }
+}
+
+input[type='range'] {
+  @apply h-1 w-full cursor-pointer appearance-none rounded-full bg-line accent-accent;
+}
