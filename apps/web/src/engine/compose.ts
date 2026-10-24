@@ -4,6 +4,7 @@ import {
   displayText,
   drawLayout,
   layoutText,
+  resolveLut,
   resolveTransform,
   type CaptionClip,
   type Clip,
@@ -144,7 +145,7 @@ function drawMedia(ctx: Ctx, track: Track, clip: MediaClip, input: ComposeInput)
   const hasEffects = clip.effects.some((e) => e.enabled);
   if (hasEffects) {
     const img = sctx.getImageData(0, 0, ow, oh);
-    applyEffectsToPixels(img.data, ow, oh, clip.effects);
+    applyEffectsToPixels(img.data, ow, oh, clip.effects, (ref) => resolveLut(input.project.luts, ref));
     sctx.putImageData(img, 0, 0);
   }
 

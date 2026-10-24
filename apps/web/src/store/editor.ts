@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import {
   addClip,
+  addLut,
   addMarker,
   addMedia,
   addTrack,
@@ -24,6 +25,7 @@ import {
   presetToEffects,
   projectDuration,
   redo,
+  removeLut,
   removeMarker,
   removeTrack,
   removeTransition,
@@ -147,6 +149,10 @@ interface EditorState {
   setTransition(clipId: string, type: TransitionType, duration: number): void;
   removeTransition(clipId: string): void;
   addEffect(clipId: string, type: string): void;
+  addLutEffect(clipId: string, ref: string): void;
+  importLut(name: string, cubeText: string): string | undefined;
+  removeLut(id: string): void;
+  setStabilize(clipId: string, smoothing: number): void;
   applyPreset(clipId: string, presetId: string): void;
   updateEffect(clipId: string, effectId: string, params: Record<string, number>): void;
   toggleEffect(clipId: string, effectId: string): void;
@@ -177,6 +183,7 @@ const emptyProject = (): Project => ({
   media: {},
   tracks: [],
   markers: [],
+  luts: {},
 });
 
 export const useEditor = create<EditorState>((set, get) => {
@@ -505,6 +512,27 @@ export const useEditor = create<EditorState>((set, get) => {
 
     addEffect(clipId, type) {
       get().patchClip(clipId, (c) => (c.type === 'media' ? { ...c, effects: [...c.effects, createEffect(type)] } : c), 'Adicionar efeito');
+    },
+    addLutEffect(clipId, ref) {
+      get().patchClip(clipId, (c) => (c.type === 'media' ? { ...c, effects: [...c.effects, createEffect('lut', {}, ref)] } : c), 'Aplicar LUT');
+    },
+    importLut(name, cubeText) {
+      let id: string | undefined;
+      get().run('Importar LUT', (p) => {
+        const r = addLut(p, name, cubeText);
+        id = r.id;
+        return r.project;
+      });
+      return id;
+    },
+    removeLut(id) {
+      get().run('Remover LUT', (p) => ({
+        ...removeLut(p, id),
+        tracks: p.tracks.map((t) => ({ ...t, clips: t.clips.map((c) => (c.type === 'media' ? { ...c, effects: c.effects.filter((e) => e.ref !== id) } : c)) })),
+      }));
+    },
+    setStabilize(clipId, smoothing) {
+      get().patchClip(clipId, (c) => (c.type === 'media' ? { ...c, stabilize: smoothing } : c), 'Estabilização', `stab:${clipId}`);
     },
     applyPreset(clipId, presetId) {
       get().patchClip(clipId, (c) => (c.type === 'media' ? { ...c, effects: [...c.effects, ...presetToEffects(presetId)] } : c), 'Aplicar preset');
