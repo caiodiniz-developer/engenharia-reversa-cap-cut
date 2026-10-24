@@ -16,6 +16,16 @@ const Analyze = z.object({
 const Assistant = z.object({ prompt: z.string().trim().min(3).max(2000) });
 const TextTask = z.object({ transcript: z.string().min(10).max(60_000) });
 
+/** Falhas do provedor externo (rede, resposta fora do formato) viram 502, sem vazar detalhes internos. */
+async function viaProvider<T>(fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn();
+  } catch (e) {
+    if (e instanceof HttpError) throw e;
+    throw new HttpError(502, `Falha no provedor de IA: ${e instanceof Error ? e.message.slice(0, 200) : 'erro'}`, 'ai_provider_error');
+  }
+}
+
 export function aiRoutes(ctx: AppContext): Router {
   const r = Router();
   const auth = requireAuth(ctx.config);
@@ -93,7 +103,7 @@ export function aiRoutes(ctx: AppContext): Router {
           task === 'summarize'
             ? 'Resuma o conteúdo da transcrição em português. Formato: {"summary": string, "bullets": string[]}.'
             : 'Sugira títulos curtos e chamativos (até 60 caracteres) para o vídeo, no idioma da transcrição. Formato: {"titles": string[]}.';
-        const result = await ctx.ai.llmJson(system, body.transcript, schema);
+        const result = await viaProvider(() => ctx.ai.llmJson(system, body.transcript, schema));
         // Registra a chamada para o controle de orçamento diário.
         await ctx.db.job.create({ data: { type: 'ai.assistant', ownerId: req.userId, projectId: req.params.id!, status: 'succeeded', progress: 1, finishedAt: new Date(), payload: { task } } });
         res.json(result);
@@ -123,7 +133,9 @@ export function aiRoutes(ctx: AppContext): Router {
         if (rr?.mediaId && rr.text && !transcripts[rr.mediaId]) transcripts[rr.mediaId] = rr.text;
       }
 
-      const plan = await ctx.ai.llmJson(ASSISTANT_SYSTEM, `Projeto:\n${describeProject(project, transcripts)}\n\nPedido do usuário: ${body.prompt}`, AssistantPlanSchema);
+      const plan = await viaProvider(() =>
+        ctx.ai.llmJson(ASSISTANT_SYSTEM, `Projeto:\n${describeProject(project, transcripts)}\n\nPedido do usuário: ${body.prompt}`, AssistantPlanSchema),
+      );
       const result = applyAssistantOps(project, plan.ops);
       await ctx.db.job.create({ data: { type: 'ai.assistant', ownerId: req.userId, projectId: p.id, status: 'succeeded', progress: 1, finishedAt: new Date(), payload: { prompt: body.prompt } } });
       res.json(json({ summary: plan.summary, ops: plan.ops, applied: result.applied, errors: result.errors, project: result.project, baseRevision: p.revision }));
