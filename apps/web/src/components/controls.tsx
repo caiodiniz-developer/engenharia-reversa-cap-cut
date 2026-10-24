@@ -12,8 +12,12 @@ export function Field({ label, children, hint }: { label: string; children: Reac
   );
 }
 
-export function Section({ title, children, action, defaultOpen = true }: { title: string; children: ReactNode; action?: ReactNode; defaultOpen?: boolean }) {
-  const [open, setOpen] = useState(defaultOpen);
+export function Section({ title, children, action, defaultOpen = true, forceOpen = false }: { title: string; children: ReactNode; action?: ReactNode; defaultOpen?: boolean; forceOpen?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen || forceOpen);
+  // Abre quando o conteúdo passa a existir (ex.: uma transição acabou de ser aplicada).
+  useEffect(() => {
+    if (forceOpen) setOpen(true);
+  }, [forceOpen]);
   return (
     <section className="border-b border-line">
       <div className="flex items-center justify-between pr-2">

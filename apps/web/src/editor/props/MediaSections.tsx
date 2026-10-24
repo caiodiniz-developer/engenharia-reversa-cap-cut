@@ -191,7 +191,7 @@ export function TransitionSection({ clip }: { clip: MediaClip }) {
   const remove = useEditor((s) => s.removeTransition);
   const tr = clip.transitionIn;
   return (
-    <Section title="Transição de entrada" defaultOpen={!!tr}>
+    <Section title="Transição de entrada" defaultOpen={!!tr} forceOpen={!!tr}>
       <Select
         label="Tipo"
         value={tr?.type ?? 'none'}
