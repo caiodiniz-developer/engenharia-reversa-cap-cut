@@ -60,6 +60,8 @@ export const EffectInstanceSchema = z.object({
   type: z.string(),
   enabled: z.boolean().default(true),
   params: z.record(z.string(), num).default({}),
+  /** Referência a um recurso do projeto (efeito de LUT: "builtin:<id>" ou id em Project.luts). */
+  ref: z.string().max(80).optional(),
 });
 export type EffectInstance = z.infer<typeof EffectInstanceSchema>;
 
@@ -135,6 +137,8 @@ export const MediaClipSchema = z.object({
   transform: TransformSchema.default({}),
   audio: AudioPropsSchema.default({}),
   effects: z.array(EffectInstanceSchema).default([]),
+  /** Estabilização de imagem (vidstab): suavização em quadros; 0 = desligada. Aplicada na exportação. */
+  stabilize: num.min(0).max(60).default(0),
   mask: MaskSchema.optional(),
   transitionIn: TransitionSchema.optional(),
 });
@@ -250,6 +254,14 @@ export const MarkerSchema = z.object({
 });
 export type Marker = z.infer<typeof MarkerSchema>;
 
+export const LutSchema = z.object({
+  id: z.string(),
+  name: z.string().max(120),
+  /** Conteúdo do arquivo .cube (LUT 3D). */
+  data: z.string().max(2_500_000),
+});
+export type Lut = z.infer<typeof LutSchema>;
+
 export const ProjectSettingsSchema = z.object({
   width: z.number().int().min(16).max(7680).default(1920),
   height: z.number().int().min(16).max(7680).default(1080),
@@ -267,5 +279,7 @@ export const ProjectSchema = z.object({
   media: z.record(z.string(), MediaAssetSchema).default({}),
   tracks: z.array(TrackSchema).default([]),
   markers: z.array(MarkerSchema).default([]),
+  /** LUTs 3D importadas pelo usuário (as embutidas são referenciadas por "builtin:<id>"). */
+  luts: z.record(z.string(), LutSchema).default({}),
 });
 export type Project = z.infer<typeof ProjectSchema>;

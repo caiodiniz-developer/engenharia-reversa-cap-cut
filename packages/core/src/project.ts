@@ -1,4 +1,5 @@
 import { newId } from './ids';
+import { parseCube } from './lut';
 import { round6, clipEnd } from './time';
 import {
   SCHEMA_VERSION,
@@ -20,6 +21,7 @@ export function createProject(name = 'Projeto sem título', settings: Partial<Pr
     media: {},
     tracks: [],
     markers: [],
+    luts: {},
   };
 }
 
@@ -74,4 +76,17 @@ export function renameProject(p: Project, name: string): Project {
 
 export function setSettings(p: Project, patch: Partial<ProjectSettings>): Project {
   return { ...p, settings: ProjectSettingsSchema.parse({ ...p.settings, ...patch }) };
+}
+
+/** Importa uma LUT 3D (.cube) para o projeto; valida o conteúdo e devolve o id para referenciar nos efeitos. */
+export function addLut(p: Project, name: string, cubeText: string): { project: Project; id: string } {
+  const lut = parseCube(cubeText); // lança LutError se inválida
+  const id = newId('lut');
+  return { project: { ...p, luts: { ...p.luts, [id]: { id, name: name.slice(0, 120) || lut.title || 'LUT', data: cubeText } } }, id };
+}
+
+export function removeLut(p: Project, id: string): Project {
+  const luts = { ...p.luts };
+  delete luts[id];
+  return { ...p, luts };
 }
