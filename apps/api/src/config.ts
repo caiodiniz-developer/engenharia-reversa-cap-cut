@@ -43,6 +43,8 @@ const Env = z.object({
   WHISPER_MODEL: z.string().optional(),
   /** Teto de gasto/uso de IA por usuário por dia (nº de chamadas pagas). */
   AI_DAILY_CALL_LIMIT: z.coerce.number().default(50),
+  /** Nº de proxies confiáveis à frente da API (nginx = 1). Necessário para o rate limit enxergar o IP real. */
+  TRUST_PROXY: z.coerce.number().int().min(0).default(0),
 });
 
 export type Config = z.infer<typeof Env> & {
