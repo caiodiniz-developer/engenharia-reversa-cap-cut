@@ -237,6 +237,7 @@ export function mediaRoutes(ctx: AppContext): Router {
     auth,
     h(async (req, res) => {
       const project = await ownedProject(ctx, req.params.id!, req.userId);
+      if (!req.is('multipart/form-data')) throw new HttpError(415, 'Envie o arquivo como multipart/form-data', 'unsupported_type');
       await assertQuota(project.id);
       await mkdir(path.join(ctx.config.tmpDir, 'multipart'), { recursive: true });
       const tmp = path.join(ctx.config.tmpDir, 'multipart', randomBytes(8).toString('hex'));
