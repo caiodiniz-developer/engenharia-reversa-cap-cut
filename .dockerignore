@@ -1,0 +1,8 @@
+**/node_modules
+**/dist
+.git
+.pgdata
+storage
+**/test-results
+**/playwright-report
+.npmrc
