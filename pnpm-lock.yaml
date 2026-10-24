@@ -57,6 +57,9 @@ importers:
         specifier: 3.24.1
         version: 3.24.1
     devDependencies:
+      '@napi-rs/canvas':
+        specifier: 0.1.65
+        version: 0.1.65
       '@types/busboy':
         specifier: 1.5.4
         version: 1.5.4
