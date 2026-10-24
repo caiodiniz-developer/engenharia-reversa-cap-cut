@@ -10,7 +10,8 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "prisma:generate": "prisma generate",
-    "prisma:push": "prisma db push"
+    "prisma:push": "prisma db push",
+    "dev:all": "tsx src/dev.ts"
   },
   "dependencies": {
     "@editor/core": "workspace:*",

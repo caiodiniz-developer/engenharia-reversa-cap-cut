@@ -4,11 +4,11 @@
   "version": "0.1.0",
   "packageManager": "pnpm@10.33.0",
   "scripts": {
+    "dev:api": "pnpm --filter @editor/api dev:all",
+    "dev:web": "pnpm --filter @editor/web dev",
     "build": "pnpm -r build",
     "test": "pnpm -r --if-present test",
     "typecheck": "pnpm -r --if-present typecheck",
-    "dev:api": "pnpm --filter @editor/api dev",
-    "dev:web": "pnpm --filter @editor/web dev",
     "e2e": "pnpm --filter @editor/web e2e"
   },
   "devDependencies": {
