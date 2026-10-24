@@ -1,0 +1,118 @@
+import { useEffect } from 'react';
+import { projectDuration } from '@editor/core';
+import { saveNow } from '../store/persist';
+import { useEditor } from '../store/editor';
+
+export interface Shortcut {
+  keys: string;
+  label: string;
+}
+
+export const SHORTCUTS: Shortcut[] = [
+  { keys: 'Espaço', label: 'Reproduzir / pausar' },
+  { keys: 'S', label: 'Dividir clipe na cabeça de reprodução' },
+  { keys: 'Delete', label: 'Excluir seleção' },
+  { keys: 'Shift + Delete', label: 'Excluir e fechar o espaço' },
+  { keys: 'Ctrl + Z', label: 'Desfazer' },
+  { keys: 'Ctrl + Shift + Z  /  Ctrl + Y', label: 'Refazer' },
+  { keys: 'Ctrl + C  /  Ctrl + V', label: 'Copiar / colar no cursor' },
+  { keys: 'Ctrl + D', label: 'Duplicar' },
+  { keys: 'Ctrl + A', label: 'Selecionar todos os clipes' },
+  { keys: 'Ctrl + G  /  Ctrl + Shift + G', label: 'Agrupar / desagrupar' },
+  { keys: 'Ctrl + S', label: 'Salvar agora' },
+  { keys: '← / →', label: 'Quadro anterior / próximo' },
+  { keys: 'Shift + ← / →', label: 'Voltar / avançar 1 segundo' },
+  { keys: 'Home / End', label: 'Ir ao início / ao fim' },
+  { keys: 'M', label: 'Adicionar marcador' },
+  { keys: 'N', label: 'Ligar/desligar ímã (snap)' },
+  { keys: '+ / −', label: 'Aumentar / diminuir zoom da timeline' },
+  { keys: 'Ctrl + roda do mouse', label: 'Zoom na timeline' },
+  { keys: 'Alt ao arrastar', label: 'Ignora o ímã / seleciona só o clipe (sem vinculados)' },
+  { keys: 'Esc', label: 'Limpar seleção' },
+  { keys: '?', label: 'Mostrar atalhos' },
+];
+
+const isTyping = (t: EventTarget | null): boolean => {
+  const el = t as HTMLElement | null;
+  if (!el) return false;
+  const tag = el.tagName;
+  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable;
+};
+
+/** Atalhos globais do editor. Ignora teclas digitadas em campos de formulário. */
+export function useShortcuts(openHelp: () => void): void {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const s = useEditor.getState();
+      const mod = e.ctrlKey || e.metaKey;
+      const key = e.key.toLowerCase();
+
+      if (mod && key === 's') {
+        e.preventDefault();
+        void saveNow();
+        return;
+      }
+      if (isTyping(e.target)) return;
+      // Botões/controles focados tratam Enter/Espaço por conta própria.
+      if ((e.key === ' ' || e.key === 'Enter') && (e.target as HTMLElement).closest?.('button, [role="button"], a, [role="tab"], [role="menuitem"], [role="radio"]')) return;
+
+      if (mod && key === 'z') {
+        e.preventDefault();
+        e.shiftKey ? s.redo() : s.undo();
+      } else if (mod && key === 'y') {
+        e.preventDefault();
+        s.redo();
+      } else if (mod && key === 'c') {
+        s.copySelection();
+      } else if (mod && key === 'v') {
+        e.preventDefault();
+        s.pasteClipboard();
+      } else if (mod && key === 'd') {
+        e.preventDefault();
+        s.duplicateSelection();
+      } else if (mod && key === 'a') {
+        e.preventDefault();
+        s.select(s.project.tracks.flatMap((t) => t.clips.map((c) => c.id)));
+      } else if (mod && key === 'g') {
+        e.preventDefault();
+        e.shiftKey ? s.ungroup(s.selection) : s.group(s.selection);
+      } else if (mod) {
+        return;
+      } else if (e.key === ' ') {
+        e.preventDefault();
+        s.togglePlay();
+      } else if (key === 's') {
+        s.splitAtPlayhead();
+      } else if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault();
+        s.deleteSelection(e.shiftKey);
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        e.shiftKey ? s.setPlayhead(s.playhead - 1) : s.stepFrames(-1);
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        e.shiftKey ? s.setPlayhead(s.playhead + 1) : s.stepFrames(1);
+      } else if (e.key === 'Home') {
+        s.setPlaying(false);
+        s.setPlayhead(0);
+      } else if (e.key === 'End') {
+        s.setPlaying(false);
+        s.setPlayhead(projectDuration(s.project));
+      } else if (key === 'm') {
+        s.addMarkerAtPlayhead();
+      } else if (key === 'n') {
+        s.toggleSnapping();
+      } else if (e.key === '+' || e.key === '=') {
+        s.setZoom(s.zoom * 1.3);
+      } else if (e.key === '-' || e.key === '_') {
+        s.setZoom(s.zoom / 1.3);
+      } else if (e.key === 'Escape') {
+        s.select([]);
+      } else if (e.key === '?') {
+        openHelp();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [openHelp]);
+}
