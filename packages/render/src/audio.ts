@@ -21,10 +21,41 @@ export function atempoChain(speed: number): string[] {
  * Cadeia de filtros de áudio de um clipe de mídia (já com o stream de entrada recortado por -ss/-t).
  * fadeIn/fadeOut são os efetivos (incluem o crossfade criado por transições).
  */
+/** Medição da 1ª passada do loudnorm (valores em LUFS/dBTP/LU). */
+export interface Loudness {
+  input_i: number;
+  input_tp: number;
+  input_lra: number;
+  input_thresh: number;
+  target_offset: number;
+}
+
+/** Filtro de 2ª passada do loudnorm: ganho linear calculado a partir da medição (sem "bombeamento"). */
+export function loudnormPass2(m: Loudness): string {
+  return `loudnorm=I=-16:TP=-1.5:LRA=11:measured_I=${m.input_i}:measured_TP=${m.input_tp}:measured_LRA=${m.input_lra}:measured_thresh=${m.input_thresh}:offset=${m.target_offset}:linear=true`;
+}
+
+/** Interpreta o bloco JSON que o loudnorm imprime no fim do log (print_format=json). Devolve undefined se o áudio é silencioso. */
+export function parseLoudnorm(stderr: string): Loudness | undefined {
+  const start = stderr.lastIndexOf('{');
+  const end = stderr.lastIndexOf('}');
+  if (start === -1 || end < start) return undefined;
+  const raw = JSON.parse(stderr.slice(start, end + 1)) as Record<string, string>;
+  const out: Loudness = {
+    input_i: Number(raw.input_i),
+    input_tp: Number(raw.input_tp),
+    input_lra: Number(raw.input_lra),
+    input_thresh: Number(raw.input_thresh),
+    target_offset: Number(raw.target_offset),
+  };
+  return Object.values(out).every(Number.isFinite) ? out : undefined;
+}
+
 export function audioChain(
   clip: MediaClip,
   sampleRate: number,
   fades: { fadeIn: number; fadeOut: number },
+  loudness?: Loudness,
 ): string[] {
   const a = clip.audio;
   const f: string[] = [`aresample=${sampleRate}`, 'aformat=channel_layouts=stereo', 'asetpts=PTS-STARTPTS'];
@@ -35,7 +66,7 @@ export function audioChain(
   if (a.eq.bass) f.push(`bass=g=${num(a.eq.bass)}:f=100`);
   if (a.eq.mid) f.push(`equalizer=f=1000:t=q:w=1:g=${num(a.eq.mid)}`);
   if (a.eq.treble) f.push(`treble=g=${num(a.eq.treble)}:f=8000`);
-  if (a.normalize) f.push('loudnorm=I=-16:TP=-1.5:LRA=11');
+  if (a.normalize && loudness) f.push(loudnormPass2(loudness));
   if (a.pan !== 0) {
     const l = a.pan > 0 ? 1 - a.pan : 1;
     const r = a.pan < 0 ? 1 + a.pan : 1;

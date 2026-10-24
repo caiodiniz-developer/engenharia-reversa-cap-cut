@@ -16,7 +16,7 @@ import {
   type TextClip,
   type Transform,
 } from '@editor/core';
-import { audioChain } from './audio';
+import { audioChain, parseLoudnorm, type Loudness } from './audio';
 import { ffmpegPath } from './binaries';
 import { isAnimated, keyframeExpr, num } from './expr';
 import { ffmpegRun } from './media';
@@ -214,6 +214,13 @@ export async function buildRenderPlan(
     return trf;
   }
 
+  /** 1ª passada do loudnorm no trecho usado. Áudio silencioso devolve undefined (nada a normalizar). */
+  async function measureLoudness(file: string, clip: MediaClip): Promise<Loudness | undefined> {
+    const used = clip.duration * clip.speed;
+    const { stderr } = await ffmpegRun(['-ss', num(clip.sourceIn), '-t', num(used + 0.1), '-i', file, '-vn', '-af', 'loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json', '-f', 'null', '-'], 10 * 60_000, env.signal);
+    return parseLoudnorm(stderr);
+  }
+
   async function addMediaClip(clip: MediaClip, trackKind: string, hidden: boolean, muted: boolean): Promise<void> {
     const asset = project.media[clip.mediaId];
     if (!asset) throw new RenderError(`Mídia ${clip.mediaId} não encontrada no projeto`);
@@ -310,7 +317,8 @@ export async function buildRenderPlan(
         fadeIn: Math.max(clip.audio.fadeIn, crossfadeIn.get(clip.id) ?? 0),
         fadeOut: Math.max(clip.audio.fadeOut, crossfadeOut.get(clip.id) ?? 0),
       };
-      const chain = audioChain(clip, sr, fades);
+      const loudness = clip.audio.normalize ? await measureLoudness(file, clip) : undefined;
+      const chain = audioChain(clip, sr, fades, loudness);
       const ms = Math.round(clip.start * 1000);
       chain.push(`adelay=delays=${ms}:all=1`);
       const out = label('a');
