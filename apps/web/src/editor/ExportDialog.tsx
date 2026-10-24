@@ -5,6 +5,7 @@ import type { ExportInfo } from '../api/types';
 import { Modal, ProgressBar, Select } from '../components/controls';
 import { Icon } from '../components/Icon';
 import { formatBytes, formatDuration } from '../lib/format';
+import { localRecordingSupported, recordLocalDraft, RecordCancelled } from '../lib/localRecord';
 import { useEditor } from '../store/editor';
 import { useJobs } from '../store/jobs';
 import { saveNow } from '../store/persist';
@@ -86,6 +87,30 @@ export function ExportDialog({ projectId, open, onClose }: { projectId: string; 
 
   const done = job?.status === 'succeeded';
 
+  // Rascunho local: grava o preview no próprio navegador (sem renderizar no servidor).
+  const [localProgress, setLocalProgress] = useState<number | null>(null);
+  const [localAbort, setLocalAbort] = useState<AbortController | null>(null);
+  async function recordLocal() {
+    const ctrl = new AbortController();
+    setLocalAbort(ctrl);
+    setLocalProgress(0);
+    try {
+      const blob = await recordLocalDraft({ onProgress: setLocalProgress, signal: ctrl.signal });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${project.name.replace(/[^\p{L}\p{N}_-]+/gu, '_') || 'rascunho'}-rascunho.webm`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+      toast.success('Rascunho gravado. Ele tem a qualidade da prévia; use "Exportar" para o arquivo final.');
+    } catch (e) {
+      if (!(e instanceof RecordCancelled)) toast.error(e instanceof Error ? e.message : 'Falha ao gravar o rascunho');
+    } finally {
+      setLocalProgress(null);
+      setLocalAbort(null);
+    }
+  }
+
   return (
     <Modal open={open} onClose={onClose} title="Exportar vídeo" width={520}>
       <div className="mb-3 rounded-lg border border-line bg-panel2 px-3 py-2 text-2xs text-mute">
@@ -137,6 +162,28 @@ export function ExportDialog({ projectId, open, onClose }: { projectId: string; 
         </button>
       </div>
       {duration <= 0 && <p className="mt-2 text-right text-2xs text-mute">Adicione clipes à timeline para exportar.</p>}
+
+      {localRecordingSupported() && (
+        <div className="mt-5 rounded-lg border border-line bg-panel2 p-3" data-testid="local-draft">
+          <h3 className="mb-1 text-xs font-semibold">Rascunho rápido no navegador</h3>
+          <p className="mb-2 text-2xs text-mute">Grava a prévia em tempo real e baixa um WebM, sem renderizar no servidor. Qualidade da prévia (até 960 px); estabilização, normalização e redução de ruído não entram.</p>
+          {localProgress === null ? (
+            <button type="button" className="btn w-full" disabled={duration <= 0 || !!running} onClick={() => void recordLocal()} data-testid="record-local">
+              <Icon name="film" size={14} /> Gravar rascunho (WebM)
+            </button>
+          ) : (
+            <div role="status">
+              <div className="mb-1 flex items-center justify-between text-2xs">
+                <span>Gravando… {Math.round(localProgress * 100)}%</span>
+                <button type="button" className="text-mute hover:text-danger" onClick={() => localAbort?.abort()}>
+                  Cancelar
+                </button>
+              </div>
+              <ProgressBar value={localProgress} label="Progresso da gravação" />
+            </div>
+          )}
+        </div>
+      )}
 
       {history.length > 0 && (
         <div className="mt-5 border-t border-line pt-3">

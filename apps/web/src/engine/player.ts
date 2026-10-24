@@ -58,6 +58,26 @@ export class PlayerEngine {
     void this.audio?.close();
   }
 
+  /** Fluxo de vídeo (canvas) + áudio (mixagem) para a gravação local. `stop` desconecta o destino de áudio. */
+  captureStream(fps: number): { stream: MediaStream; stop: () => void } {
+    this.ensureAudio();
+    void this.audio?.resume();
+    const tracks = [...this.canvas.captureStream(fps).getVideoTracks()];
+    let dest: MediaStreamAudioDestinationNode | undefined;
+    if (this.audio && this.master) {
+      dest = this.audio.createMediaStreamDestination();
+      this.master.connect(dest);
+      tracks.push(...dest.stream.getAudioTracks());
+    }
+    return {
+      stream: new MediaStream(tracks),
+      stop: () => {
+        if (dest) this.master?.disconnect(dest);
+        tracks.forEach((t) => t.stop());
+      },
+    };
+  }
+
   /** Força um redesenho no próximo quadro (ex.: propriedade alterada com o vídeo pausado). */
   invalidate(): void {
     this.lastKey = '';

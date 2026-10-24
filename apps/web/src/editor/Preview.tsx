@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { formatTimecode } from '@editor/core';
 import { Icon } from '../components/Icon';
 import { PlayerEngine } from '../engine/player';
+import { setEngine } from '../engine/registry';
 import { aspectLabel } from '../lib/format';
 import { selectDuration, useEditor } from '../store/editor';
 
@@ -34,7 +35,11 @@ export function Preview() {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const engine = new PlayerEngine(canvas, (id) => useEditor.getState().media[id]);
-    return () => engine.dispose();
+    setEngine(engine);
+    return () => {
+      setEngine(null);
+      engine.dispose();
+    };
   }, []);
 
   // Ajusta o quadro ao espaço disponível mantendo a proporção do projeto.
