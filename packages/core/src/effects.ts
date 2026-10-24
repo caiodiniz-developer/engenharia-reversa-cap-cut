@@ -1,4 +1,5 @@
 import { newId } from './ids';
+import { applyLut, mixLut, type Lut3D } from './lut';
 import type { EffectInstance } from './schema';
 
 /**
@@ -25,17 +26,29 @@ export interface EffectParamDef {
 export interface EffectCtx {
   width: number;
   height: number;
+  /** Caminho do arquivo .cube já gravado para o efeito de LUT (a exportação prepara antes de montar o grafo). */
+  lutPath?: (fx: EffectInstance) => string | undefined;
+}
+
+/** Dados auxiliares de um efeito no preview (ex.: a LUT já resolvida). */
+export interface PixelEnv {
+  lut?: Lut3D;
 }
 
 export interface EffectDef {
   type: string;
   label: string;
-  category: 'color' | 'blur' | 'stylize' | 'key';
+  category: 'color' | 'blur' | 'stylize' | 'key' | 'look';
   params: EffectParamDef[];
   /** true quando a saída ganha/usa canal alfa (precisa rodar em rgba). */
   alpha?: boolean;
-  ffmpeg(params: Params, ctx: EffectCtx): string[];
-  pixel(data: Pixels, w: number, h: number, params: Params): void;
+  ffmpeg(params: Params, ctx: EffectCtx, fx: EffectInstance): string[];
+  pixel(data: Pixels, w: number, h: number, params: Params, env?: PixelEnv): void;
+}
+
+/** Escapa um caminho para uso dentro de aspas simples em um filtro do FFmpeg (inclui o ':' de "C:"). */
+export function escapeFilterPath(p: string): string {
+  return p.replace(/\\/g, '/').replace(/'/g, "\\'").replace(/:/g, '\\:');
 }
 
 const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
@@ -281,6 +294,20 @@ export const EFFECTS: EffectDef[] = [
     },
   },
   {
+    type: 'lut',
+    label: 'LUT de cor',
+    category: 'look',
+    params: [def('intensity', 'Intensidade', 0, 1, 0.01, 1)],
+    // O arquivo .cube (já misturado com a identidade conforme a intensidade) é gravado pela exportação.
+    ffmpeg: (_p, ctx, fx) => {
+      const file = ctx.lutPath?.(fx);
+      return file ? [`lut3d=file='${escapeFilterPath(file)}':interp=trilinear`] : [];
+    },
+    pixel(d, _w, _h, p, env) {
+      if (env?.lut) applyLut(d, mixLut(env.lut, p.intensity ?? 1));
+    },
+  },
+  {
     type: 'chromakey',
     label: 'Chroma key',
     category: 'key',
@@ -321,8 +348,8 @@ export function defaultParams(type: string): Params {
   return Object.fromEntries(d.params.map((p) => [p.key, p.default]));
 }
 
-export function createEffect(type: string, params: Params = {}): EffectInstance {
-  return { id: newId('fx'), type, enabled: true, params: { ...defaultParams(type), ...clampParams(type, params) } };
+export function createEffect(type: string, params: Params = {}, ref?: string): EffectInstance {
+  return { id: newId('fx'), type, enabled: true, params: { ...defaultParams(type), ...clampParams(type, params) }, ...(ref ? { ref } : {}) };
 }
 
 /** Limita valores aos intervalos declarados; descarta chaves desconhecidas. */
@@ -343,16 +370,18 @@ export function orderedEffects(effects: EffectInstance[]): EffectInstance[] {
   return [...enabled.filter((e) => !BY_TYPE.get(e.type)!.alpha), ...enabled.filter((e) => BY_TYPE.get(e.type)!.alpha)];
 }
 
-/** Aplica os efeitos de um clipe a um buffer RGBA (preview). */
-export function applyEffectsToPixels(data: Pixels, w: number, h: number, effects: EffectInstance[]): void {
-  for (const e of orderedEffects(effects)) BY_TYPE.get(e.type)!.pixel(data, w, h, { ...defaultParams(e.type), ...e.params });
+/** Aplica os efeitos de um clipe a um buffer RGBA (preview). `resolveLut` entrega a LUT de um efeito de LUT. */
+export function applyEffectsToPixels(data: Pixels, w: number, h: number, effects: EffectInstance[], resolveLut?: (ref: string | undefined) => Lut3D | undefined): void {
+  for (const e of orderedEffects(effects)) {
+    BY_TYPE.get(e.type)!.pixel(data, w, h, { ...defaultParams(e.type), ...e.params }, e.type === 'lut' ? { lut: resolveLut?.(e.ref) } : undefined);
+  }
 }
 
 /** Fragmentos de filtro FFmpeg para os efeitos habilitados; `alpha` seleciona o grupo. */
 export function effectsToFfmpeg(effects: EffectInstance[], ctx: EffectCtx, alpha: boolean): string[] {
   return orderedEffects(effects)
     .filter((e) => !!BY_TYPE.get(e.type)!.alpha === alpha)
-    .flatMap((e) => BY_TYPE.get(e.type)!.ffmpeg({ ...defaultParams(e.type), ...e.params }, ctx));
+    .flatMap((e) => BY_TYPE.get(e.type)!.ffmpeg({ ...defaultParams(e.type), ...e.params }, ctx, e));
 }
 
 export interface EffectPreset {
