@@ -1,0 +1,49 @@
+# Produção/avaliação local: docker compose up --build   → http://localhost:8080
+# Obrigatório: JWT_SECRET (>= 32 caracteres), por exemplo em um arquivo .env ao lado deste.
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: editor
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-editor}
+      POSTGRES_DB: editor
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U editor -d editor"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build: { context: ., target: api }
+    restart: unless-stopped
+    depends_on:
+      db: { condition: service_healthy }
+    environment:
+      DATABASE_URL: postgresql://editor:${POSTGRES_PASSWORD:-editor}@db:5432/editor?schema=public
+      JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET com pelo menos 32 caracteres}
+      CORS_ORIGINS: ${PUBLIC_ORIGIN:-http://localhost:8080}
+      PUBLIC_API_URL: ${PUBLIC_ORIGIN:-http://localhost:8080}
+      EXPORT_CONCURRENCY: ${EXPORT_CONCURRENCY:-1}
+      # IA (opcionais; sem elas a API responde 503 nos recursos correspondentes)
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    volumes:
+      - media:/data
+    # Limites de recursos para a renderização não derrubar o host.
+    deploy:
+      resources:
+        limits: { cpus: "4", memory: 6g }
+
+  web:
+    build: { context: ., target: web }
+    restart: unless-stopped
+    depends_on: [api]
+    ports:
+      - "${WEB_PORT:-8080}:80"
+
+volumes:
+  pgdata:
+  media:
