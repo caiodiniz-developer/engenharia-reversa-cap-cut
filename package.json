@@ -1,0 +1,20 @@
+{
+  "name": "web-video-editor",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r --if-present test",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "dev:api": "pnpm --filter @editor/api dev",
+    "dev:web": "pnpm --filter @editor/web dev",
+    "e2e": "pnpm --filter @editor/web e2e"
+  },
+  "devDependencies": {
+    "typescript": "5.6.3",
+    "vitest": "2.1.8",
+    "@types/node": "22.10.2",
+    "tsx": "4.19.2"
+  }
+}
