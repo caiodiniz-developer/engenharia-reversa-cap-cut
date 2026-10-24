@@ -1,0 +1,162 @@
+import { useEffect, useState } from 'react';
+import { projectDuration } from '@editor/core';
+import { api, ApiError } from '../api/client';
+import type { ExportInfo } from '../api/types';
+import { Modal, ProgressBar, Select } from '../components/controls';
+import { Icon } from '../components/Icon';
+import { formatBytes, formatDuration } from '../lib/format';
+import { useEditor } from '../store/editor';
+import { useJobs } from '../store/jobs';
+import { saveNow } from '../store/persist';
+import { toast } from '../store/toasts';
+
+type Codec = 'h264' | 'h265' | 'vp9';
+type Res = 'project' | '2160' | '1080' | '720' | '480';
+
+const QUALITY = [
+  { value: '18', label: 'Alta (arquivo maior)' },
+  { value: '21', label: 'Equilibrada' },
+  { value: '26', label: 'Compacta (arquivo menor)' },
+];
+
+export function ExportDialog({ projectId, open, onClose }: { projectId: string; open: boolean; onClose: () => void }) {
+  const project = useEditor((s) => s.project);
+  const jobs = useJobs((s) => s.jobs);
+  const [codec, setCodec] = useState<Codec>('h264');
+  const [res, setRes] = useState<Res>('project');
+  const [fps, setFps] = useState<string>('project');
+  const [crf, setCrf] = useState('21');
+  const [busy, setBusy] = useState(false);
+  const [current, setCurrent] = useState<{ exportId: string; jobId: string } | null>(null);
+  const [history, setHistory] = useState<ExportInfo[]>([]);
+
+  const duration = projectDuration(project);
+  const job = current ? jobs[current.jobId] : undefined;
+  const running = job && (job.status === 'queued' || job.status === 'running');
+
+  const { width, height } = (() => {
+    const s = project.settings;
+    if (res === 'project') return { width: s.width, height: s.height };
+    const target = Number(res);
+    // A resolução escolhida refere-se ao lado menor, preservando a proporção do projeto.
+    const scale = target / Math.min(s.width, s.height);
+    return { width: Math.round((s.width * scale) / 2) * 2, height: Math.round((s.height * scale) / 2) * 2 };
+  })();
+
+  const refresh = () => api.get<{ exports: ExportInfo[] }>(`/api/projects/${projectId}/exports`).then((r) => setHistory(r.exports)).catch(() => {});
+  useEffect(() => {
+    if (open) void refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, job?.status]);
+
+  async function start() {
+    setBusy(true);
+    try {
+      await saveNow(); // exporta o documento salvo no servidor
+      const body = { codec, crf: Number(crf), width, height, ...(fps !== 'project' ? { fps: Number(fps) } : {}), preset: 'veryfast' };
+      const r = await api.post<{ exportId: string; jobId: string }>(`/api/projects/${projectId}/exports`, body);
+      useJobs.getState().track(r.jobId, 'export', projectId);
+      setCurrent(r);
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : 'Não foi possível iniciar a exportação');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function cancel() {
+    if (!current) return;
+    try {
+      await api.post(`/api/exports/${current.exportId}/cancel`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Falha ao cancelar');
+    }
+  }
+
+  async function download(id: string) {
+    try {
+      const r = await api.get<{ url: string }>(`/api/exports/${id}/download-url`);
+      const a = document.createElement('a');
+      a.href = r.url;
+      a.click();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Arquivo indisponível (pode ter expirado)');
+    }
+  }
+
+  const done = job?.status === 'succeeded';
+
+  return (
+    <Modal open={open} onClose={onClose} title="Exportar vídeo" width={520}>
+      <div className="mb-3 rounded-lg border border-line bg-panel2 px-3 py-2 text-2xs text-mute">
+        A renderização acontece no servidor: suas mídias já enviadas são processadas por lá e o arquivo final fica disponível para download por tempo limitado (24 h por padrão).
+      </div>
+
+      <div className="grid grid-cols-2 gap-x-4">
+        <Select label="Formato" value={codec} onChange={setCodec} options={[{ value: 'h264', label: 'MP4 · H.264 (compatível)' }, { value: 'h265', label: 'MP4 · H.265 (menor)' }, { value: 'vp9', label: 'WebM · VP9' }]} />
+        <Select label="Qualidade" value={crf} onChange={setCrf} options={QUALITY} />
+        <Select label="Resolução" value={res} onChange={setRes} options={[{ value: 'project', label: `Do projeto (${project.settings.width}×${project.settings.height})` }, { value: '2160', label: '4K (lado menor 2160)' }, { value: '1080', label: 'Full HD (1080)' }, { value: '720', label: 'HD (720)' }, { value: '480', label: 'SD (480)' }]} />
+        <Select label="Quadros por segundo" value={fps} onChange={setFps} options={[{ value: 'project', label: `Do projeto (${project.settings.fps})` }, ...[24, 25, 30, 50, 60].map((f) => ({ value: String(f), label: `${f} fps` }))]} />
+      </div>
+      <p className="mb-3 text-2xs text-mute">
+        Saída: {width}×{height} · duração {formatDuration(duration)}
+      </p>
+
+      {job && (
+        <div className="mb-3 rounded-lg border border-line bg-panel2 p-3" role="status" data-testid="export-status">
+          <div className="mb-1.5 flex items-center justify-between text-xs">
+            <span>
+              {job.status === 'queued' && 'Na fila…'}
+              {job.status === 'running' && `Renderizando… ${Math.round(job.progress * 100)}%`}
+              {job.status === 'succeeded' && 'Exportação concluída'}
+              {job.status === 'failed' && 'A exportação falhou'}
+              {job.status === 'cancelled' && 'Exportação cancelada'}
+            </span>
+            {running && (
+              <button type="button" className="text-2xs text-mute hover:text-danger" onClick={() => void cancel()}>
+                Cancelar
+              </button>
+            )}
+          </div>
+          <ProgressBar value={job.status === 'succeeded' ? 1 : job.progress} label="Progresso da exportação" />
+          {job.status === 'failed' && <p className="mt-2 text-2xs text-danger">{job.error}</p>}
+          {done && current && (
+            <button type="button" className="btn btn-primary mt-3 w-full" onClick={() => void download(current.exportId)} data-testid="download-button">
+              <Icon name="download" size={14} /> Baixar arquivo
+            </button>
+          )}
+        </div>
+      )}
+
+      <div className="flex justify-end gap-2">
+        <button type="button" className="btn" onClick={onClose}>
+          Fechar
+        </button>
+        <button type="button" className="btn btn-primary" disabled={busy || !!running || duration <= 0} onClick={() => void start()} data-testid="start-export">
+          {busy ? 'Enviando…' : 'Exportar'}
+        </button>
+      </div>
+      {duration <= 0 && <p className="mt-2 text-right text-2xs text-mute">Adicione clipes à timeline para exportar.</p>}
+
+      {history.length > 0 && (
+        <div className="mt-5 border-t border-line pt-3">
+          <h3 className="panel-title !px-0">Exportações anteriores</h3>
+          <ul className="space-y-1">
+            {history.slice(0, 5).map((h) => (
+              <li key={h.id} className="flex items-center justify-between rounded-md bg-panel2 px-2 py-1.5 text-2xs">
+                <span className="text-mute">
+                  {String(h.options.codec ?? '').toUpperCase()} · {h.job.status === 'succeeded' ? (h.ready ? formatBytes(h.sizeBytes ?? 0) : 'expirado') : h.job.status}
+                </span>
+                {h.ready && (
+                  <button type="button" className="text-accent hover:underline" onClick={() => void download(h.id)}>
+                    Baixar
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </Modal>
+  );
+}
