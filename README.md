@@ -30,6 +30,7 @@ Configuração opcional em `apps/api/.env` (veja [apps/api/.env.example](apps/ap
 | `pnpm typecheck` | TypeScript estrito em todos os pacotes |
 | `pnpm test` | Vitest: core, render (FFmpeg real), API (PostgreSQL real), web |
 | `pnpm e2e` | Playwright com Chrome, API, Vite e PostgreSQL reais |
+| `pnpm e2e:prod` | O mesmo Chrome contra o **build de produção** sob a CSP |
 | `pnpm build` | Build de produção |
 
 ## Arquitetura
@@ -56,8 +57,9 @@ Cobertura medida nesta base (execução local, Windows 11, Chrome estável):
 |---|---:|---|
 | `packages/core` | 62 | operações de timeline, histórico, keyframes, legendas, efeitos, LUTs |
 | `packages/render` | 45 | exportações reais com FFmpeg, inspeção de pixels, nível de áudio, duração, cancelamento |
-| `apps/api` | 61 | PostgreSQL real, autorização, upload resumível, fila, exportação, IA (borda de rede simulada) |
+| `apps/api` | 62 | PostgreSQL real, autorização, upload resumível, fila, exportação, IA (borda de rede simulada) |
 | `apps/web` (unit) | 24 | store do editor, mapeamento de tempo, legendas |
 | `apps/web` (E2E) | 41 | fluxo completo no Chrome: importar, editar, salvar, exportar, baixar e comparar |
+| `apps/web` (E2E de produção) | 3 | build minificado servido com a CSP e os cabeçalhos do nginx: zero violações de CSP e zero erros de console |
 
 **Não verificado neste ambiente:** build das imagens Docker e o `docker compose` (Docker não estava instalado), o workflow de CI do GitHub, transcrição com `whisper.cpp` real, chamadas reais às APIs da OpenAI/Anthropic (testadas apenas contra um servidor local que imita o contrato), Firefox/Safari e dispositivos móveis.
