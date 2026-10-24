@@ -1,4 +1,4 @@
-import { EFFECTS, TRANSITION_TYPES, getEffectDef, type Clip, type MediaClip, type TransitionType } from '@editor/core';
+import { BUILTIN_LUTS, BUILTIN_PREFIX, EFFECTS, TRANSITION_TYPES, getEffectDef, type Clip, type MediaClip, type TransitionType } from '@editor/core';
 import { Check, NumberField, Section, Select } from '../../components/controls';
 import { Icon } from '../../components/Icon';
 import { useEditor } from '../../store/editor';
@@ -103,7 +103,20 @@ export function AudioSection({ clip, hasAudio }: { clip: MediaClip; hasAudio: bo
   );
 }
 
+export function StabilizeSection({ clip, kind }: { clip: MediaClip; kind: string }) {
+  const setStabilize = useEditor((s) => s.setStabilize);
+  if (kind !== 'video' || clip.freeze) return null;
+  return (
+    <Section title="Estabilização" defaultOpen={clip.stabilize > 0}>
+      <NumberField label="Suavização (0 = desligada)" value={clip.stabilize} min={0} max={30} step={1} unit="qd" onChange={(v) => setStabilize(clip.id, Math.round(v))} onCommit={() => useEditor.getState().sealDrag()} />
+      <p className="text-2xs text-mute">Reduz a tremedeira de câmera na mão (análise em duas passadas, com leve ampliação para esconder as bordas). Aplicada na exportação; o preview mostra o vídeo original.</p>
+    </Section>
+  );
+}
+
 export function EffectsSection({ clip }: { clip: MediaClip }) {
+  const luts = useEditor((s) => s.project.luts);
+  const lutName = (ref?: string) => (ref?.startsWith(BUILTIN_PREFIX) ? BUILTIN_LUTS.find((l) => l.id === ref.slice(BUILTIN_PREFIX.length))?.label : ref ? luts[ref]?.name : undefined) ?? 'LUT ausente';
   const add = useEditor((s) => s.addEffect);
   const update = useEditor((s) => s.updateEffect);
   const toggle = useEditor((s) => s.toggleEffect);
@@ -119,7 +132,7 @@ export function EffectsSection({ clip }: { clip: MediaClip }) {
           onChange={(e) => e.target.value && add(clip.id, e.target.value)}
         >
           <option value="">+ Adicionar</option>
-          {EFFECTS.map((e) => (
+          {EFFECTS.filter((e) => e.type !== 'lut').map((e) => (
             <option key={e.type} value={e.type}>
               {e.label}
             </option>
@@ -135,7 +148,7 @@ export function EffectsSection({ clip }: { clip: MediaClip }) {
           <div key={fx.id} className="mb-3 rounded-lg border border-line bg-panel2 p-2">
             <div className="mb-2 flex items-center justify-between">
               <span className="flex items-center gap-1.5 text-xs font-medium">
-                <Icon name="wand" size={12} className={fx.enabled ? 'text-accent' : 'text-mute'} /> {def.label}
+                <Icon name="wand" size={12} className={fx.enabled ? 'text-accent' : 'text-mute'} /> {fx.type === 'lut' ? `LUT: ${lutName(fx.ref)}` : def.label}
               </span>
               <span className="flex gap-0.5">
                 <button type="button" className="btn-icon !h-6 !w-6" aria-label={fx.enabled ? `Desativar ${def.label}` : `Ativar ${def.label}`} aria-pressed={!fx.enabled} onClick={() => toggle(clip.id, fx.id)}>

@@ -4,7 +4,7 @@ import { ColorField, NumberField, Section, Select, TextInput } from '../../compo
 import { Icon } from '../../components/Icon';
 import { ASPECTS, aspectLabel } from '../../lib/format';
 import { useEditor } from '../../store/editor';
-import { AudioSection, EffectsSection, MaskSection, SpeedSection, TimingSection, TransitionSection } from './MediaSections';
+import { AudioSection, EffectsSection, MaskSection, SpeedSection, StabilizeSection, TimingSection, TransitionSection } from './MediaSections';
 import { CaptionWordsSection, TextAnimationSection, TextContentSection, TextStyleSection } from './TextSections';
 import { TransformSection } from './TransformSection';
 
@@ -50,6 +50,7 @@ function MediaProps({ clips, trackKind }: { clips: MediaClip[]; trackKind: strin
       <SpeedSection clip={clip} kind={m?.kind ?? 'video'} />
       <AudioSection clip={clip} hasAudio={!!m?.hasAudio || m?.kind === 'audio'} />
       {visual && m?.kind !== 'audio' && <EffectsSection clip={clip} />}
+      {visual && <StabilizeSection clip={clip} kind={m?.kind ?? 'video'} />}
       {visual && <MaskSection clip={clip} />}
       {visual && <TransitionSection clip={clip} />}
     </>
