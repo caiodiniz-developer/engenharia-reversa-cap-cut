@@ -49,6 +49,7 @@ import {
   clampParams,
   cuesToCaptionClips,
   type AnimatableProp,
+  type CaptionClip,
   type Clip,
   type Cue,
   type History,
@@ -98,7 +99,7 @@ interface EditorState {
   load(doc: ProjectDoc, media: MediaItem[]): void;
   reset(): void;
   commitProject(label: string, project: Project, coalesceKey?: string): void;
-  run(label: string, fn: (p: Project) => Project, opts?: { coalesceKey?: string }): boolean;
+  run(label: string, fn: (p: Project) => Project, opts?: { coalesceKey?: string; quiet?: boolean }): boolean;
   undo(): void;
   redo(): void;
   jumpHistory(index: number): void;
@@ -132,8 +133,8 @@ interface EditorState {
   duplicateSelection(): void;
   copySelection(): void;
   pasteClipboard(): void;
-  moveSelection(ids: string[], delta: number, primaryId?: string, toTrackId?: string): void;
-  trim(id: string, edge: 'start' | 'end', time: number): void;
+  moveSelection(ids: string[], delta: number, primaryId?: string, toTrackId?: string): boolean;
+  trim(id: string, edge: 'start' | 'end', time: number): boolean;
   patchClip(id: string, fn: (c: Clip) => Clip, label: string, coalesceKey?: string): void;
   setSpeed(id: string, speed: number): void;
   toggleReverse(id: string): void;
@@ -156,6 +157,7 @@ interface EditorState {
 
   addText(text?: string, style?: Partial<TextStyle>): void;
   addCaptions(cues: Cue[]): void;
+  addCaptionClips(clips: CaptionClip[], label?: string): void;
 
   addTrack(kind: TrackKind): void;
   removeTrack(id: string): void;
@@ -236,6 +238,7 @@ export const useEditor = create<EditorState>((set, get) => {
         get().commitProject(label, fn(get().project), opts?.coalesceKey);
         return true;
       } catch (e) {
+        if (opts?.quiet && (e instanceof TimelineError || (e instanceof Error && e.name === 'ZodError'))) return false;
         if (e instanceof TimelineError) toast.error(e.message);
         else if (e instanceof Error && e.name === 'ZodError') toast.error('Valor inválido para esta propriedade');
         else throw e;
@@ -452,11 +455,13 @@ export const useEditor = create<EditorState>((set, get) => {
     },
 
     moveSelection(ids, delta, primaryId, toTrackId) {
-      get().run('Mover clipe', (p) => moveClips(p, ids, delta, { primaryId, toTrackId }), { coalesceKey: `move:${ids.join(',')}` });
+      return get().run('Mover clipe', (p) => moveClips(p, ids, delta, { primaryId, toTrackId }), { coalesceKey: `move:${ids.join(',')}`, quiet: true });
     },
 
     trim(id, edge, time) {
-      get().run('Ajustar duração', (p) => trimClip(p, id, edge, time), { coalesceKey: `trim:${id}:${edge}` });
+      // Clipes ligados (vídeo + áudio extraído) são aparados juntos, num único passo de histórico.
+      const ids = expandSelection(get().project, [id], { groups: false });
+      return get().run('Ajustar duração', (p) => ids.reduce((acc, i) => trimClip(acc, i, edge, time), p), { coalesceKey: `trim:${ids.join(',')}:${edge}`, quiet: true });
     },
 
     patchClip(id, fn, label, coalesceKey) {
@@ -568,15 +573,20 @@ export const useEditor = create<EditorState>((set, get) => {
     },
 
     addCaptions(cues) {
-      get().run('Adicionar legendas', (p0) => {
-        let p = p0;
-        const clips = cuesToCaptionClips(cues);
-        // Todas as legendas importadas entram na mesma faixa nova (sem sobreposição entre cues consecutivos).
-        const r = addTrack(p, 'caption');
-        p = r.project;
-        let last = -1;
-        for (const c of clips.sort((a, b) => a.start - b.start)) {
-          const parsed = CaptionClipSchema.parse({ ...c, start: Math.max(c.start, last), duration: Math.max(0.05, c.start + c.duration - Math.max(c.start, last)) });
+      get().addCaptionClips(cuesToCaptionClips(cues));
+    },
+
+    addCaptionClips(clips, label = 'Adicionar legendas') {
+      get().run(label, (p0) => {
+        // Todas as legendas entram numa faixa nova; consecutivas não podem se sobrepor.
+        const r = addTrack(p0, 'caption');
+        let p = r.project;
+        let last = 0;
+        for (const c of [...clips].sort((x, y) => x.start - y.start)) {
+          const start = Math.max(c.start, last);
+          const end = c.start + c.duration;
+          if (end - start < 0.05) continue;
+          const parsed = CaptionClipSchema.parse({ ...c, start: round6(start), duration: round6(end - start) });
           p = addClip(p, r.track.id, parsed);
           last = clipEnd(parsed);
         }

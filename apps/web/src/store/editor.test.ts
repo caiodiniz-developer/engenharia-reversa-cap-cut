@@ -72,10 +72,20 @@ describe('store do editor', () => {
     s().addToTimeline('a');
     const before = s().project;
     const [c] = s().project.tracks[0]!.clips;
-    s().trim(c!.id, 'end', 99);
+    s().setSpeed(c!.id, 40);
     expect(s().project).toBe(before);
     expect(useToasts.getState().toasts[0]).toMatchObject({ kind: 'error' });
-    expect(useToasts.getState().toasts[0]!.message).toMatch(/mídia/);
+    expect(useToasts.getState().toasts[0]!.message).toMatch(/Velocidade/);
+  });
+
+  it('ajustes durante arrasto falham em silêncio (sem toast) e mantêm o último estado válido', () => {
+    s().addToTimeline('a');
+    const [c] = s().project.tracks[0]!.clips;
+    const before = s().project;
+    expect(s().trim(c!.id, 'end', 99)).toBe(false);
+    expect(s().project).toBe(before);
+    expect(useToasts.getState().toasts).toHaveLength(0);
+    expect(s().trim(c!.id, 'end', 5)).toBe(true);
   });
 
   it('arrastos contínuos viram um único passo de undo', () => {
