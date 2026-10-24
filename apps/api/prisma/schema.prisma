@@ -1,0 +1,130 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// O documento do projeto (faixas, clipes, efeitos, transições, legendas e keyframes) é guardado como JSON
+// versionado em Project.data / ProjectVersion.data: a timeline é editada de forma atômica e o histórico
+// precisa de snapshots. Tabelas relacionais cuidam de posse, mídia, tarefas e exportações.
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  settings     Json     @default("{}")
+  createdAt    DateTime @default(now())
+
+  projects Project[]
+  media    Media[]
+  jobs     Job[]
+  exports  Export[]
+}
+
+model Project {
+  id            String   @id @default(cuid())
+  ownerId       String
+  name          String
+  data          Json
+  schemaVersion Int
+  /// Incrementa a cada salvamento; usado para controle otimista de concorrência.
+  revision      Int      @default(1)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  owner    User             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  versions ProjectVersion[]
+  media    Media[]
+  jobs     Job[]
+  exports  Export[]
+
+  @@index([ownerId, updatedAt])
+}
+
+model ProjectVersion {
+  id        String   @id @default(cuid())
+  projectId String
+  revision  Int
+  label     String   @default("")
+  data      Json
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, revision])
+}
+
+model Media {
+  id           String   @id @default(cuid())
+  projectId    String
+  ownerId      String
+  originalName String
+  mime         String
+  size         BigInt
+  kind         String
+  duration     Float    @default(0)
+  width        Int      @default(0)
+  height       Int      @default(0)
+  fps          Float    @default(0)
+  hasAudio     Boolean  @default(false)
+  storageKey   String
+  proxyKey     String?
+  thumbKey     String?
+  waveformKey  String?
+  /// uploaded | processing | ready | failed
+  status       String   @default("processing")
+  error        String?
+  createdAt    DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  owner   User    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, createdAt])
+}
+
+model Job {
+  id        String    @id @default(cuid())
+  type      String
+  ownerId   String
+  projectId String?
+  /// queued | running | succeeded | failed | cancelled
+  status    String    @default("queued")
+  progress  Float     @default(0)
+  payload   Json      @default("{}")
+  result    Json?
+  error     String?
+  attempts  Int       @default(0)
+  createdAt DateTime  @default(now())
+  startedAt DateTime?
+  finishedAt DateTime?
+
+  owner   User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  export  Export?
+
+  @@index([ownerId, createdAt])
+  @@index([status])
+}
+
+model Export {
+  id         String    @id @default(cuid())
+  projectId  String
+  ownerId    String
+  jobId      String    @unique
+  options    Json
+  outputKey  String?
+  sizeBytes  BigInt?
+  /// Quando passa desta data o arquivo é removido pela rotina de retenção.
+  expiresAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  owner   User    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  job     Job     @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+}
