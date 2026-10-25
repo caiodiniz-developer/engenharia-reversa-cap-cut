@@ -65,7 +65,7 @@ O PostgreSQL embarcado, os uploads e os temporários podem ser apontados para ou
 | Item | Como |
 |---|---|
 | Migrações em banco vazio | teste automatizado com PostgreSQL real |
-| API, fila, exportação, IA, WebSocket | suíte de 62 testes com PostgreSQL e FFmpeg reais |
+| API, fila, exportação, IA, WebSocket | suíte de 72 testes com PostgreSQL e FFmpeg reais |
 | Build estático + CSP + proxy HTTP/WS | E2E de produção no Chrome, com o mesmo arquivo de cabeçalhos do nginx |
 | `pnpm dev:api` persistente | executado manualmente: sobe em ~16 s, cadastro e autenticação respondem |
 | Dockerfile, `docker-compose.yml`, `nginx.conf`, workflow de CI | **não executados** |
