@@ -4,7 +4,7 @@ import { Icon } from '../components/Icon';
 import { PlayerEngine } from '../engine/player';
 import { getEngine, setEngine } from '../engine/registry';
 import { aspectLabel } from '../lib/format';
-import { selectDuration, useEditor } from '../store/editor';
+import { PLAYBACK_RATES, selectDuration, useEditor } from '../store/editor';
 import { toast } from '../store/toasts';
 
 function Timecode() {
@@ -48,6 +48,7 @@ export function Preview() {
   const volume = useEditor((s) => s.volume);
   const muted = useEditor((s) => s.muted);
   const loop = useEditor((s) => s.loop);
+  const rate = useEditor((s) => s.rate);
   const guides = useEditor((s) => s.guides);
   const st = useEditor.getState();
 
@@ -145,6 +146,9 @@ export function Preview() {
           </button>
           <button type="button" className="btn-icon" aria-label="Fim" title="Fim (End)" onClick={() => { st.setPlaying(false); st.setPlayhead(duration()); }}>
             <Icon name="skipForward" />
+          </button>
+          <button type="button" className="btn h-7 min-w-[44px] px-1.5 font-mono text-2xs" aria-label={`Velocidade de reprodução ${rate}×`} title="Velocidade do preview (clique para alternar; [ e ] também)" data-testid="rate-button" onClick={() => (rate >= PLAYBACK_RATES[PLAYBACK_RATES.length - 1]! ? st.setRate(PLAYBACK_RATES[0]!) : st.stepRate(1))}>
+            {rate}×
           </button>
           <button type="button" className="btn-icon" aria-label="Repetir" aria-pressed={loop} title="Repetir" onClick={st.toggleLoop}>
             <Icon name="repeat" />
