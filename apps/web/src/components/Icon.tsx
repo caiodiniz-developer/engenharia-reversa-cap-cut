@@ -128,6 +128,7 @@ const PATHS = {
   ),
   diamond: <path d="M12 3 21 12 12 21 3 12z" />,
   flag: <path d="M5 21V4M5 4h12l-2 4 2 4H5" />,
+  list: <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />,
   link: <path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1" />,
   unlink: <path d="M10 14a5 5 0 0 0 4 1.5M14 10a5 5 0 0 0-4-1.5M17 7l-1 1M8 16l-1 1M2 2l20 20" />,
   group: (
