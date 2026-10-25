@@ -227,7 +227,7 @@ export async function buildRenderPlan(
     const file = env.resolveMedia(clip.mediaId);
     const dur = clip.duration;
     const isVisual = trackKind === 'video' && !hidden && asset.kind !== 'audio';
-    const wantsAudio = asset.kind === 'video' && asset.hasAudio && !clip.freeze && !clip.audio.muted && !muted;
+    const wantsAudio = asset.kind !== 'image' && asset.hasAudio && !clip.freeze && !clip.audio.muted && !muted;
 
     if (!isVisual && !wantsAudio) return;
 
