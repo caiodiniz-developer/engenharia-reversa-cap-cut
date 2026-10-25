@@ -20,6 +20,7 @@ export const SHORTCUTS: Shortcut[] = [
   { keys: 'Ctrl + A', label: 'Selecionar todos os clipes' },
   { keys: 'Ctrl + G  /  Ctrl + Shift + G', label: 'Agrupar / desagrupar' },
   { keys: 'Ctrl + S', label: 'Salvar agora' },
+  { keys: 'Ctrl + K', label: 'Abrir a paleta de comandos' },
   { keys: '← / →', label: 'Quadro anterior / próximo' },
   { keys: 'Shift + ← / →', label: 'Voltar / avançar 1 segundo' },
   { keys: 'Home / End', label: 'Ir ao início / ao fim' },
@@ -40,7 +41,7 @@ const isTyping = (t: EventTarget | null): boolean => {
 };
 
 /** Atalhos globais do editor. Ignora teclas digitadas em campos de formulário. */
-export function useShortcuts(openHelp: () => void): void {
+export function useShortcuts(openHelp: () => void, openPalette: () => void): void {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const s = useEditor.getState();
@@ -50,6 +51,11 @@ export function useShortcuts(openHelp: () => void): void {
       if (mod && key === 's') {
         e.preventDefault();
         void saveNow();
+        return;
+      }
+      if (mod && key === 'k') {
+        e.preventDefault();
+        openPalette();
         return;
       }
       if (isTyping(e.target)) return;
@@ -119,5 +125,5 @@ export function useShortcuts(openHelp: () => void): void {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [openHelp]);
+  }, [openHelp, openPalette]);
 }
