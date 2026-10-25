@@ -32,6 +32,7 @@ export async function recordLocalDraft(opts: { onProgress?: (fraction: number) =
   if (!mime) throw new Error('Nenhum formato WebM suportado para gravação');
 
   store.setPlaying(false);
+  store.setRate(1); // o rascunho é gravado em tempo real
   store.setPlayhead(0);
   engine.invalidate();
   // Espera o primeiro quadro ser desenhado antes de iniciar.
