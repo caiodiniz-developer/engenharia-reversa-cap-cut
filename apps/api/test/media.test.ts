@@ -203,3 +203,27 @@ describe('mídia', () => {
     expect(page2.body.nextCursor).toBeNull();
   });
 });
+
+describe('tira de quadros', () => {
+  it('vídeos ganham uma tira de miniaturas com a grade informada pela API', async () => {
+    const u = await registerUser(t);
+    const p = await createProjectFor(u);
+    const m = await uploadMedia(t, u, p.id, await makeVideo(t.dir, 'film.mp4', { duration: 3, color: 'ff8800' }));
+    const media = (await u.get(`/api/media/${m.id}`)).body.media;
+    expect(media.film).toMatchObject({ count: 3, interval: 1, tileH: 64 });
+    expect(media.urls.film).toBeTruthy();
+    const img = await t.http.get(toPath(media.urls.film));
+    expect(img.status).toBe(200);
+    expect(img.headers['content-type']).toBe('image/jpeg');
+  });
+
+  it('imagens e áudios não têm tira de quadros', async () => {
+    const u = await registerUser(t);
+    const p = await createProjectFor(u);
+    const res = await u.post(`/api/projects/${p.id}/generated`, { kind: 'solid', color: '#224466' });
+    await t.built.ctx.queue.onIdle();
+    const media = (await u.get(`/api/media/${res.body.media.id}`)).body.media;
+    expect(media.film).toBeNull();
+    expect(media.urls.film).toBeNull();
+  });
+});
