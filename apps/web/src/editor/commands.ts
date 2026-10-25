@@ -75,6 +75,8 @@ export function buildCommands(ctx: { openPanel: (t: PanelTab) => void; onExport:
       icon: 'plus' as IconName,
       run: () => s().addTrack(k),
     })),
+    { id: 'remove-track', label: 'Remover faixa selecionada', group: 'Timeline', icon: 'trash', enabled: () => !!s().selectedTrackId, run: () => s().removeTrack(s().selectedTrackId!) },
+    { id: 'close-gaps', label: 'Fechar espaços vazios da faixa selecionada', group: 'Timeline', icon: 'minimize', enabled: () => !!s().selectedTrackId, run: () => s().closeGaps(s().selectedTrackId!) },
     { id: 'guides', label: 'Mostrar/ocultar guias de composição', group: 'Preview', icon: 'grid', run: () => s().toggleGuides() },
     { id: 'mute', label: 'Silenciar/ativar o som do preview', group: 'Preview', icon: 'volumeOff', run: () => s().toggleMute() },
     { id: 'save', label: 'Salvar agora', group: 'Projeto', icon: 'cloud', shortcut: 'Ctrl+S', run: () => void saveNow() },
