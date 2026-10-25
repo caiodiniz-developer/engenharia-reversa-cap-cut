@@ -2,22 +2,49 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Tokens de cor (RGB separado para permitir opacidade). Escuro é o padrão dos editores de vídeo. */
 :root {
-  --bg: 14 16 19;
-  --panel: 21 24 29;
-  --panel-2: 27 31 38;
-  --line: 40 45 54;
-  --ink: 230 232 235;
-  --mute: 139 147 161;
+  --bg: 9 11 14;
+  --panel: 16 19 24;
+  --panel-2: 22 26 32;
+  --panel-3: 31 36 44;
+  --line: 37 43 53;
+  --ink: 231 234 239;
+  --mute: 134 144 158;
   --accent: 53 208 196;
-  --playhead: 255 90 60;
+  --accent-ink: 6 30 28;
+  --playhead: 255 94 66;
   --danger: 240 82 82;
   --ok: 72 199 142;
-  --clip-video: 56 108 176;
-  --clip-audio: 47 133 90;
-  --clip-text: 183 121 31;
-  --clip-caption: 128 90 213;
+  --warn: 245 166 35;
+  --clip-video: 52 98 168;
+  --clip-audio: 38 132 96;
+  --clip-text: 176 118 32;
+  --clip-caption: 124 88 208;
+  --stage: 6 8 10;
   color-scheme: dark;
+}
+
+:root[data-theme='light'] {
+  --bg: 238 241 245;
+  --panel: 255 255 255;
+  --panel-2: 246 248 250;
+  --panel-3: 234 238 243;
+  --line: 214 220 228;
+  --ink: 21 26 33;
+  --mute: 96 108 124;
+  --accent: 13 148 136;
+  --accent-ink: 255 255 255;
+  --playhead: 224 64 36;
+  --danger: 214 48 48;
+  --ok: 22 150 96;
+  --warn: 200 120 0;
+  --clip-video: 74 124 196;
+  --clip-audio: 52 160 118;
+  --clip-text: 204 140 50;
+  --clip-caption: 146 110 224;
+  --stage: 222 227 234;
+  color-scheme: light;
 }
 
 html,
@@ -30,6 +57,7 @@ body {
   @apply bg-bg font-sans text-ink antialiased;
   overflow: hidden;
   font-size: 13px;
+  font-feature-settings: 'cv11', 'ss01';
 }
 
 * {
@@ -37,21 +65,31 @@ body {
   scrollbar-color: rgb(var(--line)) transparent;
 }
 
+::selection {
+  background: rgb(var(--accent) / 0.35);
+}
+
 @layer components {
   .btn {
-    @apply inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-line bg-panel2 px-3 text-xs font-medium text-ink transition-colors hover:border-mute/50 hover:bg-line/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-40;
+    @apply inline-flex h-8 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-line bg-panel-2 px-3 text-xs font-medium text-ink transition-colors hover:border-mute/40 hover:bg-panel-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-40;
   }
   .btn-primary {
-    @apply border-accent bg-accent text-bg hover:bg-accent/90 hover:border-accent;
+    @apply border-transparent bg-accent text-accent-ink hover:bg-accent/90;
+  }
+  .btn-ghost {
+    @apply border-transparent bg-transparent hover:bg-panel-3;
+  }
+  .btn-danger {
+    @apply border-transparent bg-danger text-white hover:bg-danger/90;
   }
   .btn-icon {
-    @apply inline-flex h-7 w-7 items-center justify-center rounded-md text-mute transition-colors hover:bg-line/70 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-30;
+    @apply inline-flex h-7 w-7 items-center justify-center rounded-md text-mute transition-colors hover:bg-panel-3 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-30;
   }
   .btn-icon[aria-pressed='true'] {
     @apply bg-accent/15 text-accent;
   }
   .field {
-    @apply h-8 w-full rounded-md border border-line bg-bg px-2 text-xs text-ink outline-none transition-colors placeholder:text-mute/60 focus:border-accent;
+    @apply h-8 w-full rounded-lg border border-line bg-bg px-2.5 text-xs text-ink outline-none transition-colors placeholder:text-mute/60 hover:border-mute/40 focus:border-accent focus:ring-2 focus:ring-accent/20;
   }
   .label {
     @apply mb-1 block text-2xs font-medium uppercase tracking-wide text-mute;
@@ -59,8 +97,79 @@ body {
   .panel-title {
     @apply px-3 py-2 text-2xs font-semibold uppercase tracking-wider text-mute;
   }
+  .card {
+    @apply rounded-xl border border-line bg-panel-2 transition-colors;
+  }
+  .card-hover {
+    @apply hover:border-accent/50 hover:bg-panel-3;
+  }
+  .kbd {
+    @apply rounded border border-line bg-panel-2 px-1.5 py-0.5 font-mono text-2xs text-mute;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full border border-line bg-panel-2 px-2 py-0.5 text-2xs font-medium text-mute;
+  }
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
 }
 
+/* Controle deslizante com trilho preenchido (--p é a porcentagem, definida inline). */
 input[type='range'] {
-  @apply h-1 w-full cursor-pointer appearance-none rounded-full bg-line accent-accent;
+  @apply h-4 w-full cursor-pointer appearance-none bg-transparent;
+  --p: 50%;
+}
+input[type='range']::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(to right, rgb(var(--accent)) var(--p), rgb(var(--line)) var(--p));
+}
+input[type='range']::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: rgb(var(--line));
+}
+input[type='range']::-moz-range-progress {
+  height: 4px;
+  border-radius: 999px;
+  background: rgb(var(--accent));
+}
+input[type='range']::-webkit-slider-thumb {
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  margin-top: -4px;
+  border-radius: 999px;
+  background: rgb(var(--ink));
+  border: 2px solid rgb(var(--accent));
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.4);
+}
+input[type='range']::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgb(var(--ink));
+  border: 2px solid rgb(var(--accent));
+}
+input[type='range']:focus-visible {
+  outline: none;
+}
+input[type='range']:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px rgb(var(--accent) / 0.35);
+}
+
+/* Fundo quadriculado do palco, para deixar clara a área transparente fora do quadro. */
+.stage-bg {
+  background-color: rgb(var(--stage));
+  background-image: radial-gradient(rgb(var(--line) / 0.55) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
