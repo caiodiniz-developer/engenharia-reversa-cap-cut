@@ -120,3 +120,28 @@ export async function energyEnvelope(file: string, windowSec = 0.05): Promise<nu
   }
   return out;
 }
+
+export interface Filmstrip {
+  /** Quantidade de miniaturas na tira. */
+  count: number;
+  /** Segundos de mídia entre uma miniatura e a próxima. */
+  interval: number;
+  tileW: number;
+  tileH: number;
+}
+
+const evenInt = (n: number) => Math.round(n / 2) * 2;
+
+/** Calcula a grade da tira de quadros: no máximo ~60 miniaturas de 64 px de altura. */
+export function filmstripSpec(duration: number, width: number, height: number): Filmstrip {
+  const interval = Math.max(1, Math.ceil(duration / 60));
+  const count = Math.max(1, Math.ceil(duration / interval));
+  const ratio = height > 0 ? width / height : 16 / 9;
+  return { count, interval, tileW: Math.min(144, Math.max(36, evenInt(64 * ratio))), tileH: 64 };
+}
+
+/** Uma imagem (JPEG) com todas as miniaturas lado a lado, usada como fundo dos clipes na timeline. */
+export async function createFilmstrip(file: string, out: string, spec: Filmstrip): Promise<void> {
+  const vf = `fps=1/${spec.interval},scale=${spec.tileW}:${spec.tileH}:force_original_aspect_ratio=increase,crop=${spec.tileW}:${spec.tileH},tile=${spec.count}x1`;
+  await ffmpegRun(['-y', '-i', file, '-an', '-sn', '-vf', vf, '-frames:v', '1', '-q:v', '5', out]);
+}
