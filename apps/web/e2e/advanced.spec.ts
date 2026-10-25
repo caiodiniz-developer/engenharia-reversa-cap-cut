@@ -41,6 +41,7 @@ test.describe('LUTs, estabilização e gravação local', () => {
     await page.getByTestId('tab-effects').click();
     await page.getByRole('tab', { name: 'LUTs' }).click();
     await page.getByRole('button', { name: 'Preto e branco contrastado' }).click();
+    await page.getByTestId('properties').getByRole('tab', { name: /Efeitos/ }).click();
     await expect(page.getByTestId('properties')).toContainText('LUT: Preto e branco contrastado');
     await seek(page, 1);
     await expect
