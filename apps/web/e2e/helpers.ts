@@ -14,7 +14,7 @@ async function tool<T>(...args: string[]): Promise<T> {
   return JSON.parse(stdout.trim().split(/\r?\n/).pop()!) as T;
 }
 
-export const probeMedia = (file: string) => tool<{ duration: number; width: number; height: number; fps: number; hasAudio: boolean; videoCodec?: string }>('probe', file);
+export const probeMedia = (file: string) => tool<{ duration: number; width: number; height: number; fps: number; hasAudio: boolean; videoCodec?: string; audioCodec?: string; kind: 'video' | 'audio' | 'image' }>('probe', file);
 export const framePixel = (file: string, t: number, fx = 0.5, fy = 0.5) => tool<[number, number, number]>('pixel', file, String(t), String(fx), String(fy));
 
 let counter = 0;
