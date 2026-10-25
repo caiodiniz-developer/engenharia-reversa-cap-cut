@@ -152,7 +152,8 @@ interface EditorState {
   registerMedia(items: MediaItem[]): void;
   importMedia(item: MediaItem): void;
   removeMediaItem(id: string): void;
-  addToTimeline(mediaId: string, opts?: { at?: number; trackId?: string }): void;
+  /** `overlay` coloca o clipe numa faixa nova acima das demais (formas, adesivos, legendas gráficas). */
+  addToTimeline(mediaId: string, opts?: { at?: number; trackId?: string; overlay?: boolean }): void;
 
   splitAtPlayhead(): void;
   deleteSelection(ripple: boolean): void;
@@ -441,6 +442,11 @@ export const useEditor = create<EditorState>((set, get) => {
         const kind: TrackKind = asset.kind === 'audio' ? 'audio' : 'video';
         const dur = asset.kind === 'image' ? 5 : asset.duration;
         let trackId = opts?.trackId;
+        if (opts?.overlay && !trackId) {
+          const r = addTrack(p, kind, { index: 0 });
+          p = r.project;
+          trackId = r.track.id;
+        }
         if (!trackId) {
           const candidates = p.tracks.filter((t) => t.kind === kind && !t.locked);
           trackId = opts?.at === undefined ? candidates[candidates.length - 1]?.id : candidates.find((t) => !t.clips.some((c) => c.start < opts.at! + dur && clipEnd(c) > opts.at!))?.id;
