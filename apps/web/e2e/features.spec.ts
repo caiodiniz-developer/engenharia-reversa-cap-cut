@@ -24,6 +24,7 @@ test.describe('propriedades, efeitos e transições', () => {
     await page.getByTestId('tab-effects').click();
     await page.getByRole('button', { name: /Saturação/ }).click();
     const props = page.getByTestId('properties');
+    await props.getByRole('tab', { name: /Efeitos/ }).click();
     await expect(props).toContainText('Efeitos (1)');
     const field = props.getByRole('textbox', { name: 'Saturação' });
     await field.fill('0');
