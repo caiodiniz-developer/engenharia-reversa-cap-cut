@@ -66,7 +66,7 @@ import {
 import type { MediaItem, ProjectDoc } from '../api/types';
 import { toast } from './toasts';
 
-export type PanelTab = 'media' | 'effects' | 'transitions' | 'text' | 'ai';
+export type PanelTab = 'media' | 'audio' | 'text' | 'effects' | 'transitions' | 'animations' | 'elements' | 'ai';
 export type SaveState = 'saved' | 'dirty' | 'saving' | 'error' | 'conflict' | 'offline';
 
 export const MIN_ZOOM = 4;
