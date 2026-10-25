@@ -25,7 +25,6 @@ function Toggle({ on, label, icon, onClick }: { on: boolean; label: string; icon
  */
 export function TrackHeader({ track, index, selected, height }: { track: Track; index: number; selected: boolean; height: number }) {
   const patch = useEditor((s) => s.patchTrack);
-  const remove = useEditor((s) => s.removeTrack);
   const select = useEditor((s) => s.selectTrack);
   const move = useEditor((s) => s.moveTrack);
   const closeGaps = useEditor((s) => s.closeGaps);
@@ -82,7 +81,6 @@ export function TrackHeader({ track, index, selected, height }: { track: Track; 
       <div className="pointer-events-none absolute inset-y-0 left-8 right-[78px] flex items-center justify-end gap-0.5 bg-gradient-to-l from-panel-3 via-panel-3 to-transparent pl-6 opacity-0 transition-opacity focus-within:pointer-events-auto focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100">
         <Toggle on={false} label="Fechar espaços vazios da faixa" icon="minimize" onClick={() => closeGaps(track.id)} />
         {!compact && <Toggle on={false} label="Mover faixa para cima" icon="chevronUp" onClick={() => move(track.id, index - 1)} />}
-        <Toggle on={false} label={`Remover faixa ${track.name}`} icon="x" onClick={() => remove(track.id)} />
       </div>
     </div>
   );
