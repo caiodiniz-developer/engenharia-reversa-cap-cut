@@ -30,6 +30,7 @@ Cada ✅ aponta o teste que o exercita. "E2E" = Playwright no Chrome com API, Vi
 |---|---|---|
 | Títulos com fonte, cor, contorno, sombra, degradê, fundo, alinhamento | ✅ | render `render2` (texto), E2E `features` |
 | Animações de entrada/saída (aparecer, subir/descer, pop) | ✅ | render `render2` |
+| Biblioteca de animações prontas (entrada, saída, movimento) que viram keyframes editáveis | ✅ | core `animation.test`, E2E `novidades` |
 | Legendas editáveis, tempos por palavra, destaque da palavra falada | ✅ | render `render2`, E2E `features` |
 | Importar/exportar SRT e VTT | ✅ | core `captions`, E2E `features` |
 | Geração automática por IA | 🟨 | funciona com `WHISPER_BIN`/`OPENAI_API_KEY`; testada contra servidor local que imita a API, não contra o serviço real |
@@ -46,6 +47,7 @@ Cada ✅ aponta o teste que o exercita. "E2E" = Playwright no Chrome com API, Vi
 | Normalização (−16 LUFS, 2 passadas) | 🟨 | verificada na exportação (`render4`); **não** aplicada no preview |
 | Redução de ruído (afftdn) | 🟨 | exportação não quebra e preserva o sinal; eficácia sobre ruído real não medida; **não** aplicada no preview |
 | Detecção de silêncio e de batidas | ✅ | API `ai.test`, core `analysis` |
+| Gravação de voz pelo microfone (entra na faixa de áudio) | ✅ | E2E `novidades` (microfone falso do Chrome), render `probe.test` (WebM sem duração no cabeçalho) |
 | Separação de voz e música | ⬜ | exige modelo de ML; não integrado |
 
 ## Efeitos
@@ -78,6 +80,20 @@ Cada ✅ aponta o teste que o exercita. "E2E" = Playwright no Chrome com API, Vi
 | Link assinado de download, retenção e limpeza | ✅ | API `exports.test` |
 | Rascunho local no navegador (MediaRecorder → WebM) | ✅ | E2E `advanced` — tempo real, qualidade do preview |
 | Renderização local com ffmpeg.wasm / WebCodecs | ⬜ | não implementada; a exportação final é sempre no servidor |
+
+## Interface e produtividade
+
+| Recurso | Estado | Verificação |
+|---|---|---|
+| Paleta de comandos (Ctrl+K) com busca sem acento | ✅ | web `commands.test`, E2E `novidades` |
+| Tema claro/escuro persistido, inclusive na tela de projetos | ✅ | E2E `novidades` |
+| Painel lateral recolhível, trilho de ferramentas com rótulos | ✅ | E2E `novidades` |
+| Propriedades em abas conforme o tipo do clipe | ✅ | E2E `novidades` |
+| Fundos de cor sólida e degradês gerados no servidor (viram mídia) | ✅ | API `generated.test`, render `generated.test`, E2E `novidades` |
+| Tira de quadros (miniaturas) nos clipes de vídeo | ✅ | render `filmstrip.test`, API `media.test`, E2E `novidades` |
+| Fechar espaços vazios de uma faixa | ✅ | core `ops/advanced.test`, E2E `novidades` |
+| Salvar o quadro atual como PNG | ✅ | E2E `novidades` (assinatura PNG verificada) |
+| Modelos de projeto (vertical curto etc.), busca, renomear, duplicar e capa dos projetos | ✅ | web `templates.test`, API `projects.test`, E2E `novidades` |
 
 ## Plataforma
 
