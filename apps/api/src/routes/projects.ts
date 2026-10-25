@@ -30,6 +30,8 @@ export function projectMeta(doc: Project) {
   };
 }
 
+const Rename = z.object({ name: z.string().trim().min(1).max(120) });
+
 const Duplicate = z.object({ name: z.string().trim().min(1).max(120).optional() });
 
 const AUTO_SNAPSHOT_EVERY = 10;
@@ -124,6 +126,18 @@ export function projectRoutes(ctx: AppContext): Router {
       }
       if (next % AUTO_SNAPSHOT_EVERY === 0) await snapshot(ctx, existing.id, next, doc, 'Salvamento automático');
       res.json({ revision: next });
+    }),
+  );
+
+  /** Renomeia sem precisar do documento no cliente. Sobe a revisão para que outras janelas abertas detectem a mudança. */
+  r.patch(
+    '/:id',
+    h(async (req, res) => {
+      const body = parse(Rename, req.body);
+      const existing = await ownedProject(ctx, req.params.id!, req.userId);
+      const doc = migrateProject(existing.data);
+      const updated = await ctx.db.project.update({ where: { id: existing.id }, data: { name: body.name, data: { ...doc, name: body.name } as object, revision: { increment: 1 } } });
+      res.json({ project: { id: updated.id, name: updated.name, revision: updated.revision } });
     }),
   );
 
