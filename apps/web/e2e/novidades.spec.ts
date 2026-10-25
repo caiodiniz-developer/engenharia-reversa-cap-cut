@@ -154,6 +154,25 @@ test.describe('timeline e preview', () => {
     expect((await clipsOf(page))[0]!.start).toBe(0);
   });
 
+  test('setas ↑/↓ saltam entre os cortes (bordas de clipes) e a paleta faz o mesmo', async ({ page }) => {
+    await withClip(page);
+    await seek(page, 2);
+    await page.keyboard.press('s'); // divide em 2s: cortes em 0, 2 e a duração total
+    await expect.poll(async () => (await clipsOf(page)).length).toBe(2);
+    const head = () => page.evaluate(() => window.__editor.getState().playhead);
+    await seek(page, 0);
+    await page.keyboard.press('ArrowDown');
+    expect(await head()).toBeCloseTo(2, 3);
+    await page.keyboard.press('ArrowDown');
+    expect(await head()).toBeGreaterThan(2);
+    await page.keyboard.press('ArrowUp');
+    expect(await head()).toBeCloseTo(2, 3);
+    await page.keyboard.press('Control+k');
+    await page.getByRole('combobox', { name: 'Buscar comandos' }).fill('corte anterior');
+    await page.keyboard.press('Enter');
+    expect(await head()).toBeCloseTo(0, 3);
+  });
+
   test('salvar o quadro atual gera um PNG válido', async ({ page }) => {
     await withClip(page);
     await seek(page, 1);
