@@ -74,11 +74,11 @@ export function MediaPanel({ projectId }: { projectId: string }) {
         <button type="button" className="btn btn-primary h-9 w-full" onClick={() => inputRef.current?.click()}>
           <Icon name="upload" size={14} /> Importar mídia
         </button>
-        <p className="text-2xs text-mute">Os arquivos são enviados ao servidor para gerar prévias e exportar. Arraste e solte aqui.</p>
+        <p className="text-2xs leading-relaxed text-mute">Os arquivos são enviados ao servidor para gerar prévias e exportar. Arraste e solte aqui.</p>
         <input className="field" placeholder="Buscar na biblioteca" aria-label="Buscar na biblioteca" value={query} onChange={(e) => setQuery(e.target.value)} />
-        <div className="flex gap-1" role="tablist" aria-label="Filtrar por tipo">
+        <div className="flex gap-1 rounded-lg bg-panel-2 p-1" role="tablist" aria-label="Filtrar por tipo">
           {(['all', 'video', 'audio', 'image'] as Filter[]).map((f) => (
-            <button key={f} type="button" role="tab" aria-selected={filter === f} onClick={() => setFilter(f)} className={`flex-1 rounded-md px-2 py-1 text-2xs font-medium ${filter === f ? 'bg-panel2 text-ink' : 'text-mute hover:text-ink'}`}>
+            <button key={f} type="button" role="tab" aria-selected={filter === f} onClick={() => setFilter(f)} className={`flex-1 rounded-md px-2 py-1 text-2xs font-medium transition-colors ${filter === f ? 'bg-panel-3 text-ink shadow-sm' : 'text-mute hover:text-ink'}`}>
               {{ all: 'Tudo', video: 'Vídeo', audio: 'Áudio', image: 'Imagem' }[f]}
             </button>
           ))}
@@ -129,7 +129,7 @@ export function MediaPanel({ projectId }: { projectId: string }) {
                     }}
                     onDoubleClick={() => m.status === 'ready' && addToTimeline(m.id)}
                     onKeyDown={(e) => e.key === 'Enter' && m.status === 'ready' && addToTimeline(m.id)}
-                    className="cursor-grab overflow-hidden rounded-lg border border-line bg-panel2 outline-none transition-colors hover:border-mute/50 focus-visible:border-accent active:cursor-grabbing"
+                    className="card card-hover cursor-grab overflow-hidden outline-none focus-visible:border-accent active:cursor-grabbing"
                   >
                     <div className="relative flex aspect-video items-center justify-center bg-bg text-mute">
                       {m.urls.thumb ? <img src={m.urls.thumb} alt="" className="h-full w-full object-cover" draggable={false} /> : <Icon name={m.kind === 'audio' ? 'music' : m.kind === 'image' ? 'image' : 'film'} size={22} />}
