@@ -79,6 +79,8 @@ export type SaveState = 'saved' | 'dirty' | 'saving' | 'error' | 'conflict' | 'o
 
 export const MIN_ZOOM = 4;
 export const MAX_ZOOM = 600;
+/** Velocidades disponíveis para o preview. */
+export const PLAYBACK_RATES = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2] as const;
 
 export function assetFromMedia(m: MediaItem): MediaAsset {
   return { id: m.id, name: m.name, kind: m.kind, duration: m.duration, width: m.width, height: m.height, fps: m.fps, hasAudio: m.hasAudio, size: m.size, mime: m.mime };
@@ -98,6 +100,8 @@ interface EditorState {
   volume: number;
   muted: boolean;
   loop: boolean;
+  /** Velocidade de reprodução do preview (não altera o projeto nem a exportação). */
+  rate: number;
   zoom: number;
   snapping: boolean;
   guides: boolean;
@@ -138,6 +142,8 @@ interface EditorState {
   setVolume(v: number): void;
   toggleMute(): void;
   toggleLoop(): void;
+  setRate(r: number): void;
+  stepRate(dir: 1 | -1): void;
   setZoom(z: number): void;
   toggleSnapping(): void;
   toggleGuides(): void;
@@ -226,6 +232,7 @@ export const useEditor = create<EditorState>((set, get) => {
     volume: 1,
     muted: false,
     loop: false,
+    rate: 1,
     zoom: 60,
     snapping: true,
     guides: false,
@@ -375,6 +382,14 @@ export const useEditor = create<EditorState>((set, get) => {
     },
     toggleMute() {
       set({ muted: !get().muted });
+    },
+    setRate(r) {
+      set({ rate: Math.max(PLAYBACK_RATES[0]!, Math.min(PLAYBACK_RATES[PLAYBACK_RATES.length - 1]!, r)) });
+    },
+    stepRate(dir) {
+      const cur = get().rate;
+      const next = dir === 1 ? PLAYBACK_RATES.find((x) => x > cur + 1e-9) : [...PLAYBACK_RATES].reverse().find((x) => x < cur - 1e-9);
+      if (next !== undefined) set({ rate: next });
     },
     toggleLoop() {
       set({ loop: !get().loop });
