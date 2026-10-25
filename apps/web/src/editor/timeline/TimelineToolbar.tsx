@@ -62,6 +62,7 @@ export function TimelineToolbar() {
         </button>
         {adding && (
           <div role="menu" className="absolute left-0 top-9 z-50 w-40 overflow-hidden rounded-xl border border-line bg-panel py-1 shadow-pop">
+            <p className="px-3 pb-1 pt-1.5 text-2xs font-semibold uppercase tracking-wide text-mute">Adicionar</p>
             {(['video', 'audio', 'text', 'caption'] as TrackKind[]).map((k) => (
               <button
                 key={k}
@@ -76,6 +77,19 @@ export function TimelineToolbar() {
                 {{ video: 'Vídeo', audio: 'Áudio', text: 'Texto', caption: 'Legendas' }[k]}
               </button>
             ))}
+            <div className="my-1 border-t border-line" />
+            <button
+              role="menuitem"
+              type="button"
+              className="block w-full px-3 py-1.5 text-left text-xs text-danger hover:bg-panel-3 disabled:opacity-40"
+              disabled={!s.selectedTrackId}
+              onClick={() => {
+                if (s.selectedTrackId) s.removeTrack(s.selectedTrackId);
+                setAdding(false);
+              }}
+            >
+              Remover faixa selecionada
+            </button>
           </div>
         )}
       </div>
