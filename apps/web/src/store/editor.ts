@@ -1,6 +1,10 @@
 import { create } from 'zustand';
 import {
   addClip,
+  applyAnimation as coreApplyAnimation,
+  clearAnimations as coreClearAnimations,
+  closeGaps as coreCloseGaps,
+  getAnimationPreset,
   addLut,
   addMarker,
   addMedia,
@@ -158,6 +162,10 @@ interface EditorState {
   toggleEffect(clipId: string, effectId: string): void;
   removeEffect(clipId: string, effectId: string): void;
 
+  applyAnimation(clipId: string, presetId: string, duration?: number): void;
+  clearAnimations(clipId: string): void;
+  closeGaps(trackId: string): void;
+  markBeats(times: number[]): void;
   setKeyframe(clipId: string, prop: AnimatableProp, value: number): void;
   removeKeyframe(clipId: string, prop: AnimatableProp): void;
 
@@ -555,6 +563,20 @@ export const useEditor = create<EditorState>((set, get) => {
       get().patchClip(clipId, (c) => (c.type === 'media' ? { ...c, effects: c.effects.filter((e) => e.id !== effectId) } : c), 'Remover efeito');
     },
 
+    applyAnimation(clipId, presetId, duration) {
+      const label = getAnimationPreset(presetId)?.label ?? presetId;
+      get().patchClip(clipId, (c) => coreApplyAnimation(c, presetId, duration), `Animação: ${label}`);
+    },
+    clearAnimations(clipId) {
+      get().patchClip(clipId, (c) => coreClearAnimations(c), 'Remover animações');
+    },
+    closeGaps(trackId) {
+      get().run('Fechar espaços vazios', (p) => coreCloseGaps(p, trackId));
+    },
+    markBeats(times) {
+      if (!times.length) return;
+      get().run(`Marcar ${times.length} batidas`, (p) => times.reduce((acc, t, i) => addMarker(acc, t, `Batida ${i + 1}`, '#f5a623').project, p));
+    },
     setKeyframe(clipId, prop, value) {
       const { playhead } = get();
       get().patchClip(
