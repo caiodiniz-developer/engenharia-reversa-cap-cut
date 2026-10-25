@@ -11,7 +11,7 @@ export default defineConfig({
   expect: { timeout: 15_000 },
   workers: 1,
   reporter: [['list']],
-  use: { baseURL: `http://localhost:${WEB}`, trace: 'retain-on-failure', acceptDownloads: true, launchOptions: { args: ['--autoplay-policy=no-user-gesture-required'] } },
+  use: { baseURL: `http://localhost:${WEB}`, trace: 'retain-on-failure', acceptDownloads: true, launchOptions: { args: ['--autoplay-policy=no-user-gesture-required', '--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream'] } },
   projects: [{ name: 'chrome-prod', use: { ...devices['Desktop Chrome'], channel: 'chrome', viewport: { width: 1440, height: 900 } } }],
   webServer: [
     {

@@ -16,7 +16,7 @@ export default defineConfig({
     trace: 'retain-on-failure',
     viewport: { width: 1440, height: 900 },
     acceptDownloads: true,
-    launchOptions: { args: ['--autoplay-policy=no-user-gesture-required'] },
+    launchOptions: { args: ['--autoplay-policy=no-user-gesture-required', '--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream'] },
   },
   // Chrome de verdade (não o Chromium do Playwright): precisa decodificar H.264 dos proxies.
   projects: [{ name: 'chrome', use: { ...devices['Desktop Chrome'], channel: 'chrome', viewport: { width: 1440, height: 900 } } }],

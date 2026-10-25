@@ -42,7 +42,7 @@ export async function signup(page: Page, name = 'Tester') {
 export async function newProject(page: Page, name = 'Projeto E2E', aspect = '16:9') {
   await page.getByRole('button', { name: 'Novo projeto' }).click();
   await page.getByLabel('Nome').fill(name);
-  await page.getByRole('radio', { name: aspect }).click();
+  await page.getByRole('radio', { name: aspect, exact: true }).click();
   await page.getByRole('button', { name: 'Criar e abrir' }).click();
   await expect(page.getByTestId('editor')).toBeVisible();
 }
