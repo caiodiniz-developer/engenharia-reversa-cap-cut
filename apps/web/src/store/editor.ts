@@ -54,6 +54,8 @@ import {
   removeKeyframeAt,
   clampParams,
   neighborEdit,
+  clipIdsAt,
+  clipIdsBySide,
   cuesToCaptionClips,
   type AnimatableProp,
   type CaptionClip,
@@ -122,6 +124,12 @@ interface EditorState {
   setPlaying(v: boolean): void;
   togglePlay(): void;
   stepFrames(n: number): void;
+  /** Seleciona todos os clipes à direita (ou à esquerda) da cabeça de reprodução. */
+  selectSide(side: 'after' | 'before'): void;
+  /** Apara o início (ou o fim) dos clipes selecionados — ou dos que estão sob a cabeça — até a cabeça de reprodução. */
+  trimToPlayhead(edge: 'start' | 'end'): void;
+  /** Move a seleção em quadros (negativo = para trás). */
+  nudgeSelection(frames: number): void;
   /** Ajusta o zoom para o projeto inteiro caber na largura da timeline. */
   fitTimeline(): void;
   /** Pula para o corte (borda de clipe ou marcador) seguinte/anterior. */
@@ -327,6 +335,26 @@ export const useEditor = create<EditorState>((set, get) => {
     stepFrames(n) {
       set({ playing: false });
       get().setPlayhead(get().playhead + n / fps());
+    },
+    selectSide(side) {
+      const ids = clipIdsBySide(get().project, get().playhead, side);
+      if (!ids.length) return toast.info(side === 'after' ? 'Não há clipes à direita da cabeça de reprodução' : 'Não há clipes à esquerda da cabeça de reprodução');
+      set({ selection: ids });
+    },
+    trimToPlayhead(edge) {
+      const { project, selection, playhead } = get();
+      const under = new Set(clipIdsAt(project, playhead));
+      const picked = selection.filter((id) => under.has(id));
+      const ids = picked.length ? picked : selection.length ? [] : [...under];
+      if (!ids.length) return toast.info('Posicione a cabeça de reprodução sobre o clipe que deseja aparar');
+      for (const id of ids) get().trim(id, edge, playhead);
+      get().sealDrag();
+    },
+    nudgeSelection(frames) {
+      const ids = get().selection;
+      if (!ids.length) return;
+      get().moveSelection(ids, frames / fps(), ids[0]);
+      get().sealDrag();
     },
     fitTimeline() {
       const total = duration();
