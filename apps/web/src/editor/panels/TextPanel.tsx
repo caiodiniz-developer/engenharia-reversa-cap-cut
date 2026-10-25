@@ -130,7 +130,7 @@ export function TextPanel() {
       <p className="mb-2 text-2xs text-mute">Salva o estilo do texto selecionado, só neste navegador.</p>
       <ul className="space-y-1">
         {list.map((t) => (
-          <li key={t.id} className="flex items-center gap-1 rounded-md border border-line bg-panel2 px-2 py-1.5">
+          <li key={t.id} className="flex items-center gap-1 card px-2 py-1.5">
             <button type="button" className="min-w-0 flex-1 truncate text-left text-xs" onClick={() => applyTemplate(t)} title="Aplicar ao texto selecionado (ou criar novo)">
               {t.name}
             </button>
