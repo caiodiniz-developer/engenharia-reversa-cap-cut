@@ -59,13 +59,13 @@ export function EffectsPanel() {
     <div className="flex h-full flex-col">
       <div className="flex gap-1 border-b border-line p-2" role="tablist">
         {(['effects', 'presets', 'luts'] as const).map((t) => (
-          <button key={t} type="button" role="tab" aria-selected={tab === t} onClick={() => setTab(t)} className={`flex-1 rounded-md px-2 py-1.5 text-xs font-medium ${tab === t ? 'bg-panel2 text-ink' : 'text-mute hover:text-ink'}`}>
+          <button key={t} type="button" role="tab" aria-selected={tab === t} onClick={() => setTab(t)} className={`flex-1 rounded-md px-2 py-1.5 text-xs font-medium ${tab === t ? 'bg-panel-3 text-ink' : 'text-mute hover:text-ink'}`}>
             {TAB_LABEL[t]}
           </button>
         ))}
       </div>
       <div className="min-h-0 flex-1 overflow-auto p-3">
-        {selection.length === 0 && <p className="mb-3 rounded-md bg-panel2 px-3 py-2 text-2xs text-mute">Selecione um clipe de vídeo para aplicar.</p>}
+        {selection.length === 0 && <p className="mb-3 rounded-md bg-panel-2 px-3 py-2 text-2xs text-mute">Selecione um clipe de vídeo para aplicar.</p>}
 
         {tab === 'luts' && (
           <div>
@@ -78,7 +78,7 @@ export function EffectsPanel() {
             <ul className="mb-4 grid grid-cols-2 gap-2">
               {BUILTIN_LUTS.map((l) => (
                 <li key={l.id}>
-                  <button type="button" className="w-full rounded-lg border border-line bg-panel2 p-2 text-left text-xs font-medium hover:border-accent/60" onClick={() => targets().forEach((id) => addLutEffect(id, BUILTIN_PREFIX + l.id))}>
+                  <button type="button" className="w-full card p-2 text-left text-xs font-medium hover:border-accent/60" onClick={() => targets().forEach((id) => addLutEffect(id, BUILTIN_PREFIX + l.id))}>
                     {l.label}
                   </button>
                 </li>
@@ -87,7 +87,7 @@ export function EffectsPanel() {
             {Object.values(luts).length > 0 && <h3 className="panel-title !px-0">Do projeto</h3>}
             <ul className="space-y-1" data-testid="project-luts">
               {Object.values(luts).map((l) => (
-                <li key={l.id} className="flex items-center gap-1 rounded-md border border-line bg-panel2 px-2 py-1.5">
+                <li key={l.id} className="flex items-center gap-1 card px-2 py-1.5">
                   <button type="button" className="min-w-0 flex-1 truncate text-left text-xs" onClick={() => targets().forEach((id) => addLutEffect(id, l.id))}>
                     {l.name}
                   </button>
@@ -107,7 +107,7 @@ export function EffectsPanel() {
               <ul className="grid grid-cols-2 gap-2">
                 {EFFECTS.filter((e) => e.category === cat && e.type !== 'lut').map((e) => (
                   <li key={e.type}>
-                    <button type="button" className="flex h-full w-full flex-col items-start gap-1 rounded-lg border border-line bg-panel2 p-2 text-left transition-colors hover:border-accent/60" title={DESCRIPTION[e.type]} onClick={() => targets().forEach((id) => addEffect(id, e.type))}>
+                    <button type="button" className="flex h-full w-full flex-col items-start gap-1 card p-2 text-left transition-colors hover:border-accent/60" title={DESCRIPTION[e.type]} onClick={() => targets().forEach((id) => addEffect(id, e.type))}>
                       <span className="flex items-center gap-1.5 text-xs font-medium">
                         <Icon name="wand" size={13} className="text-accent" /> {e.label}
                       </span>
@@ -123,7 +123,7 @@ export function EffectsPanel() {
           <ul className="grid grid-cols-2 gap-2">
             {PRESETS.map((p) => (
               <li key={p.id}>
-                <button type="button" className="flex w-full flex-col items-start gap-1 rounded-lg border border-line bg-panel2 p-2 text-left hover:border-accent/60" onClick={() => targets().forEach((id) => applyPreset(id, p.id))}>
+                <button type="button" className="flex w-full flex-col items-start gap-1 card p-2 text-left hover:border-accent/60" onClick={() => targets().forEach((id) => applyPreset(id, p.id))}>
                   <span className="text-xs font-medium">{p.label}</span>
                   <span className="text-2xs text-mute">{p.effects.map((e) => EFFECTS.find((x) => x.type === e.type)?.label).join(' · ')}</span>
                 </button>
