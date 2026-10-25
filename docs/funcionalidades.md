@@ -106,6 +106,7 @@ Cada ✅ aponta o teste que o exercita. "E2E" = Playwright no Chrome com API, Vi
 |---|---|---|
 | Cadastro/login (scrypt + JWT), isolamento entre usuários | ✅ | API `auth/projects/media/exports` |
 | Projeto versionado, migração de versões, controle de concorrência (409), histórico de versões | ✅ | core `migrate`, API `projects.test`, E2E conflito |
+| Diálogo de versões: salvar marco nomeado e restaurar (guarda o estado anterior) | ✅ | API `projects.test`, E2E `novidades` |
 | Autosave, rascunho local, modo offline, recuperação | ✅ | E2E `features` |
 | Upload resumível em Web Worker, miniaturas/waveform/proxy assíncronos | ✅ | API `media.test`, E2E |
 | WebSocket autenticado com progresso | ✅ | API `ws.test`, E2E |
