@@ -7,6 +7,16 @@ import { useEditor } from '../../store/editor';
 import { toast } from '../../store/toasts';
 
 const SOLIDS = ['#000000', '#ffffff', '#ef4444', '#f97316', '#eab308', '#22c55e', '#14b8a6', '#3b82f6', '#8b5cf6', '#ec4899', '#475569', '#fde68a'];
+const SHAPE_LIST: Array<{ id: string; label: string; d: string }> = [
+  { id: 'circle', label: 'Círculo', d: 'M50 8a42 42 0 1 0 .01 0z' },
+  { id: 'square', label: 'Quadrado', d: 'M8 8h84v84H8z' },
+  { id: 'rounded', label: 'Retângulo arredondado', d: 'M30 8h40a22 22 0 0 1 22 22v40a22 22 0 0 1-22 22H30A22 22 0 0 1 8 70V30A22 22 0 0 1 30 8z' },
+  { id: 'triangle', label: 'Triângulo', d: 'M50 8l42 84H8z' },
+  { id: 'star', label: 'Estrela', d: 'M50 12l11 28 30 2-23 19 8 29-26-16-26 16 8-29L9 42l30-2z' },
+  { id: 'heart', label: 'Coração', d: 'M50 90C10 60 8 36 26 24c12-8 22-2 24 8 2-10 12-16 24-8 18 12 16 36-24 66z' },
+  { id: 'arrow', label: 'Seta', d: 'M8 38h50V16l34 34-34 34V62H8z' },
+  { id: 'line', label: 'Linha', d: 'M8 46h84v8H8z' },
+];
 const GRADIENTS: Array<{ name: string; a: string; b: string; angle: number }> = [
   { name: 'Pôr do sol', a: '#ff9966', b: '#ff5e62', angle: 180 },
   { name: 'Oceano', a: '#2193b0', b: '#6dd5ed', angle: 135 },
@@ -20,21 +30,25 @@ const GRADIENTS: Array<{ name: string; a: string; b: string; angle: number }> = 
 export function ElementsPanel({ projectId }: { projectId: string }) {
   const importMedia = useEditor((s) => s.importMedia);
   const addToTimeline = useEditor((s) => s.addToTimeline);
-  const [mode, setMode] = useState<'solid' | 'gradient'>('solid');
+  const stateOf = useEditor.getState;
+  const [mode, setMode] = useState<'solid' | 'gradient' | 'shape'>('solid');
+  const [shapeColor, setShapeColor] = useState('#ffffff');
   const [color, setColor] = useState('#3b82f6');
   const [color2, setColor2] = useState('#8b5cf6');
   const [angle, setAngle] = useState(135);
   const [busy, setBusy] = useState(false);
 
-  async function create(spec: { kind: 'solid' | 'gradient'; color: string; color2?: string; angle?: number; name?: string }) {
+  async function create(spec: { kind: 'solid' | 'gradient' | 'shape'; shape?: string; color: string; color2?: string; angle?: number; name?: string }) {
     setBusy(true);
     try {
       const r = await api.post<{ media: MediaItem }>(`/api/projects/${projectId}/generated`, spec);
       importMedia(r.media);
-      addToTimeline(r.media.id);
-      toast.success('Fundo adicionado à biblioteca e à timeline');
+      // Formas são sobreposições: vão para uma faixa nova no topo, a partir da cabeça de reprodução.
+      if (spec.kind === 'shape') addToTimeline(r.media.id, { overlay: true, at: stateOf().playhead });
+      else addToTimeline(r.media.id);
+      toast.success(spec.kind === 'shape' ? 'Forma adicionada em uma nova faixa' : 'Fundo adicionado à biblioteca e à timeline');
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : 'Não foi possível gerar o fundo');
+      toast.error(e instanceof ApiError ? e.message : 'Não foi possível gerar o elemento');
     } finally {
       setBusy(false);
     }
@@ -44,10 +58,26 @@ export function ElementsPanel({ projectId }: { projectId: string }) {
 
   return (
     <div className="h-full overflow-auto p-3" data-testid="elements-panel">
-      <p className="mb-3 text-2xs leading-relaxed text-mute">Gere fundos com o tamanho do projeto. Eles viram imagens normais: dá para animar, aplicar efeitos e usar em qualquer faixa.</p>
-      <Segmented label="Tipo de fundo" value={mode} onChange={setMode} options={[{ value: 'solid', label: 'Cor sólida' }, { value: 'gradient', label: 'Degradê' }]} />
+      <p className="mb-3 text-2xs leading-relaxed text-mute">Gere fundos e formas no servidor. Eles viram imagens normais: dá para animar, aplicar efeitos e usar em qualquer faixa.</p>
+      <Segmented label="Tipo de elemento" value={mode} onChange={setMode} options={[{ value: 'solid', label: 'Cor sólida' }, { value: 'gradient', label: 'Degradê' }, { value: 'shape', label: 'Formas' }]} />
 
-      {mode === 'solid' ? (
+      {mode === 'shape' ? (
+        <section className="mt-3">
+          <ColorField label="Cor da forma" value={shapeColor} onChange={setShapeColor} />
+          <ul className="mt-2 grid grid-cols-4 gap-2">
+            {SHAPE_LIST.map((s) => (
+              <li key={s.id}>
+                <button type="button" disabled={busy} aria-label={`Forma ${s.label}`} title={s.label} className="card card-hover flex aspect-square w-full items-center justify-center p-2 disabled:opacity-40" onClick={() => void create({ kind: 'shape', shape: s.id, color: shapeColor })}>
+                  <svg viewBox="0 0 100 100" className="h-full w-full" aria-hidden="true">
+                    <path d={s.d} fill={shapeColor} stroke="rgb(var(--line))" strokeWidth="2" />
+                  </svg>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 text-2xs leading-relaxed text-mute">A forma entra numa faixa nova, acima das outras, a partir da cabeça de reprodução. Use Escala e Posição nas propriedades para ajustar.</p>
+        </section>
+      ) : mode === 'solid' ? (
         <section className="mt-3">
           <h3 className="mb-2 text-xs font-semibold">Cores rápidas</h3>
           <ul className="mb-3 grid grid-cols-6 gap-1.5">
