@@ -17,7 +17,7 @@ const item = (id: string, duration = 10, extra: Partial<MediaItem> = {}): MediaI
   mime: 'video/mp4',
   status: 'ready',
   error: null,
-  urls: { original: '', proxy: null, thumb: null, waveform: null },
+  urls: { original: '', proxy: null, thumb: null, waveform: null, film: null },
   ...extra,
 });
 

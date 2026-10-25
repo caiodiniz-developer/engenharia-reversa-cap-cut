@@ -13,6 +13,8 @@ export interface ProjectSummary {
   revision: number;
   updatedAt: string;
   createdAt: string;
+  cover: string | null;
+  meta: { duration: number; width: number; height: number; fps: number; clips: number; tracks: number } | null;
 }
 
 export interface ProjectDoc {
@@ -35,7 +37,9 @@ export interface MediaItem {
   mime: string;
   status: 'processing' | 'ready' | 'failed';
   error: string | null;
-  urls: { original: string; proxy: string | null; thumb: string | null; waveform: string | null };
+  urls: { original: string; proxy: string | null; thumb: string | null; waveform: string | null; film: string | null };
+  /** Grade da tira de quadros (miniaturas lado a lado) para a timeline. */
+  film?: { count: number; interval: number; tileW: number; tileH: number } | null;
 }
 
 export type JobStatus = 'queued' | 'running' | 'succeeded' | 'failed' | 'cancelled';
