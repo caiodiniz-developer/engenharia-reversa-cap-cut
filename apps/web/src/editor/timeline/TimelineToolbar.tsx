@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { findClip, projectDuration, type TrackKind } from '@editor/core';
 import { Icon, type IconName } from '../../components/Icon';
 import { MAX_ZOOM, MIN_ZOOM, selectCanRedo, selectCanUndo, useEditor } from '../../store/editor';
+import { toast } from '../../store/toasts';
 
 function Tool({ icon, label, onClick, disabled, pressed, shortcut }: { icon: IconName; label: string; onClick: () => void; disabled?: boolean; pressed?: boolean; shortcut?: string }) {
   return (
@@ -12,11 +13,11 @@ function Tool({ icon, label, onClick, disabled, pressed, shortcut }: { icon: Ico
   );
 }
 
-const Sep = () => <span className="mx-1 h-4 w-px bg-line" aria-hidden="true" />;
+const Sep = () => <span className="mx-1.5 h-5 w-px bg-line" aria-hidden="true" />;
 
 export function TimelineToolbar() {
   // Assina só o necessário: o cursor muda a cada quadro e não deve re-renderizar a barra de ferramentas.
-  const sel = useEditor(useShallow((st) => ({ selection: st.selection, project: st.project, snapping: st.snapping, zoom: st.zoom })));
+  const sel = useEditor(useShallow((st) => ({ selection: st.selection, project: st.project, snapping: st.snapping, zoom: st.zoom, selectedTrackId: st.selectedTrackId })));
   const s = { ...useEditor.getState(), ...sel };
   const canUndo = useEditor(selectCanUndo);
   const canRedo = useEditor(selectCanRedo);
@@ -35,7 +36,7 @@ export function TimelineToolbar() {
   };
 
   return (
-    <div className="flex h-9 shrink-0 items-center gap-0.5 border-b border-line bg-panel px-2" role="toolbar" aria-label="Ferramentas da timeline">
+    <div className="flex h-10 shrink-0 items-center gap-0.5 border-b border-line bg-panel px-3" role="toolbar" aria-label="Ferramentas da timeline">
       <Tool icon="undo" label="Desfazer" shortcut="Ctrl+Z" onClick={s.undo} disabled={!canUndo} />
       <Tool icon="redo" label="Refazer" shortcut="Ctrl+Shift+Z" onClick={s.redo} disabled={!canRedo} />
       <Sep />
@@ -52,14 +53,15 @@ export function TimelineToolbar() {
       <Tool icon="group" label="Agrupar clipes" shortcut="Ctrl+G" onClick={() => s.group(s.selection)} disabled={s.selection.length < 2} />
       <Tool icon="snowflake" label="Congelar quadro" onClick={() => one && s.freeze(one.id)} disabled={!isVideoMedia} />
       <Tool icon="flag" label="Adicionar marcador" shortcut="M" onClick={s.addMarkerAtPlayhead} />
+      <Tool icon="minimize" label="Fechar espaços vazios da faixa selecionada" onClick={() => (s.selectedTrackId ? s.closeGaps(s.selectedTrackId) : toast.info('Clique no cabeçalho de uma faixa para selecioná-la'))} />
       <Sep />
       <Tool icon="magnet" label="Ímã (snap)" shortcut="N" onClick={s.toggleSnapping} pressed={s.snapping} />
       <div className="relative">
-        <button type="button" className="btn h-7 px-2" aria-haspopup="menu" aria-expanded={adding} onClick={() => setAdding(!adding)}>
+        <button type="button" className="btn h-7 px-2.5" aria-haspopup="menu" aria-expanded={adding} onClick={() => setAdding(!adding)}>
           <Icon name="plus" size={13} /> Faixa
         </button>
         {adding && (
-          <div role="menu" className="absolute left-0 top-8 z-50 w-36 overflow-hidden rounded-lg border border-line bg-panel2 py-1 shadow-xl">
+          <div role="menu" className="absolute left-0 top-9 z-50 w-40 overflow-hidden rounded-xl border border-line bg-panel py-1 shadow-pop">
             {(['video', 'audio', 'text', 'caption'] as TrackKind[]).map((k) => (
               <button
                 key={k}
