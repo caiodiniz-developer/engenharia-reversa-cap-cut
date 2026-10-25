@@ -11,14 +11,18 @@ const KIND: Record<Track['kind'], { icon: IconName; text: string; bar: string; l
   caption: { icon: 'captions', text: 'text-clip-caption', bar: 'bg-clip-caption', label: 'Legendas' },
 };
 
-function Toggle({ on, label, icon, onClick, alwaysShow }: { on: boolean; label: string; icon: IconName; onClick: () => void; alwaysShow?: boolean }) {
+function Toggle({ on, label, icon, onClick }: { on: boolean; label: string; icon: IconName; onClick: () => void }) {
   return (
-    <button type="button" className={`btn-icon !h-6 !w-6 ${on ? '!text-warn' : alwaysShow ? '' : 'opacity-0 group-hover:opacity-100 focus:opacity-100'}`} aria-label={label} title={label} aria-pressed={on} onClick={(e) => (e.stopPropagation(), onClick())}>
+    <button type="button" className={`btn-icon !h-6 !w-6 ${on ? '!text-warn' : ''}`} aria-label={label} title={label} aria-pressed={on} onClick={(e) => (e.stopPropagation(), onClick())}>
       <Icon name={icon} size={13} />
     </button>
   );
 }
 
+/**
+ * Cabeçalho da faixa. Os três controles de estado (ocultar, silenciar, bloquear) ficam sempre visíveis;
+ * as ações menos frequentes aparecem sobre o nome ao passar o mouse, para o nome nunca ser espremido.
+ */
 export function TrackHeader({ track, index, selected, height }: { track: Track; index: number; selected: boolean; height: number }) {
   const patch = useEditor((s) => s.patchTrack);
   const remove = useEditor((s) => s.removeTrack);
@@ -31,7 +35,7 @@ export function TrackHeader({ track, index, selected, height }: { track: Track; 
 
   return (
     <div
-      className={`group sticky left-0 z-20 flex shrink-0 items-center gap-1.5 border-b border-r border-line pr-1.5 ${selected ? 'bg-panel-3' : 'bg-panel'}`}
+      className={`group sticky left-0 z-20 flex shrink-0 items-center gap-2 border-b border-r border-line pr-1.5 ${selected ? 'bg-panel-3' : 'bg-panel'}`}
       style={{ width: HEADER_W, height }}
       onClick={() => select(track.id)}
       data-testid={`track-header-${track.kind}`}
@@ -57,16 +61,25 @@ export function TrackHeader({ track, index, selected, height }: { track: Track; 
             }}
           />
         ) : (
-          <button type="button" className="block w-full truncate text-left text-xs font-medium" onDoubleClick={() => setEditing(true)} title="Duplo clique para renomear">
+          <button type="button" className="block w-full truncate text-left text-xs font-medium" onDoubleClick={() => setEditing(true)} title={`${track.name} — duplo clique para renomear`}>
             {track.name}
           </button>
         )}
-        {!compact && <span className="block text-2xs text-mute">{track.clips.length} {track.clips.length === 1 ? 'clipe' : 'clipes'}</span>}
+        {!compact && (
+          <span className="block truncate text-2xs text-mute">
+            {track.clips.length} {track.clips.length === 1 ? 'clipe' : 'clipes'}
+          </span>
+        )}
       </div>
+
       <div className="flex shrink-0 items-center">
-        {track.kind !== 'audio' && <Toggle on={track.hidden} alwaysShow={track.hidden} label={track.hidden ? 'Mostrar faixa' : 'Ocultar faixa'} icon={track.hidden ? 'eyeOff' : 'eye'} onClick={() => patch(track.id, { hidden: !track.hidden })} />}
+        {track.kind !== 'audio' && <Toggle on={track.hidden} label={track.hidden ? 'Mostrar faixa' : 'Ocultar faixa'} icon={track.hidden ? 'eyeOff' : 'eye'} onClick={() => patch(track.id, { hidden: !track.hidden })} />}
         {(track.kind === 'video' || track.kind === 'audio') && <Toggle on={track.muted} label={track.muted ? 'Ativar som da faixa' : 'Silenciar faixa'} icon={track.muted ? 'volumeOff' : 'volume'} onClick={() => patch(track.id, { muted: !track.muted })} />}
         <Toggle on={track.locked} label={track.locked ? 'Desbloquear faixa' : 'Bloquear faixa'} icon={track.locked ? 'lock' : 'unlock'} onClick={() => patch(track.id, { locked: !track.locked })} />
+      </div>
+
+      {/* Ações secundárias: aparecem sobre o nome ao passar o mouse ou ao focar. */}
+      <div className="pointer-events-none absolute inset-y-0 left-8 right-[78px] flex items-center justify-end gap-0.5 bg-gradient-to-l from-panel-3 via-panel-3 to-transparent pl-6 opacity-0 transition-opacity focus-within:pointer-events-auto focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100">
         <Toggle on={false} label="Fechar espaços vazios da faixa" icon="minimize" onClick={() => closeGaps(track.id)} />
         {!compact && <Toggle on={false} label="Mover faixa para cima" icon="chevronUp" onClick={() => move(track.id, index - 1)} />}
         <Toggle on={false} label={`Remover faixa ${track.name}`} icon="x" onClick={() => remove(track.id)} />
