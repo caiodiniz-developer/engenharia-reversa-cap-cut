@@ -170,3 +170,27 @@ describe('listagem, capa e duplicação', () => {
     expect((await b.post(`/api/projects/${p.id}/duplicate`)).status).toBe(404);
   });
 });
+
+describe('renomear', () => {
+  it('PATCH renomeia, atualiza o documento e sobe a revisão (outras janelas detectam)', async () => {
+    const u = await registerUser(t);
+    const p = await createProjectFor(u, 'Antigo');
+    const r = await u.patch(`/api/projects/${p.id}`).send({ name: '  Novo nome  ' });
+    expect(r.status).toBe(200);
+    expect(r.body.project).toMatchObject({ name: 'Novo nome', revision: 2 });
+    const read = (await u.get(`/api/projects/${p.id}`)).body.project;
+    expect(read.name).toBe('Novo nome');
+    expect(read.data.name).toBe('Novo nome');
+    // uma janela que ainda está na revisão 1 recebe conflito ao salvar
+    const stale = await u.put(`/api/projects/${p.id}`, { data: p.data, baseRevision: 1 });
+    expect(stale.status).toBe(409);
+  });
+
+  it('valida o nome e a posse', async () => {
+    const a = await registerUser(t);
+    const b = await registerUser(t);
+    const p = await createProjectFor(a);
+    expect((await a.patch(`/api/projects/${p.id}`).send({ name: '   ' })).status).toBe(400);
+    expect((await b.patch(`/api/projects/${p.id}`).send({ name: 'x' })).status).toBe(404);
+  });
+});
