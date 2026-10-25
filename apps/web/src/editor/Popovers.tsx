@@ -41,6 +41,16 @@ export function HistoryList({ onDone }: { onDone: () => void }) {
         <h3 className="text-xs font-semibold">Histórico de operações</h3>
         <span className="text-2xs text-mute">{history.entries.length - 1} passos</span>
       </div>
+      <button
+        type="button"
+        className="flex w-full items-center gap-2 border-b border-line px-3 py-2 text-left text-xs text-accent hover:bg-panel-3"
+        onClick={() => {
+          onDone();
+          window.dispatchEvent(new Event('editor:open-versions'));
+        }}
+      >
+        <Icon name="cloud" size={13} /> Versões salvas do projeto…
+      </button>
       <ol className="max-h-80 overflow-auto py-1" data-testid="history-list">
         {items.map(({ e, i }) => (
           <li key={i}>
