@@ -1,5 +1,5 @@
 import { createReadStream, createWriteStream } from 'node:fs';
-import { mkdir, rm, stat, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { pipeline } from 'node:stream/promises';
 import type { Readable } from 'node:stream';
@@ -12,6 +12,8 @@ export interface ObjectStore {
   put(key: string, data: Buffer | Readable): Promise<number>;
   /** Caminho local do objeto (necessário para o FFmpeg). */
   localPath(key: string): string;
+  /** Copia um objeto (usado ao duplicar projetos). */
+  copy(srcKey: string, dstKey: string): Promise<void>;
   size(key: string): Promise<number | undefined>;
   stream(key: string, range?: { start: number; end: number }): Readable;
   delete(key: string): Promise<void>;
@@ -44,6 +46,12 @@ export class LocalObjectStore implements ObjectStore {
     if (Buffer.isBuffer(data)) await writeFile(file, data);
     else await pipeline(data, createWriteStream(file));
     return (await stat(file)).size;
+  }
+
+  async copy(srcKey: string, dstKey: string): Promise<void> {
+    const dst = this.localPath(dstKey);
+    await mkdir(path.dirname(dst), { recursive: true });
+    await copyFile(this.localPath(srcKey), dst);
   }
 
   async size(key: string): Promise<number | undefined> {
