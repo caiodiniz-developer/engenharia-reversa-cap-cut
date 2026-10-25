@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { findClip, projectDuration, type TrackKind } from '@editor/core';
+import { findClip, type TrackKind } from '@editor/core';
 import { Icon, type IconName } from '../../components/Icon';
 import { MAX_ZOOM, MIN_ZOOM, selectCanRedo, selectCanUndo, useEditor } from '../../store/editor';
 import { toast } from '../../store/toasts';
@@ -27,13 +27,6 @@ export function TimelineToolbar() {
   const isVideoMedia = one?.type === 'media' && s.project.media[one.mediaId]?.kind === 'video';
   const canExtract = isVideoMedia && s.project.media[(one as { mediaId: string }).mediaId]?.hasAudio && !(one as { audio: { muted: boolean } }).audio.muted;
   const linked = s.selection.some((id) => findClip(s.project, id)?.clip.linkId);
-  const total = projectDuration(s.project);
-
-  const fit = () => {
-    const el = document.querySelector<HTMLElement>('[data-testid="timeline"]');
-    const w = (el?.clientWidth ?? 900) - 220;
-    if (total > 0) s.setZoom(Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, w / total)));
-  };
 
   return (
     <div className="flex h-10 shrink-0 items-center gap-0.5 border-b border-line bg-panel px-3" role="toolbar" aria-label="Ferramentas da timeline">
@@ -98,7 +91,7 @@ export function TimelineToolbar() {
         <Tool icon="zoomOut" label="Diminuir zoom" shortcut="-" onClick={() => s.setZoom(s.zoom / 1.3)} />
         <input type="range" aria-label="Zoom da timeline" className="w-24" min={Math.log(MIN_ZOOM)} max={Math.log(MAX_ZOOM)} step={0.01} value={Math.log(s.zoom)} onChange={(e) => s.setZoom(Math.exp(Number(e.target.value)))} />
         <Tool icon="zoomIn" label="Aumentar zoom" shortcut="+" onClick={() => s.setZoom(s.zoom * 1.3)} />
-        <button type="button" className="btn h-7 px-2 text-2xs" onClick={fit} title="Ajustar o projeto à largura da timeline">
+        <button type="button" className="btn h-7 px-2 text-2xs" onClick={s.fitTimeline} title="Ajustar o projeto à largura da timeline (Shift+Z)">
           Ajustar
         </button>
       </div>

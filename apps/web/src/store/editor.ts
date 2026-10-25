@@ -122,6 +122,8 @@ interface EditorState {
   setPlaying(v: boolean): void;
   togglePlay(): void;
   stepFrames(n: number): void;
+  /** Ajusta o zoom para o projeto inteiro caber na largura da timeline. */
+  fitTimeline(): void;
   /** Pula para o corte (borda de clipe ou marcador) seguinte/anterior. */
   jumpToEdit(dir: 1 | -1): void;
   setVolume(v: number): void;
@@ -325,6 +327,12 @@ export const useEditor = create<EditorState>((set, get) => {
     stepFrames(n) {
       set({ playing: false });
       get().setPlayhead(get().playhead + n / fps());
+    },
+    fitTimeline() {
+      const total = duration();
+      if (total <= 0) return;
+      const el = document.querySelector<HTMLElement>('[data-testid="timeline"]');
+      get().setZoom(((el?.clientWidth ?? 900) - 220) / total);
     },
     jumpToEdit(dir) {
       const t = neighborEdit(get().project, get().playhead, dir, { markers: true });
