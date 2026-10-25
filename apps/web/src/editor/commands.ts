@@ -93,6 +93,7 @@ export function buildCommands(ctx: { openPanel: (t: PanelTab) => void; onExport:
     { id: 'mute', label: 'Silenciar/ativar o som do preview', group: 'Preview', icon: 'volumeOff', run: () => s().toggleMute() },
     { id: 'save', label: 'Salvar agora', group: 'Projeto', icon: 'cloud', shortcut: 'Ctrl+S', run: () => void saveNow() },
     { id: 'export', label: 'Exportar vídeo…', group: 'Projeto', icon: 'download', keywords: 'renderizar baixar mp4', run: ctx.onExport },
+    { id: 'versions', label: 'Versões do projeto…', group: 'Projeto', icon: 'history', keywords: 'histórico restaurar marco backup', run: () => window.dispatchEvent(new Event('editor:open-versions')) },
     { id: 'home', label: 'Voltar aos projetos', group: 'Projeto', icon: 'home', run: ctx.goHome },
     { id: 'theme', label: 'Alternar tema claro/escuro', group: 'Aparência', icon: 'sun', keywords: 'dark light modo', run: () => useTheme.getState().toggle() },
     { id: 'help', label: 'Mostrar atalhos de teclado', group: 'Ajuda', icon: 'keyboard', shortcut: '?', run: ctx.onHelp },
