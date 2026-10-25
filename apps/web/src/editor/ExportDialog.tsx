@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { projectDuration } from '@editor/core';
 import { api, ApiError } from '../api/client';
 import type { ExportInfo } from '../api/types';
-import { Modal, ProgressBar, Select } from '../components/controls';
+import { Modal, ProgressBar, Segmented, Select } from '../components/controls';
 import { Icon } from '../components/Icon';
 import { formatBytes, formatDuration } from '../lib/format';
 import { localRecordingSupported, recordLocalDraft, RecordCancelled } from '../lib/localRecord';
@@ -12,6 +12,7 @@ import { saveNow } from '../store/persist';
 import { toast } from '../store/toasts';
 
 type Codec = 'h264' | 'h265' | 'vp9';
+type AudioFormat = 'mp3' | 'm4a' | 'wav';
 type Res = 'project' | '2160' | '1080' | '720' | '480';
 
 const QUALITY = [
@@ -27,6 +28,8 @@ export function ExportDialog({ projectId, open, onClose }: { projectId: string; 
   const [res, setRes] = useState<Res>('project');
   const [fps, setFps] = useState<string>('project');
   const [crf, setCrf] = useState('21');
+  const [kind, setKind] = useState<'video' | 'audio'>('video');
+  const [audioFormat, setAudioFormat] = useState<AudioFormat>('mp3');
   const [busy, setBusy] = useState(false);
   const [current, setCurrent] = useState<{ exportId: string; jobId: string } | null>(null);
   const [history, setHistory] = useState<ExportInfo[]>([]);
@@ -54,7 +57,7 @@ export function ExportDialog({ projectId, open, onClose }: { projectId: string; 
     setBusy(true);
     try {
       await saveNow(); // exporta o documento salvo no servidor
-      const body = { codec, crf: Number(crf), width, height, ...(fps !== 'project' ? { fps: Number(fps) } : {}), preset: 'veryfast' };
+      const body = kind === 'audio' ? { audioOnly: audioFormat } : { codec, crf: Number(crf), width, height, ...(fps !== 'project' ? { fps: Number(fps) } : {}), preset: 'veryfast' };
       const r = await api.post<{ exportId: string; jobId: string }>(`/api/projects/${projectId}/exports`, body);
       useJobs.getState().track(r.jobId, 'export', projectId);
       setCurrent(r);
@@ -117,14 +120,24 @@ export function ExportDialog({ projectId, open, onClose }: { projectId: string; 
         A renderização acontece no servidor: suas mídias já enviadas são processadas por lá e o arquivo final fica disponível para download por tempo limitado (24 h por padrão).
       </div>
 
+      <div className="mb-3">
+        <Segmented label="Tipo de exportação" value={kind} onChange={setKind} options={[{ value: 'video', label: 'Vídeo' }, { value: 'audio', label: 'Somente áudio' }]} />
+      </div>
+
+      {kind === 'audio' ? (
+        <div className="grid grid-cols-2 gap-x-4">
+          <Select label="Formato do áudio" value={audioFormat} onChange={setAudioFormat} options={[{ value: 'mp3', label: 'MP3 (compatível)' }, { value: 'm4a', label: 'M4A · AAC' }, { value: 'wav', label: 'WAV (sem compressão)' }]} />
+        </div>
+      ) : (
       <div className="grid grid-cols-2 gap-x-4">
         <Select label="Formato" value={codec} onChange={setCodec} options={[{ value: 'h264', label: 'MP4 · H.264 (compatível)' }, { value: 'h265', label: 'MP4 · H.265 (menor)' }, { value: 'vp9', label: 'WebM · VP9' }]} />
         <Select label="Qualidade" value={crf} onChange={setCrf} options={QUALITY} />
         <Select label="Resolução" value={res} onChange={setRes} options={[{ value: 'project', label: `Do projeto (${project.settings.width}×${project.settings.height})` }, { value: '2160', label: '4K (lado menor 2160)' }, { value: '1080', label: 'Full HD (1080)' }, { value: '720', label: 'HD (720)' }, { value: '480', label: 'SD (480)' }]} />
         <Select label="Quadros por segundo" value={fps} onChange={setFps} options={[{ value: 'project', label: `Do projeto (${project.settings.fps})` }, ...[24, 25, 30, 50, 60].map((f) => ({ value: String(f), label: `${f} fps` }))]} />
       </div>
+      )}
       <p className="mb-3 text-2xs text-mute">
-        Saída: {width}×{height} · duração {formatDuration(duration)}
+        Saída: {kind === 'audio' ? `áudio ${audioFormat.toUpperCase()}` : `${width}×${height}`} · duração {formatDuration(duration)}
       </p>
 
       {job && (
@@ -192,7 +205,7 @@ export function ExportDialog({ projectId, open, onClose }: { projectId: string; 
             {history.slice(0, 5).map((h) => (
               <li key={h.id} className="flex items-center justify-between rounded-md bg-panel-2 px-2 py-1.5 text-2xs">
                 <span className="text-mute">
-                  {String(h.options.codec ?? '').toUpperCase()} · {h.job.status === 'succeeded' ? (h.ready ? formatBytes(h.sizeBytes ?? 0) : 'expirado') : h.job.status}
+                  {String(h.options.audioOnly ?? h.options.codec ?? '').toUpperCase()} · {h.job.status === 'succeeded' ? (h.ready ? formatBytes(h.sizeBytes ?? 0) : 'expirado') : h.job.status}
                 </span>
                 {h.ready && (
                   <button type="button" className="text-accent hover:underline" onClick={() => void download(h.id)}>
