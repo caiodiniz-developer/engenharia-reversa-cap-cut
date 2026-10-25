@@ -1,9 +1,9 @@
 import type { TrackKind } from '@editor/core';
 
-export const HEADER_W = 176;
-export const RULER_H = 28;
+export const HEADER_W = 196;
+export const RULER_H = 30;
 
-export const trackHeight = (kind: TrackKind): number => (kind === 'video' ? 56 : kind === 'audio' ? 48 : 36);
+export const trackHeight = (kind: TrackKind): number => (kind === 'video' ? 68 : kind === 'audio' ? 52 : 40);
 
 /** Escolhe o passo (s) das marcações da régua conforme o zoom, para ~80px entre marcações principais. */
 export function rulerStep(pps: number): { major: number; minor: number } {

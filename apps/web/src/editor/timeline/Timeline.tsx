@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { clipEnd, collectSnapPoints, findClip, projectDuration, snapRange, snapTime, type Clip, type Track } from '@editor/core';
+import { clipEnd, collectSnapPoints, findClip, formatTimecode, projectDuration, snapRange, snapTime, type Clip, type Track } from '@editor/core';
+import { Icon } from '../../components/Icon';
 import { MAX_ZOOM, MIN_ZOOM, useEditor } from '../../store/editor';
 import { toast } from '../../store/toasts';
 import { ClipView } from './ClipView';
-import { HEADER_W, RULER_H, trackHeight } from './geometry';
+import { HEADER_W, RULER_H, rulerStep, trackHeight } from './geometry';
 import { Ruler } from './Ruler';
 import { TimelineToolbar } from './TimelineToolbar';
 import { TrackHeader } from './TrackHeader';
@@ -36,6 +37,11 @@ export function Timeline() {
   const total = projectDuration(project);
   const viewW = Math.max(100, scroll.width - HEADER_W);
   const contentW = Math.max(total + 10, viewW / zoom) * zoom;
+  // Janela visível (quantizada em blocos de 512 px) para criar miniaturas só do que aparece na tela.
+  const viewFrom = Math.max(0, Math.floor(scroll.left / 512) * 512 - 512);
+  const viewTo = Math.ceil((scroll.left + viewW) / 512) * 512 + 512;
+  const view = useMemo(() => ({ from: viewFrom, to: viewTo }), [viewFrom, viewTo]);
+  const gridPx = rulerStep(zoom).major * zoom;
   const heights = useMemo(() => project.tracks.map((t) => trackHeight(t.kind)), [project.tracks]);
   const lanesH = heights.reduce((a, b) => a + b, 0);
 
@@ -265,16 +271,35 @@ export function Timeline() {
           {/* Faixas */}
           <div className="relative">
             {project.tracks.length === 0 && (
-              <div className="sticky left-0 flex h-28 items-center justify-center text-xs text-mute" style={{ width: scroll.width }}>
-                Importe uma mídia e arraste para cá, ou clique em “+” na biblioteca.
+              <div
+                className={`sticky left-0 m-4 flex h-32 flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed text-center transition-colors ${dropTrack === '__empty' ? 'border-accent bg-accent/10 text-ink' : 'border-line text-mute'}`}
+                style={{ width: Math.max(300, scroll.width - 32) }}
+                data-testid="timeline-empty"
+                onDragOver={(e) => {
+                  if (e.dataTransfer.types.includes('application/x-media-id')) {
+                    e.preventDefault();
+                    setDropTrack('__empty');
+                  }
+                }}
+                onDragLeave={() => setDropTrack(null)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setDropTrack(null);
+                  const id = e.dataTransfer.getData('application/x-media-id');
+                  if (id) store.getState().addToTimeline(id, { at: 0 });
+                }}
+              >
+                <Icon name="layers" size={22} />
+                <p className="text-xs font-medium text-ink">Arraste uma mídia para começar a editar</p>
+                <p className="text-2xs">ou dê dois cliques em um item da biblioteca</p>
               </div>
             )}
             {project.tracks.map((track, i) => (
               <div key={track.id} className="flex" style={{ height: heights[i] }} data-track-id={track.id}>
                 <TrackHeader track={track} index={i} selected={selectedTrackId === track.id} height={heights[i]!} />
                 <div
-                  className={`relative border-b border-line/70 ${dropTrack === track.id ? 'bg-accent/10' : i % 2 ? 'bg-panel/40' : ''}`}
-                  style={{ width: contentW, opacity: track.hidden ? 0.5 : 1 }}
+                  className={`relative border-b border-line/70 ${dropTrack === track.id ? '!bg-accent/10' : i % 2 ? 'bg-panel/40' : ''}`}
+                  style={{ width: contentW, opacity: track.hidden ? 0.5 : 1, backgroundImage: 'linear-gradient(to right, rgb(var(--line) / 0.4) 1px, transparent 1px)', backgroundSize: `${gridPx}px 100%` }}
                   onDragOver={(e) => {
                     if (e.dataTransfer.types.includes('application/x-media-id')) {
                       e.preventDefault();
@@ -295,6 +320,7 @@ export function Timeline() {
                       selected={selection.includes(c.id)}
                       media={c.type === 'media' ? media[c.mediaId] : undefined}
                       height={heights[i]!}
+                      view={view}
                       onPointerDown={onClipPointerDown}
                       onTrimDown={onTrimDown}
                     />
@@ -318,8 +344,10 @@ export function Timeline() {
 
 function Playhead({ zoom, height }: { zoom: number; height: number }) {
   const playhead = useEditor((s) => s.playhead);
+  const fps = useEditor((s) => s.project.settings.fps);
   return (
     <div className="pointer-events-none absolute top-0 z-30" style={{ left: HEADER_W + playhead * zoom, height }} data-testid="playhead">
+      <span className="absolute left-1.5 top-[3px] rounded bg-playhead px-1 font-mono text-[10px] leading-4 text-white shadow">{formatTimecode(playhead, fps).slice(3)}</span>
       <div className="absolute -left-[6px] top-0 h-0 w-0 border-x-[6px] border-t-[9px] border-x-transparent border-t-playhead" />
       <div className="h-full w-px bg-playhead" />
     </div>
