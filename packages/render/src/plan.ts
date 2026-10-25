@@ -23,6 +23,7 @@ import { ffmpegRun } from './media';
 import { measureText, renderTextPng } from './textimage';
 
 export type VideoCodec = 'h264' | 'h265' | 'vp9';
+export type AudioFormat = 'mp3' | 'wav' | 'm4a';
 
 export interface RenderOptions {
   /** Substitui a resolução do projeto (será arredondada para número par). */
@@ -34,6 +35,8 @@ export interface RenderOptions {
   crf?: number;
   preset?: 'ultrafast' | 'veryfast' | 'fast' | 'medium' | 'slow';
   audioBitrate?: string;
+  /** Exporta somente o áudio mixado neste formato (sem vídeo, texto ou legendas). */
+  audioOnly?: AudioFormat;
   /** Exporta apenas o intervalo [start, end] da timeline (segundos). */
   range?: { start: number; end: number };
 }
@@ -84,6 +87,22 @@ export function codecArgs(codec: VideoCodec, crf: number, preset: string, audioB
   }
 }
 
+export function audioFormatArgs(format: AudioFormat, audioBitrate: string): { args: string[]; ext: string } {
+  switch (format) {
+    case 'mp3':
+      return { ext: 'mp3', args: ['-c:a', 'libmp3lame', '-b:a', audioBitrate] };
+    case 'm4a':
+      return { ext: 'm4a', args: ['-c:a', 'aac', '-b:a', audioBitrate, '-movflags', '+faststart'] };
+    case 'wav':
+      return { ext: 'wav', args: ['-c:a', 'pcm_s16le'] };
+  }
+}
+
+/** Extensão do arquivo de saída para as opções dadas. */
+export function outputExtension(opts: Pick<RenderOptions, 'codec' | 'audioOnly'>): string {
+  return opts.audioOnly ? audioFormatArgs(opts.audioOnly, '192k').ext : codecArgs(opts.codec ?? 'h264', 20, 'veryfast', '192k').ext;
+}
+
 /** Converte o projeto em argumentos do FFmpeg + filter_complex (escrito em arquivo no tmpDir). */
 export async function buildRenderPlan(
   project: Project,
@@ -98,6 +117,7 @@ export async function buildRenderPlan(
   const H = even(opts.height ?? project.settings.height);
   const fps = opts.fps ?? project.settings.fps;
   const sr = project.settings.sampleRate;
+  const audioOnly = !!opts.audioOnly;
   const frame = { width: W, height: H };
 
   await mkdir(env.tmpDir, { recursive: true });
@@ -124,7 +144,7 @@ export async function buildRenderPlan(
   let uid = 0;
   const label = (p: string): string => `${p}${uid++}`;
 
-  filters.push(`color=c=${hex(project.settings.background)}:s=${W}x${H}:r=${num(fps)}:d=${num(total)},format=yuv420p[base]`);
+  if (!audioOnly) filters.push(`color=c=${hex(project.settings.background)}:s=${W}x${H}:r=${num(fps)}:d=${num(total)},format=yuv420p[base]`);
 
   const layers: Layer[] = [];
   const audioLabels: string[] = [];
@@ -226,7 +246,7 @@ export async function buildRenderPlan(
     if (!asset) throw new RenderError(`Mídia ${clip.mediaId} não encontrada no projeto`);
     const file = env.resolveMedia(clip.mediaId);
     const dur = clip.duration;
-    const isVisual = trackKind === 'video' && !hidden && asset.kind !== 'audio';
+    const isVisual = !audioOnly && trackKind === 'video' && !hidden && asset.kind !== 'audio';
     const wantsAudio = asset.kind !== 'image' && asset.hasAudio && !clip.freeze && !clip.audio.muted && !muted;
 
     if (!isVisual && !wantsAudio) return;
@@ -400,21 +420,25 @@ export async function buildRenderPlan(
     for (const clip of sorted) {
       if (opts.range && (clipEnd(clip) <= opts.range.start || clip.start >= opts.range.end)) continue;
       if (clip.type === 'media') await addMediaClip(clip, track.kind, track.hidden, track.muted);
-      else if (!track.hidden) await addTextClip(clip, textIdx++);
+      else if (!track.hidden && !audioOnly) await addTextClip(clip, textIdx++);
     }
   }
 
   // Composição: sobrepõe cada camada na ordem.
   let current = 'base';
-  layers.forEach((l, i) => {
-    const out = i === layers.length - 1 ? 'vcomp' : `ov${i}`;
-    filters.push(
-      `[${current}][${l.label}]overlay=x='${l.x}':y='${l.y}':enable='between(t,${num(l.start)},${num(l.end)})':eof_action=pass:eval=frame[${out}]`,
-    );
-    current = out;
-  });
-  if (layers.length === 0) filters.push('[base]null[vcomp]');
-  filters.push(`[vcomp]format=yuv420p[vout]`);
+  if (!audioOnly) {
+    layers.forEach((l, i) => {
+      const out = i === layers.length - 1 ? 'vcomp' : `ov${i}`;
+      filters.push(
+        `[${current}][${l.label}]overlay=x='${l.x}':y='${l.y}':enable='between(t,${num(l.start)},${num(l.end)})':eof_action=pass:eval=frame[${out}]`,
+      );
+      current = out;
+    });
+  }
+  if (!audioOnly) {
+    if (layers.length === 0) filters.push('[base]null[vcomp]');
+    filters.push(`[vcomp]format=yuv420p[vout]`);
+  }
 
   if (audioLabels.length === 0) {
     filters.push(`anullsrc=r=${sr}:cl=stereo,atrim=duration=${num(total)}[aout]`);
@@ -430,7 +454,7 @@ export async function buildRenderPlan(
   const scriptPath = path.join(env.tmpDir, 'filter_complex.txt');
   await writeFile(scriptPath, filterGraph);
 
-  const codec = codecArgs(opts.codec ?? 'h264', opts.crf ?? 20, opts.preset ?? 'veryfast', opts.audioBitrate ?? '192k');
+  const codec = opts.audioOnly ? audioFormatArgs(opts.audioOnly, opts.audioBitrate ?? '192k') : codecArgs(opts.codec ?? 'h264', opts.crf ?? 20, opts.preset ?? 'veryfast', opts.audioBitrate ?? '192k');
   const outRange = opts.range ? ['-ss', num(opts.range.start), '-t', num(opts.range.end - opts.range.start)] : ['-t', num(total)];
   const args = [
     '-y',
@@ -443,12 +467,10 @@ export async function buildRenderPlan(
     ...inputs.flat(),
     '-filter_complex_script',
     scriptPath,
-    '-map',
-    '[vout]',
+    ...(audioOnly ? ['-vn'] : ['-map', '[vout]']),
     '-map',
     '[aout]',
-    '-r',
-    num(fps),
+    ...(audioOnly ? [] : ['-r', num(fps)]),
     ...codec.args,
     ...outRange,
     outputPath,

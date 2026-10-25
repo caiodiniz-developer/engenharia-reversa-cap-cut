@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import type { Project } from '@editor/core';
-import { buildRenderPlan, RenderError, type RenderEnv, type RenderOptions, type RenderPlan } from './plan';
+import { buildRenderPlan, outputExtension, RenderError, type RenderEnv, type RenderOptions, type RenderPlan } from './plan';
 
 export interface RunHandlers {
   /** 0..1 */
@@ -77,7 +77,7 @@ export async function renderProject(
   const tmpDir = await mkdtemp(path.join(root, 'render-'));
   try {
     // A extensão depende do codec, então planejamos com um nome provisório e ajustamos.
-    const ext = (opts.codec ?? 'h264') === 'vp9' ? 'webm' : 'mp4';
+    const ext = outputExtension(opts);
     const output = `${outputBase}.${ext}`;
     const plan = await buildRenderPlan(project, opts, { resolveMedia: env.resolveMedia, tmpDir, signal: handlers.signal }, output);
     await runFfmpeg(plan, handlers);
