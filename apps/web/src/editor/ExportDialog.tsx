@@ -113,7 +113,7 @@ export function ExportDialog({ projectId, open, onClose }: { projectId: string; 
 
   return (
     <Modal open={open} onClose={onClose} title="Exportar vídeo" width={520}>
-      <div className="mb-3 rounded-lg border border-line bg-panel2 px-3 py-2 text-2xs text-mute">
+      <div className="mb-3 card px-3 py-2 text-2xs text-mute">
         A renderização acontece no servidor: suas mídias já enviadas são processadas por lá e o arquivo final fica disponível para download por tempo limitado (24 h por padrão).
       </div>
 
@@ -128,7 +128,7 @@ export function ExportDialog({ projectId, open, onClose }: { projectId: string; 
       </p>
 
       {job && (
-        <div className="mb-3 rounded-lg border border-line bg-panel2 p-3" role="status" data-testid="export-status">
+        <div className="mb-3 card p-3" role="status" data-testid="export-status">
           <div className="mb-1.5 flex items-center justify-between text-xs">
             <span>
               {job.status === 'queued' && 'Na fila…'}
@@ -164,7 +164,7 @@ export function ExportDialog({ projectId, open, onClose }: { projectId: string; 
       {duration <= 0 && <p className="mt-2 text-right text-2xs text-mute">Adicione clipes à timeline para exportar.</p>}
 
       {localRecordingSupported() && (
-        <div className="mt-5 rounded-lg border border-line bg-panel2 p-3" data-testid="local-draft">
+        <div className="mt-5 card p-3" data-testid="local-draft">
           <h3 className="mb-1 text-xs font-semibold">Rascunho rápido no navegador</h3>
           <p className="mb-2 text-2xs text-mute">Grava a prévia em tempo real e baixa um WebM, sem renderizar no servidor. Qualidade da prévia (até 960 px); estabilização, normalização e redução de ruído não entram.</p>
           {localProgress === null ? (
@@ -190,7 +190,7 @@ export function ExportDialog({ projectId, open, onClose }: { projectId: string; 
           <h3 className="panel-title !px-0">Exportações anteriores</h3>
           <ul className="space-y-1">
             {history.slice(0, 5).map((h) => (
-              <li key={h.id} className="flex items-center justify-between rounded-md bg-panel2 px-2 py-1.5 text-2xs">
+              <li key={h.id} className="flex items-center justify-between rounded-md bg-panel-2 px-2 py-1.5 text-2xs">
                 <span className="text-mute">
                   {String(h.options.codec ?? '').toUpperCase()} · {h.job.status === 'succeeded' ? (h.ready ? formatBytes(h.sizeBytes ?? 0) : 'expirado') : h.job.status}
                 </span>
