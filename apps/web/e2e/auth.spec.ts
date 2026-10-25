@@ -60,7 +60,8 @@ test.describe('autenticação e projetos', () => {
     await signup(page);
     await newProject(page, 'Descartável');
     await page.goto('/');
-    await page.getByRole('button', { name: 'Excluir Descartável' }).click({ force: true });
+    await page.getByRole('button', { name: 'Mais ações para Descartável' }).click({ force: true });
+    await page.getByRole('menuitem', { name: 'Excluir Descartável' }).click();
     await page.getByRole('button', { name: 'Excluir definitivamente' }).click();
     await expect(page.getByText('Nenhum projeto ainda')).toBeVisible();
     await page.goto('/p/nao-existe');
