@@ -14,7 +14,7 @@ import { HttpError, h, json, notFound, ownedMedia, ownedProject, parse, requireA
 import { sanitizeFilename, signResource, verifyResource } from '../security';
 
 const CHUNK_SIZE = 8 * 1024 * 1024;
-const VARIANTS = ['original', 'proxy', 'thumb', 'waveform'] as const;
+const VARIANTS = ['original', 'proxy', 'thumb', 'waveform', 'film'] as const;
 type Variant = (typeof VARIANTS)[number];
 
 const InitUpload = z.object({
@@ -59,6 +59,8 @@ function keyFor(m: Media, variant: Variant): string | null {
       return m.thumbKey;
     case 'waveform':
       return m.waveformKey;
+    case 'film':
+      return (m.film as { key?: string } | null)?.key ?? null;
   }
 }
 
@@ -81,7 +83,16 @@ const CONTENT_TYPES: Record<string, string> = {
   '.json': 'application/json',
 };
 
+interface FilmMeta {
+  key: string;
+  count: number;
+  interval: number;
+  tileW: number;
+  tileH: number;
+}
+
 export function presentMedia(ctx: AppContext, m: Media, userId: string) {
+  const film = (m.film ?? null) as unknown as FilmMeta | null;
   return json({
     id: m.id,
     name: m.originalName,
@@ -100,7 +111,9 @@ export function presentMedia(ctx: AppContext, m: Media, userId: string) {
       proxy: m.proxyKey ? mediaUrl(ctx, m.id, 'proxy', userId) : null,
       thumb: m.thumbKey ? mediaUrl(ctx, m.id, 'thumb', userId) : null,
       waveform: m.waveformKey ? mediaUrl(ctx, m.id, 'waveform', userId) : null,
+      film: m.film ? mediaUrl(ctx, m.id, 'film', userId) : null,
     },
+    film: film ? { count: film.count, interval: film.interval, tileW: film.tileW, tileH: film.tileH } : null,
   });
 }
 
