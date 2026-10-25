@@ -36,6 +36,27 @@ async function exportAndDownload(page: Page, opts: { codec?: string; res?: strin
 }
 
 test.describe('exportação pelo navegador', () => {
+  test('exporta somente o áudio em MP3 pelo diálogo e o arquivo não tem vídeo', async ({ page }) => {
+    await sequence(page);
+    await page.getByTestId('export-button').click();
+    const dialog = page.getByRole('dialog', { name: 'Exportar vídeo' });
+    await dialog.getByRole('radio', { name: 'Somente áudio' }).click();
+    await expect(dialog.getByLabel('Resolução')).toHaveCount(0);
+    await dialog.getByLabel('Formato do áudio').selectOption('mp3');
+    await dialog.getByTestId('start-export').click();
+    await expect(dialog.getByTestId('export-status')).toContainText('Exportação concluída', { timeout: 120_000 });
+    const [download] = await Promise.all([page.waitForEvent('download'), dialog.getByTestId('download-button').click()]);
+    expect(download.suggestedFilename()).toMatch(/.mp3$/);
+    const dir = await mkdtemp(path.join(os.tmpdir(), 'e2e-dl-'));
+    const file = path.join(dir, download.suggestedFilename());
+    await download.saveAs(file);
+    const info = await probeMedia(file);
+    expect(info.kind).toBe('audio');
+    expect(info.videoCodec).toBeUndefined();
+    expect(info.duration).toBeGreaterThan(7.8);
+    expect(info.duration).toBeLessThan(8.4);
+  });
+
   test('exporta no servidor, baixa o arquivo e ele coincide com o preview', async ({ page }) => {
     await sequence(page);
     const { file, name } = await exportAndDownload(page);
