@@ -173,6 +173,21 @@ test.describe('timeline e preview', () => {
     expect(await head()).toBeCloseTo(0, 3);
   });
 
+  test('Shift+Z ajusta o zoom para o projeto caber na timeline', async ({ page }) => {
+    await withClip(page);
+    const zoom = () => page.evaluate(() => window.__editor.getState().zoom);
+    await page.getByRole('button', { name: 'Aumentar zoom' }).click();
+    await page.getByRole('button', { name: 'Aumentar zoom' }).click();
+    const before = await zoom();
+    await page.keyboard.press('Shift+Z');
+    const after = await zoom();
+    expect(after).not.toBeCloseTo(before, 1);
+    // o clipe inteiro cabe na largura visível da timeline
+    const box = await page.locator('[data-clip-id]').first().boundingBox();
+    const tl = await page.getByTestId('timeline').boundingBox();
+    expect(box!.x + box!.width).toBeLessThanOrEqual(tl!.x + tl!.width + 1);
+  });
+
   test('salvar o quadro atual gera um PNG válido', async ({ page }) => {
     await withClip(page);
     await seek(page, 1);
