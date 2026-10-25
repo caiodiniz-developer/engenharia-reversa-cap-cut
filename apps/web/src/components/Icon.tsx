@@ -153,6 +153,7 @@ const PATHS = {
   folder: <path d="M3 6a2 2 0 0 1 2-2h4l2 3h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />,
   alert: <path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" />,
   chevronDown: <path d="m6 9 6 6 6-6" />,
+  chevronUp: <path d="m6 15 6-6 6 6" />,
   chevronRight: <path d="m9 6 6 6-6 6" />,
   sun: (
     <>
@@ -230,6 +231,7 @@ const PATHS = {
       <path d="M5 15V6a2 2 0 0 1 2-2h8M14.5 12.5v6M11.5 15.5h6" />
     </>
   ),
+  minimize: <path d="M8 3v5H3M16 3v5h5M8 21v-5H3M16 21v-5h5" />,
   panelRight: (
     <>
       <rect x="3" y="4" width="18" height="16" rx="2" />
