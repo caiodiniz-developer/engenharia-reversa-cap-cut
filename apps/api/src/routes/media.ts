@@ -9,7 +9,7 @@ import { Router } from 'express';
 import type { Media } from '@prisma/client';
 import { z } from 'zod';
 import { migrateProject } from '@editor/core';
-import { probeMedia, renderBackgroundPng } from '@editor/render';
+import { probeMedia, renderBackgroundPng, renderShapePng, SHAPES } from '@editor/render';
 import { HttpError, h, json, notFound, ownedMedia, ownedProject, parse, requireAuth, type AppContext } from '../http';
 import { sanitizeFilename, signResource, verifyResource } from '../security';
 
@@ -33,9 +33,12 @@ interface UploadMeta {
 
 const MIME_OK = /^(video|audio|image)\//;
 
+const SHAPE_NAMES: Record<(typeof SHAPES)[number], string> = { circle: 'Círculo', square: 'Quadrado', rounded: 'Retângulo arredondado', triangle: 'Triângulo', star: 'Estrela', heart: 'Coração', arrow: 'Seta', line: 'Linha' };
+
 const HexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Use o formato #rrggbb');
 const Generate = z.object({
-  kind: z.enum(['solid', 'gradient']),
+  kind: z.enum(['solid', 'gradient', 'shape']),
+  shape: z.enum(SHAPES).optional(),
   color: HexColor,
   color2: HexColor.optional(),
   angle: z.number().min(0).max(360).default(180),
@@ -266,12 +269,16 @@ export function mediaRoutes(ctx: AppContext): Router {
       if (body.kind === 'gradient' && !body.color2) throw new HttpError(400, 'O degradê precisa de duas cores', 'validation');
       await assertQuota(project.id);
       const settings = migrateProject(project.data).settings;
-      const png = renderBackgroundPng({ ...body, width: body.width ?? settings.width, height: body.height ?? settings.height });
+      if (body.kind === 'shape' && !body.shape) throw new HttpError(400, 'Escolha a forma', 'validation');
+      const png =
+        body.kind === 'shape'
+          ? renderShapePng({ shape: body.shape!, color: body.color, size: body.width })
+          : renderBackgroundPng({ ...body, kind: body.kind, width: body.width ?? settings.width, height: body.height ?? settings.height });
       await mkdir(path.join(ctx.config.tmpDir, 'multipart'), { recursive: true });
       const tmp = path.join(ctx.config.tmpDir, 'multipart', randomBytes(8).toString('hex'));
       await writeFile(tmp, png);
       try {
-        const label = body.name || (body.kind === 'solid' ? `Fundo ${body.color.slice(1).toUpperCase()}` : 'Degradê');
+        const label = body.name || (body.kind === 'solid' ? `Fundo ${body.color.slice(1).toUpperCase()}` : body.kind === 'shape' ? `${SHAPE_NAMES[body.shape!]} ${body.color.slice(1).toUpperCase()}` : 'Degradê');
         const media = await finalize(req.userId, project.id, tmp, `${label}.png`, 'image/png');
         res.status(201).json({ media: presentMedia(ctx, media, req.userId) });
       } finally {
