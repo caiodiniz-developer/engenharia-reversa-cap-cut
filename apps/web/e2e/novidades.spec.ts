@@ -259,6 +259,31 @@ test.describe('timeline e preview', () => {
     await expect(pop).toBeHidden();
   });
 
+  test('velocidade do preview: ] aumenta, o botão alterna e a cabeça anda mais rápido', async ({ page }) => {
+    await withClip(page);
+    const rate = () => page.evaluate(() => window.__editor.getState().rate);
+    expect(await rate()).toBe(1);
+    await page.keyboard.press(']');
+    expect(await rate()).toBe(1.25);
+    await page.keyboard.press('[');
+    await page.keyboard.press('[');
+    expect(await rate()).toBe(0.75);
+    // o botão percorre até o máximo e volta ao mínimo
+    const btn = page.getByTestId('rate-button');
+    for (let i = 0; i < 4; i++) await btn.click();
+    expect(await rate()).toBe(2);
+    await expect(btn).toHaveText('2×');
+
+    await seek(page, 0);
+    await page.getByTestId('play-button').click();
+    await page.waitForTimeout(1200);
+    await page.getByTestId('play-button').click();
+    const head = await page.evaluate(() => window.__editor.getState().playhead);
+    expect(head).toBeGreaterThan(1.6); // 1,2 s reais a 2× ≈ 2,4 s (com folga para a inicialização)
+    await btn.click();
+    expect(await rate()).toBe(0.25);
+  });
+
   test('salvar o quadro atual gera um PNG válido', async ({ page }) => {
     await withClip(page);
     await seek(page, 1);
