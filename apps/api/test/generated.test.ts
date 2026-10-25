@@ -31,6 +31,24 @@ describe('mídias geradas', () => {
     expect(res.body.media).toMatchObject({ width: 640, height: 360, name: 'Pôr do sol.png' });
   });
 
+  it('cria uma forma quadrada transparente com nome em português', async () => {
+    const u = await registerUser(t);
+    const p = await createProjectFor(u);
+    const res = await u.post(`/api/projects/${p.id}/generated`, { kind: 'shape', shape: 'star', color: '#ffcc00', width: 512 });
+    expect(res.status).toBe(201);
+    expect(res.body.media).toMatchObject({ kind: 'image', width: 512, height: 512, name: 'Estrela FFCC00.png' });
+    await t.built.ctx.queue.onIdle();
+    const media = (await u.get(`/api/media/${res.body.media.id}`)).body.media;
+    expect(media.status).toBe('ready');
+  });
+
+  it('forma exige a escolha da figura e recusa figura desconhecida', async () => {
+    const u = await registerUser(t);
+    const p = await createProjectFor(u);
+    expect((await u.post(`/api/projects/${p.id}/generated`, { kind: 'shape', color: '#ffcc00' })).status).toBe(400);
+    expect((await u.post(`/api/projects/${p.id}/generated`, { kind: 'shape', shape: 'hexagono', color: '#ffcc00' })).status).toBe(400);
+  });
+
   it('valida cores, dimensões e a posse do projeto', async () => {
     const a = await registerUser(t);
     const b = await registerUser(t);
