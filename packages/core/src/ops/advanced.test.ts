@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { findClip, projectDuration } from '../project';
 import { addClip, fixtureProject, mediaClip } from '../testing';
-import { extractAudio, freezeFrame, removeRanges, removeTransition, setSpeed, setTransition } from './advanced';
+import { closeGaps, extractAudio, freezeFrame, removeRanges, removeTransition, setSpeed, setTransition } from './advanced';
+import { updateClip } from './clips';
+import { setTrackProps } from './tracks';
+import type { Project } from '../schema';
 
 describe('setSpeed', () => {
   it('2x reduz a duração pela metade e mantém o trecho de origem', () => {
@@ -113,3 +116,38 @@ describe('removeRanges', () => {
     expect(r.tracks[0]!.clips[0]).toMatchObject({ start: 0, sourceIn: 2 });
   });
 });
+
+describe('closeGaps', () => {
+  it('encosta os clipes e leva o primeiro a zero', () => {
+    const { project, trackId } = fixtureProject();
+    const a = mediaClip('m1', 2, 2);
+    const b = mediaClip('m1', 6, 3);
+    const c = mediaClip('m2', 12, 1);
+    const p = [a, b, c].reduce((acc, clip) => addClip(acc, trackId, clip), project);
+    const r = closeGaps(p, trackId);
+    expect(r.tracks[0]!.clips.map((x) => [x.start, x.duration])).toEqual([[0, 2], [2, 3], [5, 1]]);
+    expect(projectDuration(r)).toBe(6);
+  });
+
+  it('mantém a sobreposição de uma transição ao fechar os vãos', () => {
+    const { project, trackId } = fixtureProject();
+    const a = mediaClip('m1', 0, 4);
+    const b = mediaClip('m2', 4, 4);
+    let p = addClip(addClip(project, trackId, a), trackId, b);
+    p = setTransition(p, b.id, 'fade', 1); // b começa em 3
+    const gap = moveClipTo(p, b.id, 3);
+    const r = closeGaps(gap, trackId);
+    expect(findClip(r, b.id)!.clip.start).toBe(3);
+  });
+
+  it('não altera faixa bloqueada', () => {
+    const { project, trackId } = fixtureProject();
+    const p = addClip(project, trackId, mediaClip('m1', 3, 2));
+    const locked = setTrackProps(p, trackId, { locked: true });
+    expect(() => closeGaps(locked, trackId)).toThrow(/bloqueada/);
+  });
+});
+
+function moveClipTo(p: Project, id: string, start: number): Project {
+  return updateClip(p, id, { start });
+}
