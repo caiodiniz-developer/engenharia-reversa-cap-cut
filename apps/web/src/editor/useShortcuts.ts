@@ -23,6 +23,7 @@ export const SHORTCUTS: Shortcut[] = [
   { keys: 'Ctrl + K', label: 'Abrir a paleta de comandos' },
   { keys: '← / →', label: 'Quadro anterior / próximo' },
   { keys: 'Shift + ← / →', label: 'Voltar / avançar 1 segundo' },
+  { keys: '↑ / ↓', label: 'Corte anterior / seguinte (bordas de clipes e marcadores)' },
   { keys: 'Home / End', label: 'Ir ao início / ao fim' },
   { keys: 'M', label: 'Adicionar marcador' },
   { keys: 'N', label: 'Ligar/desligar ímã (snap)' },
@@ -103,6 +104,9 @@ export function useShortcuts(openHelp: () => void, openPalette: () => void): voi
       } else if (e.key === 'ArrowRight') {
         e.preventDefault();
         e.shiftKey ? s.setPlayhead(s.playhead + 1) : s.stepFrames(1);
+      } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        s.jumpToEdit(e.key === 'ArrowUp' ? -1 : 1);
       } else if (e.key === 'Home') {
         s.setPlaying(false);
         s.setPlayhead(0);
