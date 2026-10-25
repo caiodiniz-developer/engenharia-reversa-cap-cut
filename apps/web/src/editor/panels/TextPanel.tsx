@@ -5,7 +5,7 @@ import { templates, type TextTemplate } from '../../lib/idb';
 import { useEditor } from '../../store/editor';
 import { toast } from '../../store/toasts';
 
-const PRESETS: Array<{ id: string; label: string; sample: string; style: Partial<TextStyle> }> = [
+export const PRESETS: Array<{ id: string; label: string; sample: string; style: Partial<TextStyle> }> = [
   { id: 'title', label: 'Título', sample: 'Título', style: { fontSize: 120, bold: true, shadowBlur: 10, shadowY: 4 } },
   { id: 'subtitle', label: 'Subtítulo', sample: 'Subtítulo', style: { fontSize: 64, bold: false } },
   { id: 'outline', label: 'Contorno', sample: 'Contorno', style: { fontSize: 96, strokeWidth: 8, strokeColor: '#000000' } },
@@ -13,6 +13,11 @@ const PRESETS: Array<{ id: string; label: string; sample: string; style: Partial
   { id: 'box', label: 'Caixa', sample: 'Caixa', style: { fontSize: 72, background: '#000000cc' } },
   { id: 'gradient', label: 'Degradê', sample: 'Degradê', style: { fontSize: 110, color: '#ffb347', gradientTo: '#ff3c8e' } },
   { id: 'gold', label: 'Cinema', sample: 'Cinema', style: { fontSize: 90, color: '#ffe14d', strokeWidth: 6, strokeColor: '#000000' } },
+  { id: 'lower', label: 'Terço inferior', sample: 'Nome Sobrenome', style: { fontSize: 56, align: 'left', background: '#000000b3', maxWidth: 0.6 } },
+  { id: 'highlight', label: 'Marca-texto', sample: 'Marca-texto', style: { fontSize: 76, color: '#111111', background: '#ffe14dff', bold: true } },
+  { id: 'retro', label: 'Retrô', sample: 'Retrô', style: { fontSize: 110, color: '#ff6b6b', shadowColor: '#1b1b1b', shadowX: 8, shadowY: 8, shadowBlur: 0 } },
+  { id: 'ice', label: 'Gelo', sample: 'Gelo', style: { fontSize: 100, color: '#cfe9ff', shadowColor: '#3b82f6', shadowBlur: 26 } },
+  { id: 'thin', label: 'Elegante', sample: 'Elegante', style: { fontSize: 84, bold: false, italic: true, color: '#f5f0e6' } },
 ];
 
 function download(name: string, text: string, type: string) {
@@ -82,7 +87,7 @@ export function TextPanel() {
       <ul className="grid grid-cols-2 gap-2">
         {PRESETS.map((p) => (
           <li key={p.id}>
-            <button type="button" onClick={() => addText(p.sample, p.style)} className="flex h-16 w-full items-center justify-center overflow-hidden rounded-lg border border-line bg-bg px-1 hover:border-accent/60" aria-label={`Adicionar texto ${p.label}`}>
+            <button type="button" onClick={() => addText(p.sample, p.style)} className="card card-hover flex h-16 w-full items-center justify-center overflow-hidden px-1" aria-label={`Adicionar texto ${p.label}`}>
               <span
                 className="max-w-full truncate"
                 style={{
@@ -91,7 +96,7 @@ export function TextPanel() {
                   color: p.style.gradientTo ? 'transparent' : (p.style.color ?? '#fff'),
                   backgroundImage: p.style.gradientTo ? `linear-gradient(${p.style.color},${p.style.gradientTo})` : undefined,
                   WebkitBackgroundClip: p.style.gradientTo ? 'text' : undefined,
-                  textShadow: p.style.shadowBlur ? `0 0 ${p.style.shadowBlur / 2}px ${p.style.shadowColor ?? '#000'}` : p.style.strokeWidth ? '1px 1px 0 #000,-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000' : undefined,
+                  textShadow: p.style.shadowX || p.style.shadowY ? `${(p.style.shadowX ?? 0) / 8}px ${(p.style.shadowY ?? 0) / 8}px ${(p.style.shadowBlur ?? 0) / 2}px ${p.style.shadowColor ?? '#000'}` : p.style.shadowBlur ? `0 0 ${p.style.shadowBlur / 2}px ${p.style.shadowColor ?? '#000'}` : p.style.strokeWidth ? '1px 1px 0 #000,-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000' : undefined,
                   background: p.style.background ? p.style.background : undefined,
                   padding: p.style.background ? '2px 6px' : undefined,
                 }}
