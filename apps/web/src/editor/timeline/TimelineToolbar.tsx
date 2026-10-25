@@ -4,6 +4,7 @@ import { findClip, type TrackKind } from '@editor/core';
 import { Icon, type IconName } from '../../components/Icon';
 import { MAX_ZOOM, MIN_ZOOM, selectCanRedo, selectCanUndo, useEditor } from '../../store/editor';
 import { toast } from '../../store/toasts';
+import { MarkersPopover } from './MarkersPopover';
 
 function Tool({ icon, label, onClick, disabled, pressed, shortcut }: { icon: IconName; label: string; onClick: () => void; disabled?: boolean; pressed?: boolean; shortcut?: string }) {
   return (
@@ -46,6 +47,7 @@ export function TimelineToolbar() {
       <Tool icon="group" label="Agrupar clipes" shortcut="Ctrl+G" onClick={() => s.group(s.selection)} disabled={s.selection.length < 2} />
       <Tool icon="snowflake" label="Congelar quadro" onClick={() => one && s.freeze(one.id)} disabled={!isVideoMedia} />
       <Tool icon="flag" label="Adicionar marcador" shortcut="M" onClick={s.addMarkerAtPlayhead} />
+      <MarkersPopover />
       <Tool icon="minimize" label="Fechar espaços vazios da faixa selecionada" onClick={() => (s.selectedTrackId ? s.closeGaps(s.selectedTrackId) : toast.info('Clique no cabeçalho de uma faixa para selecioná-la'))} />
       <Sep />
       <Tool icon="magnet" label="Ímã (snap)" shortcut="N" onClick={s.toggleSnapping} pressed={s.snapping} />
