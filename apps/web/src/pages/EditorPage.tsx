@@ -5,6 +5,7 @@ import type { MediaItem, ProjectDoc } from '../api/types';
 import { Icon } from '../components/Icon';
 import { CommandPalette } from '../editor/CommandPalette';
 import { ExportDialog } from '../editor/ExportDialog';
+import { VersionsDialog } from '../editor/VersionsDialog';
 import { AiPanel } from '../editor/panels/AiPanel';
 import { AnimationsPanel } from '../editor/panels/AnimationsPanel';
 import { AudioPanel } from '../editor/panels/AudioPanel';
@@ -74,6 +75,13 @@ export function EditorPage() {
   };
 
   // A paleta de comandos pede para abrir um painel (e ele precisa estar visível).
+  const [versionsOpen, setVersionsOpen] = useState(false);
+  useEffect(() => {
+    const open = () => setVersionsOpen(true);
+    window.addEventListener('editor:open-versions', open);
+    return () => window.removeEventListener('editor:open-versions', open);
+  }, []);
+
   useEffect(() => {
     const open = () => setPanelOpen(true);
     window.addEventListener('editor:open-panel', open);
@@ -219,6 +227,7 @@ export function EditorPage() {
       </div>
 
       <ExportDialog projectId={id} open={exporting} onClose={() => setExporting(false)} />
+      <VersionsDialog projectId={id} open={versionsOpen} onClose={() => setVersionsOpen(false)} />
       <ShortcutsDialog open={help} onClose={() => setHelp(false)} />
       <CommandPalette open={palette} onClose={() => setPalette(false)} onExport={() => setExporting(true)} onHelp={openHelp} />
     </div>
