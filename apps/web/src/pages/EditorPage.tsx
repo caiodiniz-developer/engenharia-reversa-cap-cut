@@ -2,10 +2,14 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api, ApiError } from '../api/client';
 import type { MediaItem, ProjectDoc } from '../api/types';
-import { Icon, type IconName } from '../components/Icon';
+import { Icon } from '../components/Icon';
+import { CommandPalette } from '../editor/CommandPalette';
 import { ExportDialog } from '../editor/ExportDialog';
 import { AiPanel } from '../editor/panels/AiPanel';
+import { AnimationsPanel } from '../editor/panels/AnimationsPanel';
+import { AudioPanel } from '../editor/panels/AudioPanel';
 import { EffectsPanel } from '../editor/panels/EffectsPanel';
+import { ElementsPanel } from '../editor/panels/ElementsPanel';
 import { MediaPanel } from '../editor/panels/MediaPanel';
 import { TextPanel } from '../editor/panels/TextPanel';
 import { TransitionsPanel } from '../editor/panels/TransitionsPanel';
@@ -14,20 +18,13 @@ import { Preview } from '../editor/Preview';
 import { Properties } from '../editor/props/Properties';
 import { Timeline } from '../editor/timeline/Timeline';
 import { TopBar } from '../editor/TopBar';
+import { TOOLS, ToolRail } from '../editor/ToolRail';
 import { useShortcuts } from '../editor/useShortcuts';
 import { Divider, useResizable } from '../editor/useResizable';
-import { useEditor, type PanelTab } from '../store/editor';
+import { useEditor } from '../store/editor';
 import { bindEvents } from '../store/jobs';
 import { recoverDraft, reloadFromServer, saveNow, startAutosave } from '../store/persist';
 import { toast } from '../store/toasts';
-
-const TABS: Array<{ id: PanelTab; label: string; icon: IconName }> = [
-  { id: 'media', label: 'Mídia', icon: 'film' },
-  { id: 'effects', label: 'Efeitos', icon: 'wand' },
-  { id: 'transitions', label: 'Transições', icon: 'shuffle' },
-  { id: 'text', label: 'Texto', icon: 'type' },
-  { id: 'ai', label: 'IA', icon: 'sparkles' },
-];
 
 async function loadAllMedia(projectId: string): Promise<MediaItem[]> {
   const out: MediaItem[] = [];
@@ -40,20 +37,48 @@ async function loadAllMedia(projectId: string): Promise<MediaItem[]> {
   return out;
 }
 
+function loadFlag(key: string, fallback: boolean): boolean {
+  try {
+    const v = localStorage.getItem(`editor.layout.${key}`);
+    return v === null ? fallback : v === '1';
+  } catch {
+    return fallback;
+  }
+}
+
 export function EditorPage() {
   const { id = '' } = useParams();
   const [state, setState] = useState<'loading' | 'ready' | 'missing' | 'error'>('loading');
   const [exporting, setExporting] = useState(false);
   const [help, setHelp] = useState(false);
+  const [palette, setPalette] = useState(false);
   const [propsOpen, setPropsOpen] = useState(false);
+  const [panelOpen, setPanelOpen] = useState(() => loadFlag('panelOpen', true));
   const panel = useEditor((s) => s.panel);
   const setPanel = useEditor((s) => s.setPanel);
   const saveState = useEditor((s) => s.saveState);
-  const left = useResizable('left', 300, 240, 480, 'x');
-  const right = useResizable('right', 320, 260, 520, 'x', true);
-  const timeline = useResizable('timeline', 300, 160, 640, 'y', true);
+  const left = useResizable('left', 320, 260, 520, 'x');
+  const right = useResizable('right', 330, 280, 520, 'x', true);
+  const timeline = useResizable('timeline', 320, 180, 680, 'y', true);
   const openHelp = useCallback(() => setHelp(true), []);
-  useShortcuts(openHelp);
+  const openPalette = useCallback(() => setPalette(true), []);
+  useShortcuts(openHelp, openPalette);
+
+  const togglePanel = (open: boolean) => {
+    setPanelOpen(open);
+    try {
+      localStorage.setItem('editor.layout.panelOpen', open ? '1' : '0');
+    } catch {
+      /* ignora */
+    }
+  };
+
+  // A paleta de comandos pede para abrir um painel (e ele precisa estar visível).
+  useEffect(() => {
+    const open = () => setPanelOpen(true);
+    window.addEventListener('editor:open-panel', open);
+    return () => window.removeEventListener('editor:open-panel', open);
+  }, []);
 
   useEffect(() => {
     let alive = true;
@@ -97,8 +122,8 @@ export function EditorPage() {
 
   if (state === 'loading') {
     return (
-      <div className="flex h-full items-center justify-center text-xs text-mute" role="status">
-        Abrindo projeto…
+      <div className="flex h-full items-center justify-center gap-3 text-xs text-mute" role="status">
+        <span className="h-4 w-4 animate-spin rounded-full border-2 border-line border-t-accent" /> Abrindo projeto…
       </div>
     );
   }
@@ -114,9 +139,11 @@ export function EditorPage() {
     );
   }
 
+  const tool = TOOLS.find((t) => t.id === panel)!;
+
   return (
-    <div className="flex h-full flex-col" data-testid="editor">
-      <TopBar onExport={() => setExporting(true)} onHelp={openHelp} onToggleProps={() => setPropsOpen(!propsOpen)} />
+    <div className="flex h-full flex-col bg-bg" data-testid="editor">
+      <TopBar onExport={() => setExporting(true)} onHelp={openHelp} onPalette={openPalette} onToggleProps={() => setPropsOpen(!propsOpen)} />
 
       {saveState === 'conflict' && (
         <div className="flex items-center gap-3 border-b border-danger/40 bg-danger/10 px-4 py-2 text-xs" role="alert">
@@ -140,32 +167,47 @@ export function EditorPage() {
       )}
 
       <div className="flex min-h-0 flex-1 flex-col">
-        <div className="flex min-h-0 flex-1">
-          <aside className="flex shrink-0 flex-col bg-panel" style={{ width: left.size }} aria-label="Biblioteca e ferramentas">
-            <div className="flex shrink-0 border-b border-line" role="tablist" aria-label="Painéis">
-              {TABS.map((t) => (
-                <button key={t.id} type="button" role="tab" aria-selected={panel === t.id} aria-controls="left-panel" onClick={() => setPanel(t.id)} className={`flex flex-1 flex-col items-center gap-0.5 border-b-2 py-2 text-2xs transition-colors ${panel === t.id ? 'border-accent text-ink' : 'border-transparent text-mute hover:text-ink'}`} title={t.label} data-testid={`tab-${t.id}`}>
-                  <Icon name={t.icon} size={16} />
-                  <span className="max-w-full truncate px-0.5">{t.label}</span>
-                </button>
-              ))}
-            </div>
-            <div id="left-panel" role="tabpanel" className="min-h-0 flex-1">
-              {panel === 'media' && <MediaPanel projectId={id} />}
-              {panel === 'effects' && <EffectsPanel />}
-              {panel === 'transitions' && <TransitionsPanel />}
-              {panel === 'text' && <TextPanel />}
-              {panel === 'ai' && <AiPanel projectId={id} />}
-            </div>
-          </aside>
-          <Divider axis="x" onPointerDown={left.startDrag} onNudge={left.nudge} label="Redimensionar painel esquerdo" />
+        <div className="relative flex min-h-0 flex-1">
+          <ToolRail
+            value={panel}
+            onChange={(t) => {
+              setPanel(t);
+              togglePanel(true);
+            }}
+          />
+
+          {panelOpen && (
+            <>
+              <aside className="flex shrink-0 flex-col bg-panel" style={{ width: left.size }} aria-label="Biblioteca e ferramentas">
+                <header className="flex h-11 shrink-0 items-center justify-between border-b border-line px-3">
+                  <div className="min-w-0">
+                    <h2 className="truncate text-sm font-semibold">{tool.label}</h2>
+                  </div>
+                  <button type="button" className="btn-icon" aria-label="Recolher painel" title="Recolher painel" onClick={() => togglePanel(false)}>
+                    <Icon name="chevronDown" size={15} style={{ transform: 'rotate(90deg)' }} />
+                  </button>
+                </header>
+                <div id="left-panel" role="tabpanel" className="min-h-0 flex-1">
+                  {panel === 'media' && <MediaPanel projectId={id} />}
+                  {panel === 'audio' && <AudioPanel projectId={id} />}
+                  {panel === 'text' && <TextPanel />}
+                  {panel === 'effects' && <EffectsPanel />}
+                  {panel === 'transitions' && <TransitionsPanel />}
+                  {panel === 'animations' && <AnimationsPanel />}
+                  {panel === 'elements' && <ElementsPanel projectId={id} />}
+                  {panel === 'ai' && <AiPanel projectId={id} />}
+                </div>
+              </aside>
+              <Divider axis="x" onPointerDown={left.startDrag} onNudge={left.nudge} label="Redimensionar painel esquerdo" />
+            </>
+          )}
 
           <main className="min-w-0 flex-1" aria-label="Pré-visualização">
             <Preview />
           </main>
 
           <Divider axis="x" onPointerDown={right.startDrag} onNudge={(d) => right.nudge(-d)} label="Redimensionar painel de propriedades" />
-          <aside className={`${propsOpen ? 'absolute bottom-0 right-0 top-12 z-40 shadow-2xl' : 'hidden'} shrink-0 bg-panel lg:static lg:block lg:shadow-none`} style={{ width: right.size }} aria-label="Propriedades">
+          <aside className={`${propsOpen ? 'absolute bottom-0 right-0 top-0 z-40 shadow-pop' : 'hidden'} shrink-0 bg-panel lg:static lg:block lg:shadow-none`} style={{ width: right.size }} aria-label="Propriedades">
             <Properties />
           </aside>
         </div>
@@ -178,6 +220,7 @@ export function EditorPage() {
 
       <ExportDialog projectId={id} open={exporting} onClose={() => setExporting(false)} />
       <ShortcutsDialog open={help} onClose={() => setHelp(false)} />
+      <CommandPalette open={palette} onClose={() => setPalette(false)} onExport={() => setExporting(true)} onHelp={openHelp} />
     </div>
   );
 }
