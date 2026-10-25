@@ -221,7 +221,7 @@ export function AiPanel({ projectId }: { projectId: string }) {
       )}
 
       {external && (
-        <label className="m-3 flex items-start gap-2 rounded-lg border border-line bg-panel2 p-3 text-2xs leading-snug text-mute">
+        <label className="m-3 flex items-start gap-2 card p-3 text-2xs leading-snug text-mute">
           <input type="checkbox" className="mt-0.5 accent-accent" checked={consent} onChange={(e) => void updateSettings({ aiConsent: e.target.checked })} />
           <span>
             Autorizo enviar o áudio/dados do projeto aos provedores externos de IA configurados no servidor (
@@ -259,7 +259,7 @@ export function AiPanel({ projectId }: { projectId: string }) {
           </button>
         </div>
         {silences && (
-          <div className="mt-3 rounded-lg border border-line bg-panel2 p-2 text-2xs">
+          <div className="mt-3 card p-2 text-2xs">
             <p className="mb-1 font-medium">{silences.length} silêncios{silences.length ? ` (${silences.reduce((n, r) => n + r.end - r.start, 0).toFixed(1)} s no total)` : ''}</p>
             <ul className="mb-2 max-h-24 overflow-auto font-mono text-mute">
               {silences.map((r, i) => (
@@ -281,7 +281,7 @@ export function AiPanel({ projectId }: { projectId: string }) {
           Detectar trocas de cena
         </button>
         {scenes && (
-          <div className="mt-3 rounded-lg border border-line bg-panel2 p-2 text-2xs">
+          <div className="mt-3 card p-2 text-2xs">
             <p className="mb-1 font-medium">{scenes.length} trocas: {scenes.slice(0, 8).map((t) => `${t.toFixed(1)}s`).join(', ')}{scenes.length > 8 ? '…' : ''}</p>
             <button type="button" className="btn w-full" disabled={!scenes.length || !targetClip} onClick={markScenes}>
               Marcar na timeline
@@ -302,7 +302,7 @@ export function AiPanel({ projectId }: { projectId: string }) {
         </button>
         <p className="mt-2 text-2xs text-mute">Heurística baseada em energia do áudio, pausas e trocas de cena. É uma sugestão, não uma garantia de qualidade.</p>
         {highlights && (
-          <div className="mt-3 rounded-lg border border-line bg-panel2 p-2 text-2xs">
+          <div className="mt-3 card p-2 text-2xs">
             {highlights.length === 0 ? (
               <p>Nada sugerido para esta mídia.</p>
             ) : (
@@ -334,7 +334,7 @@ export function AiPanel({ projectId }: { projectId: string }) {
               <Icon name="wand" size={14} /> Gerar proposta
             </button>
             {proposal && (
-              <div className="mt-3 rounded-lg border border-line bg-panel2 p-2 text-2xs" data-testid="proposal">
+              <div className="mt-3 card p-2 text-2xs" data-testid="proposal">
                 <p className="mb-1 text-xs font-medium">{proposal.summary}</p>
                 <p className="text-mute">
                   {proposal.applied} de {proposal.ops.length} operações são válidas.
@@ -384,7 +384,7 @@ export function AiPanel({ projectId }: { projectId: string }) {
             </button>
           </div>
           {text && (
-            <div className="mt-3 rounded-lg border border-line bg-panel2 p-2 text-xs">
+            <div className="mt-3 card p-2 text-xs">
               <p className="mb-1 text-2xs font-semibold uppercase text-mute">{text.kind}</p>
               {text.lines.map((l, i) => (
                 <p key={i} className="mb-1">
