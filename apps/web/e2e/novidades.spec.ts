@@ -326,6 +326,17 @@ test.describe('timeline e preview', () => {
     await expect(page.getByTestId('file-input')).toBeAttached();
   });
 
+  test('novas predefinições de texto: Terço inferior entra alinhado à esquerda e com fundo', async ({ page }) => {
+    await withClip(page);
+    await page.getByTestId('tab-text').click();
+    await page.getByRole('button', { name: 'Adicionar texto Terço inferior' }).click();
+    await expect.poll(async () => (await clipsOf(page)).filter((c) => c.type === 'text').length).toBe(1);
+    const text = (await projectOf(page)).tracks.flatMap((t) => t.clips).find((c) => c.type === 'text') as unknown as { text: string; style: { align: string; background?: string; fontSize: number } };
+    expect(text.text).toBe('Nome Sobrenome');
+    expect(text.style).toMatchObject({ align: 'left', fontSize: 56 });
+    expect(text.style.background).toBeTruthy();
+  });
+
   test('propriedades em abas conforme o tipo do clipe', async ({ page }) => {
     await withClip(page);
     const props = page.getByTestId('properties');
