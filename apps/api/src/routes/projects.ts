@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { createProject, migrateProject, ProjectSettingsSchema, SCHEMA_VERSION, type Project } from '@editor/core';
+import { createProject, migrateProject, newId, projectDuration, ProjectSettingsSchema, SCHEMA_VERSION, type Project } from '@editor/core';
 import { HttpError, h, json, notFound, ownedProject, parse, requireAuth, type AppContext } from '../http';
+import { mediaUrl } from './media';
 
 const Create = z.object({
   name: z.string().trim().min(1).max(120).default('Projeto sem título'),
@@ -16,6 +17,20 @@ const Save = z.object({
 });
 
 const SnapshotBody = z.object({ label: z.string().trim().max(100).default('') });
+
+/** Resumo guardado na linha do projeto para listagens rápidas (sem carregar o documento inteiro). */
+export function projectMeta(doc: Project) {
+  return {
+    duration: Math.round(projectDuration(doc) * 100) / 100,
+    width: doc.settings.width,
+    height: doc.settings.height,
+    fps: doc.settings.fps,
+    clips: doc.tracks.reduce((n, t) => n + t.clips.length, 0),
+    tracks: doc.tracks.length,
+  };
+}
+
+const Duplicate = z.object({ name: z.string().trim().min(1).max(120).optional() });
 
 const AUTO_SNAPSHOT_EVERY = 10;
 const MAX_VERSIONS = 50;
@@ -51,10 +66,20 @@ export function projectRoutes(ctx: AppContext): Router {
       const rows = await ctx.db.project.findMany({
         where: { ownerId: req.userId },
         orderBy: { updatedAt: 'desc' },
-        select: { id: true, name: true, revision: true, updatedAt: true, createdAt: true },
+        select: { id: true, name: true, revision: true, updatedAt: true, createdAt: true, meta: true },
         take: 200,
       });
-      res.json({ projects: rows });
+      // Capa: miniatura da primeira mídia (vídeo ou imagem) que já tem miniatura.
+      const covers = rows.length
+        ? await ctx.db.media.findMany({
+            where: { projectId: { in: rows.map((r) => r.id) }, thumbKey: { not: null } },
+            orderBy: { createdAt: 'asc' },
+            distinct: ['projectId'],
+            select: { id: true, projectId: true },
+          })
+        : [];
+      const coverOf = new Map(covers.map((c) => [c.projectId, mediaUrl(ctx, c.id, 'thumb', req.userId)]));
+      res.json({ projects: rows.map((r) => ({ ...r, cover: coverOf.get(r.id) ?? null })) });
     }),
   );
 
@@ -64,7 +89,7 @@ export function projectRoutes(ctx: AppContext): Router {
       const body = parse(Create, req.body ?? {});
       const doc = createProject(body.name, body.settings);
       const row = await ctx.db.project.create({
-        data: { id: doc.id, ownerId: req.userId, name: body.name, data: doc as object, schemaVersion: SCHEMA_VERSION },
+        data: { id: doc.id, ownerId: req.userId, name: body.name, data: doc as object, schemaVersion: SCHEMA_VERSION, meta: projectMeta(doc) },
       });
       res.status(201).json({ project: { id: row.id, name: row.name, revision: row.revision, data: doc } });
     }),
@@ -91,7 +116,7 @@ export function projectRoutes(ctx: AppContext): Router {
       // Atualização condicional: só grava se ninguém salvou depois da revisão-base.
       const res1 = await ctx.db.project.updateMany({
         where: { id: existing.id, ownerId: req.userId, revision: body.baseRevision },
-        data: { data: { ...doc, name } as object, name, schemaVersion: SCHEMA_VERSION, revision: next },
+        data: { data: { ...doc, name } as object, name, schemaVersion: SCHEMA_VERSION, revision: next, meta: projectMeta(doc) },
       });
       if (res1.count === 0) {
         const cur = await ctx.db.project.findUnique({ where: { id: existing.id }, select: { revision: true } });
@@ -99,6 +124,76 @@ export function projectRoutes(ctx: AppContext): Router {
       }
       if (next % AUTO_SNAPSHOT_EVERY === 0) await snapshot(ctx, existing.id, next, doc, 'Salvamento automático');
       res.json({ revision: next });
+    }),
+  );
+
+  /** Duplica o projeto: documento, mídias (registros e arquivos) e ids remapeados. Não copia histórico nem exportações. */
+  r.post(
+    '/:id/duplicate',
+    h(async (req, res) => {
+      const body = parse(Duplicate, req.body ?? {});
+      const src = await ownedProject(ctx, req.params.id!, req.userId);
+      const doc = migrateProject(src.data);
+      const name = body.name ?? `${src.name} (cópia)`.slice(0, 120);
+      const newProjectId = newId('prj');
+      const rows = await ctx.db.media.findMany({ where: { projectId: src.id } });
+
+      // 1) registros: projeto novo + uma linha de mídia nova para cada original (ids remapeados)
+      const idMap = new Map<string, string>();
+      await ctx.db.$transaction(async (tx) => {
+        await tx.project.create({ data: { id: newProjectId, ownerId: req.userId, name, data: { ...doc, id: newProjectId, name } as object, schemaVersion: SCHEMA_VERSION } });
+        for (const m of rows) {
+          const nm = await tx.media.create({
+            data: {
+              projectId: newProjectId, ownerId: req.userId, originalName: m.originalName, mime: m.mime, size: m.size, kind: m.kind,
+              duration: m.duration, width: m.width, height: m.height, fps: m.fps, hasAudio: m.hasAudio, storageKey: 'pending', status: m.status, error: m.error,
+            },
+          });
+          idMap.set(m.id, nm.id);
+        }
+      });
+
+      // 2) arquivos: copia cada variante para a pasta da nova mídia e grava as chaves novas
+      try {
+        for (const m of rows) {
+          const nid = idMap.get(m.id)!;
+          const base = `projects/${newProjectId}/media/${nid}`;
+          const mapKey = async (key: string | null | undefined): Promise<string | null> => {
+            if (!key) return null;
+            const dst = `${base}/${key.split('/').pop()}`;
+            await ctx.store.copy(key, dst);
+            return dst;
+          };
+          const film = m.film as { key: string } | null;
+          const filmKey = await mapKey(film?.key);
+          await ctx.db.media.update({
+            where: { id: nid },
+            data: {
+              storageKey: (await mapKey(m.storageKey))!,
+              proxyKey: await mapKey(m.proxyKey),
+              thumbKey: await mapKey(m.thumbKey),
+              waveformKey: await mapKey(m.waveformKey),
+              film: film && filmKey ? { ...film, key: filmKey } : undefined,
+            },
+          });
+        }
+      } catch (e) {
+        // Não deixa um projeto pela metade: remove a cópia (cascata) e os arquivos já copiados.
+        await ctx.db.project.delete({ where: { id: newProjectId } }).catch(() => {});
+        await ctx.store.deletePrefix(`projects/${newProjectId}`).catch(() => {});
+        throw e;
+      }
+
+      // 3) documento com os ids de mídia remapeados
+      const remapped: Project = {
+        ...doc,
+        id: newProjectId,
+        name,
+        media: Object.fromEntries(Object.entries(doc.media).map(([id, a]) => [idMap.get(id) ?? id, { ...a, id: idMap.get(id) ?? id }])),
+        tracks: doc.tracks.map((t) => ({ ...t, clips: t.clips.map((c) => (c.type === 'media' ? { ...c, mediaId: idMap.get(c.mediaId) ?? c.mediaId } : c)) })),
+      };
+      await ctx.db.project.update({ where: { id: newProjectId }, data: { data: remapped as object, meta: projectMeta(remapped) } });
+      res.status(201).json({ project: { id: newProjectId, name, revision: 1 } });
     }),
   );
 
@@ -147,7 +242,7 @@ export function projectRoutes(ctx: AppContext): Router {
       await snapshot(ctx, p.id, p.revision, migrateProject(p.data), `Antes de restaurar a revisão ${rev}`);
       const doc = await validateDocument(ctx, p.id, v.data);
       const next = p.revision + 1;
-      await ctx.db.project.update({ where: { id: p.id }, data: { data: doc as object, name: doc.name, revision: next } });
+      await ctx.db.project.update({ where: { id: p.id }, data: { data: doc as object, name: doc.name, revision: next, meta: projectMeta(doc) } });
       res.json(json({ revision: next, data: doc }));
     }),
   );
