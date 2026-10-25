@@ -316,6 +316,44 @@ test.describe('timeline e preview', () => {
   });
 });
 
+test.describe('versões do projeto', () => {
+  test('salva um marco, apaga o clipe e restaura a versão (reversível)', async ({ page }) => {
+    await withClip(page);
+    await waitSaved(page);
+    await page.keyboard.press('Control+k');
+    await page.getByRole('combobox', { name: 'Buscar comandos' }).fill('versoes do projeto');
+    await page.keyboard.press('Enter');
+    const dialog = page.getByRole('dialog', { name: 'Versões do projeto' });
+    await expect(dialog).toBeVisible();
+    await dialog.getByLabel('Nome da versão').fill('Marco A');
+    await dialog.getByTestId('save-version').click();
+    await expect(dialog.getByTestId('version-list')).toContainText('Marco A');
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+
+    // apaga o clipe e confirma que o servidor tem o projeto vazio
+    await page.keyboard.press('Delete');
+    await expect.poll(async () => (await clipsOf(page)).length).toBe(0);
+    await waitSaved(page);
+
+    // reabre pelo histórico e restaura o marco
+    await page.getByRole('button', { name: 'Histórico de operações' }).click();
+    await page.getByRole('button', { name: /Versões salvas do projeto/ }).click();
+    await expect(dialog).toBeVisible();
+    const row = dialog.getByRole('listitem').filter({ hasText: 'Marco A' });
+    await row.getByRole('button', { name: /Restaurar revisão/ }).click();
+    await row.getByRole('button', { name: /Confirmar restauração/ }).click();
+    await expect.poll(async () => (await clipsOf(page)).length).toBe(1);
+    // a restauração guardou o estado anterior (projeto vazio) como nova versão
+    await expect(dialog.getByTestId('version-list')).toContainText('Antes de restaurar');
+    await page.keyboard.press('Escape');
+    // o servidor passa a ter o clipe de volta
+    await waitSaved(page);
+    await page.reload();
+    await expect(page.locator('[data-clip-id]')).toHaveCount(1);
+  });
+});
+
 test.describe('tela de projetos', () => {
   test('modelo "Vertical curto" cria um projeto 9:16 já com título e faixa de legendas', async ({ page }) => {
     await signup(page);
