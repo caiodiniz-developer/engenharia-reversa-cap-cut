@@ -235,6 +235,30 @@ test.describe('timeline e preview', () => {
     expect(picked).toEqual([clips[0]!.id]);
   });
 
+  test('lista de marcadores: adiciona, renomeia, vai até o marcador e remove', async ({ page }) => {
+    await withClip(page);
+    await seek(page, 1);
+    await page.keyboard.press('m');
+    await seek(page, 3);
+    await page.keyboard.press('m');
+    await page.getByTestId('markers-button').click();
+    const pop = page.getByTestId('markers-popover');
+    await expect(pop.getByRole('listitem')).toHaveCount(2);
+
+    await pop.getByRole('textbox').first().fill('Intro');
+    await pop.getByRole('textbox').first().press('Enter');
+    await expect.poll(async () => (await projectOf(page)).markers[0]!.label).toBe('Intro');
+
+    await seek(page, 0);
+    await pop.getByRole('button', { name: /Ir ao marcador Intro/ }).click();
+    expect(await page.evaluate(() => window.__editor.getState().playhead)).toBeCloseTo(1, 3);
+
+    await pop.getByRole('button', { name: /Remover marcador Intro/ }).click();
+    await expect(pop.getByRole('listitem')).toHaveCount(1);
+    await page.keyboard.press('Escape');
+    await expect(pop).toBeHidden();
+  });
+
   test('salvar o quadro atual gera um PNG válido', async ({ page }) => {
     await withClip(page);
     await seek(page, 1);
