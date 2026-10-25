@@ -23,7 +23,7 @@ export const PASSWORD = 'senha-forte-123';
 
 declare global {
   interface Window {
-    __editor: { getState(): { project: Project; playhead: number; playing: boolean; saveState: string; selection: string[]; serverRevision: number; history: { entries: unknown[]; index: number } } };
+    __editor: { getState(): { project: Project; playhead: number; zoom: number; playing: boolean; saveState: string; selection: string[]; serverRevision: number; history: { entries: unknown[]; index: number } } };
   }
 }
 
