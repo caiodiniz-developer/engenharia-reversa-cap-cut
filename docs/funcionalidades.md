@@ -91,6 +91,7 @@ Cada ✅ aponta o teste que o exercita. "E2E" = Playwright no Chrome com API, Vi
 | Painel lateral recolhível, trilho de ferramentas com rótulos | ✅ | E2E `novidades` |
 | Propriedades em abas conforme o tipo do clipe | ✅ | E2E `novidades` |
 | Fundos de cor sólida e degradês gerados no servidor (viram mídia) | ✅ | API `generated.test`, render `generated.test`, E2E `novidades` |
+| Formas (círculo, quadrado, arredondado, triângulo, estrela, coração, seta, linha) com transparência | ✅ | render `generated.test`+`shapes.test` (transparência na exportação), API `generated.test`, E2E `novidades` |
 | Tira de quadros (miniaturas) nos clipes de vídeo | ✅ | render `filmstrip.test`, API `media.test`, E2E `novidades` |
 | Saltar entre cortes (↑/↓) por bordas de clipes e marcadores | ✅ | core `navigation.test`, E2E `novidades` |
 | Aparar até a cabeça (Q/W), empurrar seleção (Alt+setas), selecionar à direita/esquerda | ✅ | core `navigation.test`, E2E `novidades` |
