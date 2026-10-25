@@ -95,6 +95,7 @@ Cada ✅ aponta o teste que o exercita. "E2E" = Playwright no Chrome com API, Vi
 | Saltar entre cortes (↑/↓) por bordas de clipes e marcadores | ✅ | core `navigation.test`, E2E `novidades` |
 | Aparar até a cabeça (Q/W), empurrar seleção (Alt+setas), selecionar à direita/esquerda | ✅ | core `navigation.test`, E2E `novidades` |
 | Lista de marcadores (ir, renomear, remover) | ✅ | E2E `novidades` |
+| Velocidade do preview (0,25× a 2×; não afeta a exportação) | ✅ | E2E `novidades` (relógio medido); o áudio muda de tom em velocidades extremas no navegador |
 | Fechar espaços vazios de uma faixa | ✅ | core `ops/advanced.test`, E2E `novidades` |
 | Salvar o quadro atual como PNG | ✅ | E2E `novidades` (assinatura PNG verificada) |
 | Modelos de projeto (vertical curto etc.), busca, renomear, duplicar e capa dos projetos | ✅ | web `templates.test`, API `projects.test`, E2E `novidades` |
