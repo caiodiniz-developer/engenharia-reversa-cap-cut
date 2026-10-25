@@ -188,6 +188,53 @@ test.describe('timeline e preview', () => {
     expect(box!.x + box!.width).toBeLessThanOrEqual(tl!.x + tl!.width + 1);
   });
 
+  test('Q/W apara início e fim até a cabeça de reprodução (e o undo desfaz)', async ({ page }) => {
+    const c = await withClip(page);
+    await seek(page, 2);
+    await page.keyboard.press('w');
+    await expect.poll(async () => (await clipsOf(page))[0]!.duration).toBeCloseTo(2, 3);
+    await seek(page, 1);
+    await page.keyboard.press('q');
+    const [after] = await clipsOf(page);
+    expect(after!.start).toBeCloseTo(1, 3);
+    expect(after!.duration).toBeCloseTo(1, 3);
+    expect(after!.sourceIn).toBeCloseTo(1, 3);
+    await page.keyboard.press('Control+z');
+    const [undone] = await clipsOf(page);
+    expect(undone!.start).toBeCloseTo(0, 3);
+    expect(c.id).toBe(undone!.id);
+  });
+
+  test('Alt+setas empurram a seleção por quadro e por segundo', async ({ page }) => {
+    await withClip(page);
+    const fps = await page.evaluate(() => window.__editor.getState().project.settings.fps);
+    await page.keyboard.press('Alt+ArrowRight');
+    await expect.poll(async () => (await clipsOf(page))[0]!.start).toBeCloseTo(1 / fps, 4);
+    await page.keyboard.press('Alt+Shift+ArrowRight');
+    await expect.poll(async () => (await clipsOf(page))[0]!.start).toBeCloseTo(1 + 1 / fps, 4);
+    await page.keyboard.press('Alt+ArrowLeft');
+    await expect.poll(async () => (await clipsOf(page))[0]!.start).toBeCloseTo(1, 4);
+  });
+
+  test('a paleta seleciona os clipes à direita e à esquerda da cabeça', async ({ page }) => {
+    await withClip(page);
+    await seek(page, 2);
+    await page.keyboard.press('s');
+    await expect.poll(async () => (await clipsOf(page)).length).toBe(2);
+    await seek(page, 2);
+    const sel = () => page.evaluate(() => window.__editor.getState().selection.length);
+    await page.keyboard.press('Control+k');
+    await page.getByRole('combobox', { name: 'Buscar comandos' }).fill('selecionar clipes a direita');
+    await page.keyboard.press('Enter');
+    expect(await sel()).toBe(1);
+    await page.keyboard.press('Control+k');
+    await page.getByRole('combobox', { name: 'Buscar comandos' }).fill('selecionar clipes a esquerda');
+    await page.keyboard.press('Enter');
+    const picked = await page.evaluate(() => window.__editor.getState().selection);
+    const clips = await clipsOf(page);
+    expect(picked).toEqual([clips[0]!.id]);
+  });
+
   test('salvar o quadro atual gera um PNG válido', async ({ page }) => {
     await withClip(page);
     await seek(page, 1);
