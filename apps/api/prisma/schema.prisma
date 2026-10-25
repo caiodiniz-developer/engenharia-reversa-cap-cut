@@ -33,6 +33,8 @@ model Project {
   schemaVersion Int
   /// Incrementa a cada salvamento; usado para controle otimista de concorrência.
   revision      Int      @default(1)
+  /// Resumo para listagens (duração, formato, nº de clipes), recalculado a cada salvamento.
+  meta          Json?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -75,6 +77,8 @@ model Media {
   proxyKey     String?
   thumbKey     String?
   waveformKey  String?
+  /// Tira de quadros para a timeline: { key, count, interval, tileW, tileH }.
+  film         Json?
   /// uploaded | processing | ready | failed
   status       String   @default("processing")
   error        String?
