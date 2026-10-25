@@ -23,6 +23,8 @@ export const SHORTCUTS: Shortcut[] = [
   { keys: 'Ctrl + K', label: 'Abrir a paleta de comandos' },
   { keys: '← / →', label: 'Quadro anterior / próximo' },
   { keys: 'Shift + ← / →', label: 'Voltar / avançar 1 segundo' },
+  { keys: 'Q / W', label: 'Aparar início / fim do clipe até a cabeça de reprodução' },
+  { keys: 'Alt + ← / →', label: 'Empurrar a seleção 1 quadro (com Shift, 1 segundo)' },
   { keys: '↑ / ↓', label: 'Corte anterior / seguinte (bordas de clipes e marcadores)' },
   { keys: 'Home / End', label: 'Ir ao início / ao fim' },
   { keys: 'M', label: 'Adicionar marcador' },
@@ -99,6 +101,10 @@ export function useShortcuts(openHelp: () => void, openPalette: () => void): voi
       } else if (e.key === 'Delete' || e.key === 'Backspace') {
         e.preventDefault();
         s.deleteSelection(e.shiftKey);
+      } else if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+        e.preventDefault();
+        const step = e.shiftKey ? s.project.settings.fps : 1;
+        s.nudgeSelection(e.key === 'ArrowLeft' ? -step : step);
       } else if (e.key === 'ArrowLeft') {
         e.preventDefault();
         e.shiftKey ? s.setPlayhead(s.playhead - 1) : s.stepFrames(-1);
@@ -116,6 +122,10 @@ export function useShortcuts(openHelp: () => void, openPalette: () => void): voi
         s.setPlayhead(projectDuration(s.project));
       } else if (key === 'z' && e.shiftKey) {
         s.fitTimeline();
+      } else if (key === 'q') {
+        s.trimToPlayhead('start');
+      } else if (key === 'w') {
+        s.trimToPlayhead('end');
       } else if (key === 'm') {
         s.addMarkerAtPlayhead();
       } else if (key === 'n') {
