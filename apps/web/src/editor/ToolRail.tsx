@@ -15,7 +15,7 @@ export const TOOLS: Array<{ id: PanelTab; label: string; icon: IconName; title: 
 /** Trilho vertical de ferramentas (ícone + rótulo), como nos editores de vídeo profissionais. */
 export function ToolRail({ value, onChange }: { value: PanelTab; onChange: (t: PanelTab) => void }) {
   return (
-    <nav className="flex w-[68px] shrink-0 flex-col items-stretch gap-0.5 overflow-y-auto border-r border-line bg-panel py-2" role="tablist" aria-label="Ferramentas" aria-orientation="vertical">
+    <nav className="flex w-[78px] shrink-0 flex-col items-stretch gap-0.5 overflow-y-auto border-r border-line bg-panel py-2" role="tablist" aria-label="Ferramentas" aria-orientation="vertical">
       {TOOLS.map((t) => {
         const active = value === t.id;
         return (
@@ -28,11 +28,11 @@ export function ToolRail({ value, onChange }: { value: PanelTab; onChange: (t: P
             title={t.title}
             data-testid={`tab-${t.id}`}
             onClick={() => onChange(t.id)}
-            className={`group relative mx-1.5 flex flex-col items-center gap-1 rounded-lg px-1 py-2 text-2xs font-medium transition-colors ${active ? 'bg-accent/12 text-accent' : 'text-mute hover:bg-panel-3 hover:text-ink'}`}
+            className={`group relative mx-1.5 flex flex-col items-center gap-1 rounded-lg px-0.5 py-2 text-[10px] font-medium transition-colors ${active ? 'bg-accent/12 text-accent' : 'text-mute hover:bg-panel-3 hover:text-ink'}`}
           >
             {active && <span className="absolute -left-1.5 top-2 h-[calc(100%-16px)] w-0.5 rounded-full bg-accent" />}
             <Icon name={t.icon} size={19} />
-            <span className="max-w-full truncate leading-none">{t.label}</span>
+            <span className="leading-none">{t.label}</span>
           </button>
         );
       })}
