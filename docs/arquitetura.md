@@ -64,6 +64,10 @@ Dois pontos não óbvios que os testes de integração descobriram:
 - **Timeline:** DOM + canvas só para a régua (desenha apenas a janela visível). Arrasto com snap, trim, marquee, zoom ancorado no cursor.
 - **Preview:** `PlayerEngine` mantém elementos `<video>/<audio>` como escravos do relógio, mixa com Web Audio (ganho, 3 bandas, pan) e compõe em Canvas 2D (`composeFrame`). Usa o proxy H.264 de 360p gerado no servidor.
 - **Salvamento:** debounce → `PUT` com `baseRevision` (409 em conflito) → rascunho paralelo no IndexedDB → recuperação ao reabrir; offline tenta de novo ao voltar.
+- **Shell do editor:** trilho de ferramentas (`ToolRail`) + painel lateral recolhível + preview + propriedades em abas + timeline. O catálogo de comandos (`editor/commands.ts`) alimenta a paleta (Ctrl+K) e é a fonte única das ações pesquisáveis. O tema vive em `store/theme.ts` (variáveis CSS RGB trocadas por `data-theme`).
+- **Animações:** `packages/core/src/animation.ts` define presets que geram keyframes comuns; a aplicação passa por `useEditor.run`, então desfazer/refazer funcionam sem código especial.
+- **Mídia gerada:** `POST /projects/:id/generated` cria PNGs de fundo com o FFmpeg (`packages/render/src/generated.ts`) e os registra como mídia comum. A tira de quadros (`Media.film`, migração `0002_project_meta_media_film`) é gerada junto com as demais derivadas.
+- **Projetos:** `Project.meta` guarda um resumo (duração, contagem de clipes) para a listagem; a capa é a miniatura da primeira mídia. Duplicar copia o documento e os arquivos de mídia numa transação.
 - **Web Worker:** upload resumível em partes de 8 MB, fora da thread principal.
 
 ## Decisões e desvios do planejamento original
