@@ -31,6 +31,7 @@ import {
   redo,
   removeLut,
   removeMarker,
+  updateMarker,
   removeTrack,
   removeTransition,
   round6,
@@ -192,6 +193,7 @@ interface EditorState {
   moveTrack(id: string, index: number): void;
   addMarkerAtPlayhead(): void;
   removeMarker(id: string): void;
+  renameMarker(id: string, label: string): void;
   setSettings(patch: Partial<ProjectSettings>): void;
   rename(name: string): void;
 }
@@ -703,6 +705,9 @@ export const useEditor = create<EditorState>((set, get) => {
     },
     addMarkerAtPlayhead() {
       get().run('Adicionar marcador', (p) => addMarker(p, get().playhead, `Marcador ${p.markers.length + 1}`).project);
+    },
+    renameMarker(id, label) {
+      get().run('Renomear marcador', (p) => updateMarker(p, id, { label: label.trim().slice(0, 80) }), { coalesceKey: `marker:${id}` });
     },
     removeMarker(id) {
       get().run('Remover marcador', (p) => removeMarker(p, id));
