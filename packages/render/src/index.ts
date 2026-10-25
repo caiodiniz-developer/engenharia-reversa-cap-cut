@@ -6,3 +6,4 @@ export * from './textimage';
 export * from './plan';
 export * from './run';
 export * from './media';
+export * from './generated';
