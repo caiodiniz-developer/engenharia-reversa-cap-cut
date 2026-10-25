@@ -33,6 +33,7 @@ export class PlayerEngine {
   private wallStart = 0;
   private timeStart = 0;
   private wasPlaying = false;
+  private lastRate = 1;
   private disposed = false;
   private unsub: () => void;
   private lastKey = '';
@@ -178,7 +179,7 @@ export class PlayerEngine {
     return { fadeIn, fadeOut };
   }
 
-  private syncClip(slot: Slot, clip: MediaClip, track: Track, t: number, playing: boolean, fps: number, audible: boolean): void {
+  private syncClip(slot: Slot, clip: MediaClip, track: Track, t: number, playing: boolean, fps: number, audible: boolean, rate = 1): void {
     const item = this.getMedia(clip.mediaId);
     if (!item) return;
     const el = slot.el;
@@ -192,7 +193,7 @@ export class PlayerEngine {
       if (!el.paused) el.pause();
       if (!el.seeking && Math.abs(el.currentTime - desired) > 0.5 / fps) el.currentTime = desired;
     } else {
-      el.playbackRate = Math.max(0.0625, Math.min(16, clip.speed));
+      el.playbackRate = Math.max(0.0625, Math.min(16, clip.speed * rate));
       if (Math.abs(el.currentTime - desired) > 0.3 && !el.seeking) el.currentTime = desired;
       if (el.paused) void el.play().catch(() => {});
     }
@@ -234,10 +235,16 @@ export class PlayerEngine {
       this.timeStart = st.playhead;
     }
     this.wasPlaying = st.playing;
+    if (st.rate !== this.lastRate) {
+      // Reancora o relógio para a mudança de velocidade não dar saltos na cabeça de reprodução.
+      this.lastRate = st.rate;
+      this.wallStart = performance.now();
+      this.timeStart = st.playhead;
+    }
 
     let t = st.playhead;
     if (st.playing) {
-      t = this.timeStart + (performance.now() - this.wallStart) / 1000;
+      t = this.timeStart + ((performance.now() - this.wallStart) / 1000) * st.rate;
       if (t >= total) {
         if (st.loop && total > 0) {
           t = 0;
@@ -271,7 +278,7 @@ export class PlayerEngine {
           if (slot.el instanceof HTMLMediaElement && !slot.el.seeking && Math.abs(slot.el.currentTime - clip.sourceIn) > 0.1) slot.el.currentTime = clip.sourceIn;
           continue;
         }
-        this.syncClip(slot, clip, track, t, st.playing, fps, true);
+        this.syncClip(slot, clip, track, t, st.playing, fps, true, st.rate);
       }
     }
 
