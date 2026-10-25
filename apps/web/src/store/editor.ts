@@ -53,6 +53,7 @@ import {
   upsertKeyframe,
   removeKeyframeAt,
   clampParams,
+  neighborEdit,
   cuesToCaptionClips,
   type AnimatableProp,
   type CaptionClip,
@@ -121,6 +122,8 @@ interface EditorState {
   setPlaying(v: boolean): void;
   togglePlay(): void;
   stepFrames(n: number): void;
+  /** Pula para o corte (borda de clipe ou marcador) seguinte/anterior. */
+  jumpToEdit(dir: 1 | -1): void;
   setVolume(v: number): void;
   toggleMute(): void;
   toggleLoop(): void;
@@ -322,6 +325,12 @@ export const useEditor = create<EditorState>((set, get) => {
     stepFrames(n) {
       set({ playing: false });
       get().setPlayhead(get().playhead + n / fps());
+    },
+    jumpToEdit(dir) {
+      const t = neighborEdit(get().project, get().playhead, dir, { markers: true });
+      if (t === undefined) return;
+      set({ playing: false });
+      get().setPlayhead(t);
     },
     setVolume(v) {
       set({ volume: Math.max(0, Math.min(1, v)), muted: false });
