@@ -186,4 +186,35 @@ describe('exportação', () => {
     expect(info.duration).toBeGreaterThan(1.9);
     expect(info.duration).toBeLessThan(2.2);
   });
+
+  it('exporta só o áudio em MP3, com o tipo de conteúdo e a extensão corretos', async () => {
+    const u = await registerUser(t);
+    const p = await readyProject(u);
+    const created = await u.post(`/api/projects/${p.id}/exports`, { audioOnly: 'mp3', preset: 'ultrafast' });
+    expect(created.status).toBe(202);
+    await t.built.ctx.queue.onIdle();
+    const dl = await u.get(`/api/exports/${created.body.exportId}/download-url`);
+    const file = await t.http.get(toPath(dl.body.url)).buffer(true).parse((res, cb) => {
+      const chunks: Buffer[] = [];
+      res.on('data', (c: Buffer) => chunks.push(c));
+      res.on('end', () => cb(null, Buffer.concat(chunks)));
+    });
+    expect(file.status).toBe(200);
+    expect(file.headers['content-type']).toBe('audio/mpeg');
+    expect(file.headers['content-disposition']).toContain('.mp3"');
+    const out = path.join(t.dir, 'so-audio.mp3');
+    await writeFile(out, file.body as Buffer);
+    const info = await probeMedia(out);
+    expect(info).toMatchObject({ kind: 'audio', hasAudio: true, audioCodec: 'mp3' });
+    expect(info.videoCodec).toBeUndefined();
+    expect(info.duration).toBeGreaterThan(3.8);
+    expect(info.duration).toBeLessThan(4.3);
+  });
+
+  it('recusa formato de áudio desconhecido', async () => {
+    const u = await registerUser(t);
+    const p = await readyProject(u);
+    const res = await u.post(`/api/projects/${p.id}/exports`, { audioOnly: 'flac' });
+    expect(res.status).toBe(400);
+  });
 });
