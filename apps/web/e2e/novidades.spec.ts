@@ -290,12 +290,18 @@ test.describe('timeline e preview', () => {
     expect(await rate()).toBe(2);
     await expect(btn).toHaveText('2×');
 
+    // mede a razão entre o avanço da cabeça e o tempo real (imune à lentidão de inicialização)
     await seek(page, 0);
     await page.getByTestId('play-button').click();
-    await page.waitForTimeout(1200);
+    await expect.poll(async () => (await page.evaluate(() => window.__editor.getState().playhead)) > 0.2, { timeout: 15_000 }).toBe(true);
+    const sample = () => page.evaluate(() => ({ t: window.__editor.getState().playhead, w: performance.now() / 1000 }));
+    const s1 = await sample();
+    await page.waitForTimeout(1000);
+    const s2 = await sample();
     await page.getByTestId('play-button').click();
-    const head = await page.evaluate(() => window.__editor.getState().playhead);
-    expect(head).toBeGreaterThan(1.6); // 1,2 s reais a 2× ≈ 2,4 s (com folga para a inicialização)
+    const ratio = (s2.t - s1.t) / (s2.w - s1.w);
+    expect(ratio).toBeGreaterThan(1.6);
+    expect(ratio).toBeLessThan(2.4);
     await btn.click();
     expect(await rate()).toBe(0.25);
   });
