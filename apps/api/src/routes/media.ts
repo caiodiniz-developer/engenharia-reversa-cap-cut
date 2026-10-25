@@ -8,7 +8,8 @@ import busboy from 'busboy';
 import { Router } from 'express';
 import type { Media } from '@prisma/client';
 import { z } from 'zod';
-import { probeMedia } from '@editor/render';
+import { migrateProject } from '@editor/core';
+import { probeMedia, renderBackgroundPng } from '@editor/render';
 import { HttpError, h, json, notFound, ownedMedia, ownedProject, parse, requireAuth, type AppContext } from '../http';
 import { sanitizeFilename, signResource, verifyResource } from '../security';
 
@@ -31,6 +32,17 @@ interface UploadMeta {
 }
 
 const MIME_OK = /^(video|audio|image)\//;
+
+const HexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Use o formato #rrggbb');
+const Generate = z.object({
+  kind: z.enum(['solid', 'gradient']),
+  color: HexColor,
+  color2: HexColor.optional(),
+  angle: z.number().min(0).max(360).default(180),
+  width: z.number().int().min(16).max(3840).optional(),
+  height: z.number().int().min(16).max(3840).optional(),
+  name: z.string().trim().max(60).optional(),
+});
 
 export function mediaUrl(ctx: AppContext, mediaId: string, variant: Variant, userId: string): string {
   const { exp, sig } = signResource(ctx.config.signingSecret, `media:${mediaId}:${variant}`, userId, ctx.config.SIGNED_URL_TTL_SECONDS);
@@ -227,6 +239,30 @@ export function mediaRoutes(ctx: AppContext): Router {
         res.status(201).json({ media: presentMedia(ctx, media, req.userId) });
       } finally {
         await rm(dir, { recursive: true, force: true });
+      }
+    }),
+  );
+
+  // ---- Mídias geradas (fundo de cor sólida ou degradê) ----
+  r.post(
+    '/projects/:id/generated',
+    auth,
+    h(async (req, res) => {
+      const body = parse(Generate, req.body);
+      const project = await ownedProject(ctx, req.params.id!, req.userId);
+      if (body.kind === 'gradient' && !body.color2) throw new HttpError(400, 'O degradê precisa de duas cores', 'validation');
+      await assertQuota(project.id);
+      const settings = migrateProject(project.data).settings;
+      const png = renderBackgroundPng({ ...body, width: body.width ?? settings.width, height: body.height ?? settings.height });
+      await mkdir(path.join(ctx.config.tmpDir, 'multipart'), { recursive: true });
+      const tmp = path.join(ctx.config.tmpDir, 'multipart', randomBytes(8).toString('hex'));
+      await writeFile(tmp, png);
+      try {
+        const label = body.name || (body.kind === 'solid' ? `Fundo ${body.color.slice(1).toUpperCase()}` : 'Degradê');
+        const media = await finalize(req.userId, project.id, tmp, `${label}.png`, 'image/png');
+        res.status(201).json({ media: presentMedia(ctx, media, req.userId) });
+      } finally {
+        await rm(tmp, { force: true });
       }
     }),
   );
