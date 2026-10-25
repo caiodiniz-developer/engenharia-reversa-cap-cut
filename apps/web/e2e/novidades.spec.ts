@@ -148,8 +148,9 @@ test.describe('timeline e preview', () => {
       s.moveSelection([id], 5, id);
     }, a!.id);
     expect((await clipsOf(page))[0]!.start).toBe(5);
-    await page.getByTestId('track-header-video').getByRole('button', { name: 'Vídeo 1', exact: true }).click();
-    await page.getByRole('button', { name: 'Fechar espaços vazios da faixa selecionada' }).click();
+    const header = page.getByTestId('track-header-video');
+    await header.hover();
+    await header.getByRole('button', { name: 'Fechar espaços vazios da faixa' }).click();
     expect((await clipsOf(page))[0]!.start).toBe(0);
   });
 
