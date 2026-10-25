@@ -231,7 +231,7 @@ export function AiPanel({ projectId }: { projectId: string }) {
       )}
 
       <div className="px-3 pt-3">
-        <Select label="Mídia de trabalho" value={current} onChange={setMediaId} options={ready.length ? ready.map((m) => ({ value: m.id, label: `${m.name} (${formatDuration(m.duration)})` })) : [{ value: '', label: 'Nenhuma mídia pronta' }]} />
+        <Select label="Mídia" value={current} onChange={setMediaId} options={ready.length ? ready.map((m) => ({ value: m.id, label: `${m.name} (${formatDuration(m.duration)})` })) : [{ value: '', label: 'Nenhuma mídia pronta' }]} />
       </div>
 
       <Section title="Legendas automáticas">
