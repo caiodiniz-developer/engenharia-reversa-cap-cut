@@ -23,3 +23,22 @@ export function neighborEdit(p: Project, time: number, dir: 1 | -1, opts: { mark
   const pts = editPoints(p, opts);
   return dir === 1 ? pts.find((t) => t > time + eps) : [...pts].reverse().find((t) => t < time - eps);
 }
+
+/** Clipes que começam em `time` ou depois (side = 'after') ou que terminam em `time` ou antes (side = 'before'). Ignora faixas bloqueadas. */
+export function clipIdsBySide(p: Project, time: number, side: 'after' | 'before'): string[] {
+  const eps = 1e-6;
+  const ids: string[] = [];
+  for (const t of p.tracks) {
+    if (t.locked) continue;
+    for (const c of t.clips) {
+      if (side === 'after' ? c.start >= time - eps : clipEnd(c) <= time + eps) ids.push(c.id);
+    }
+  }
+  return ids;
+}
+
+/** Clipes que contêm o instante `time` (estritamente dentro). Ignora faixas bloqueadas. */
+export function clipIdsAt(p: Project, time: number): string[] {
+  const eps = 1e-6;
+  return p.tracks.filter((t) => !t.locked).flatMap((t) => t.clips.filter((c) => time > c.start + eps && time < clipEnd(c) - eps).map((c) => c.id));
+}
