@@ -70,6 +70,23 @@ body {
 }
 
 @layer components {
+  /* <details> com o mesmo visual dos cabeçalhos de seção. */
+  .disclosure-summary {
+    @apply cursor-pointer list-none py-1.5 text-xs font-semibold text-ink/90 hover:text-ink;
+  }
+  details > summary::-webkit-details-marker {
+    display: none;
+  }
+  details > .disclosure-summary::before {
+    content: '▸';
+    display: inline-block;
+    margin-right: 6px;
+    color: rgb(var(--mute));
+    transition: transform 0.15s;
+  }
+  details[open] > .disclosure-summary::before {
+    transform: rotate(90deg);
+  }
   .btn {
     @apply inline-flex h-8 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-line bg-panel-2 px-3 text-xs font-medium text-ink transition-colors hover:border-mute/40 hover:bg-panel-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-40;
   }

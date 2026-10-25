@@ -61,14 +61,14 @@ export function TextStyleSection({ clip }: { clip: T }) {
       <NumberField label="Largura máxima" value={st.maxWidth * 100} min={10} max={100} step={1} unit="%" onChange={(v) => set({ maxWidth: v / 100 }, 'Largura do texto', 'mw')} onCommit={commit} />
 
       <details className="mt-1" open={st.strokeWidth > 0}>
-        <summary className="cursor-pointer text-2xs font-semibold uppercase tracking-wide text-mute">Contorno</summary>
+        <summary className="disclosure-summary">Contorno</summary>
         <div className="mt-2">
           <NumberField label="Espessura" value={st.strokeWidth} min={0} max={40} step={0.5} unit="px" onChange={(v) => set({ strokeWidth: v }, 'Contorno', 'sw')} onCommit={commit} />
           <ColorField label="Cor do contorno" value={st.strokeColor} onChange={(v) => set({ strokeColor: v }, 'Cor do contorno', 'sc')} />
         </div>
       </details>
       <details className="mt-1" open={st.shadowBlur > 0 || st.shadowX !== 0 || st.shadowY !== 0}>
-        <summary className="cursor-pointer text-2xs font-semibold uppercase tracking-wide text-mute">Sombra</summary>
+        <summary className="disclosure-summary">Sombra</summary>
         <div className="mt-2">
           <ColorField label="Cor da sombra" value={st.shadowColor} onChange={(v) => set({ shadowColor: v }, 'Cor da sombra', 'shc')} />
           <NumberField label="Desfoque" value={st.shadowBlur} min={0} max={80} step={1} unit="px" onChange={(v) => set({ shadowBlur: v }, 'Sombra', 'shb')} onCommit={commit} />
@@ -77,7 +77,7 @@ export function TextStyleSection({ clip }: { clip: T }) {
         </div>
       </details>
       <details className="mt-1" open={!!st.background}>
-        <summary className="cursor-pointer text-2xs font-semibold uppercase tracking-wide text-mute">Fundo</summary>
+        <summary className="disclosure-summary">Fundo</summary>
         <div className="mt-2">
           <Check label="Caixa de fundo" checked={!!st.background} onChange={(v) => set({ background: v ? '#000000cc' : undefined })} />
           {st.background && <ColorField label="Cor do fundo" value={st.background.slice(0, 7)} onChange={(v) => set({ background: `${v}cc` }, 'Fundo', 'bg')} />}

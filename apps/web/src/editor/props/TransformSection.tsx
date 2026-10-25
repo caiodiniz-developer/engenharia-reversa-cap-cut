@@ -42,7 +42,7 @@ export function TransformSection({ clips }: { clips: Visual[] }) {
       </div>
       {clip.type === 'media' && (
         <details className="mt-2">
-          <summary className="cursor-pointer text-2xs font-semibold uppercase tracking-wide text-mute">Recorte</summary>
+          <summary className="disclosure-summary">Recorte</summary>
           <div className="mt-2">
             {(['l', 't', 'r', 'b'] as const).map((side) => (
               <NumberField

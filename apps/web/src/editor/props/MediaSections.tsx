@@ -87,7 +87,7 @@ export function AudioSection({ clip, hasAudio }: { clip: MediaClip; hasAudio: bo
       <NumberField label="Fade out" value={a.fadeOut} min={0} max={Math.max(0.1, clip.duration)} step={0.1} unit="s" onChange={(v) => set({ fadeOut: v }, 'Fade out', 'fo')} onCommit={() => useEditor.getState().sealDrag()} />
       <NumberField label="Balanço (E ↔ D)" value={a.pan} min={-1} max={1} step={0.05} onChange={(v) => set({ pan: v }, 'Balanço', 'pan')} onCommit={() => useEditor.getState().sealDrag()} />
       <details className="mt-1">
-        <summary className="cursor-pointer text-2xs font-semibold uppercase tracking-wide text-mute">Equalizador</summary>
+        <summary className="disclosure-summary">Equalizador</summary>
         <div className="mt-2">
           {(['bass', 'mid', 'treble'] as const).map((b) => (
             <NumberField key={b} label={{ bass: 'Graves', mid: 'Médios', treble: 'Agudos' }[b]} value={a.eq[b]} min={-24} max={24} step={0.5} unit="dB" onChange={(v) => set({ eq: { ...a.eq, [b]: v } }, 'Equalizar', `eq${b}`)} onCommit={() => useEditor.getState().sealDrag()} />
