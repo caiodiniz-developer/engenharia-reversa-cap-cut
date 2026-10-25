@@ -216,3 +216,23 @@ export function removeRanges(p: Project, clipId: string, ranges: Array<{ start: 
   }
   return next;
 }
+
+/**
+ * Remove os espaços vazios de uma faixa: cada clipe é puxado para encostar no anterior (o primeiro vai para 0).
+ * A sobreposição de transições é preservada.
+ */
+export function closeGaps(p: Project, trackId: string): Project {
+  const track = requireTrack(p, trackId);
+  assertUnlocked(track);
+  const sorted = [...track.clips].sort((a, b) => a.start - b.start);
+  let cursor = 0;
+  const moved: Clip[] = [];
+  for (const c of sorted) {
+    const start = round6(c.type === 'media' && c.transitionIn && moved.length ? Math.max(0, cursor - c.transitionIn.duration) : cursor);
+    moved.push({ ...c, start } as Clip);
+    cursor = round6(start + c.duration);
+  }
+  const out = withTrackClips(p, trackId, () => moved);
+  assertTracksValid(out, [trackId]);
+  return out;
+}
