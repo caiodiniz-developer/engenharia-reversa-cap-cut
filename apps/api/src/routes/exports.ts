@@ -14,11 +14,15 @@ const ExportOptions = z.object({
   height: z.number().int().min(16).max(7680).optional(),
   fps: z.number().min(1).max(60).optional(),
   codec: z.enum(['h264', 'h265', 'vp9']).default('h264'),
+  /** Exporta somente o áudio mixado, neste formato. */
+  audioOnly: z.enum(['mp3', 'wav', 'm4a']).optional(),
   /** 0 = melhor qualidade, 51 = pior. */
   crf: z.number().int().min(14).max(40).default(21),
   preset: z.enum(['ultrafast', 'veryfast', 'fast', 'medium', 'slow']).default('veryfast'),
   range: z.object({ start: z.number().min(0), end: z.number().positive() }).refine((r) => r.end > r.start, 'Intervalo inválido').optional(),
 });
+
+const MIME: Record<string, string> = { '.mp4': 'video/mp4', '.webm': 'video/webm', '.mp3': 'audio/mpeg', '.m4a': 'audio/mp4', '.wav': 'audio/wav' };
 
 function presentJob(job: { id: string; type: string; status: string; progress: number; error: string | null; result: unknown; createdAt: Date; startedAt: Date | null; finishedAt: Date | null }) {
   return { id: job.id, type: job.type, status: job.status, progress: job.progress, error: job.error, result: job.result, createdAt: job.createdAt, startedAt: job.startedAt, finishedAt: job.finishedAt };
@@ -113,7 +117,7 @@ export function exportRoutes(ctx: AppContext): Router {
       const size = await ctx.store.size(e.outputKey);
       if (size === undefined) throw notFound('Arquivo');
       const ext = path.extname(e.outputKey);
-      res.setHeader('Content-Type', ext === '.webm' ? 'video/webm' : 'video/mp4');
+      res.setHeader('Content-Type', MIME[ext] ?? 'application/octet-stream');
       res.setHeader('Content-Length', size);
       res.setHeader('Content-Disposition', contentDisposition(`${sanitizeFilename(e.project.name)}${ext}`));
       await pipeline(ctx.store.stream(e.outputKey), res);
