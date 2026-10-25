@@ -2,6 +2,8 @@ import { mkdir, rm, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { detectBeats, migrateProject, type Project } from '@editor/core';
 import {
+  createFilmstrip,
+  filmstripSpec,
   createProxy,
   detectScenes,
   detectSilenceFfmpeg,
@@ -35,6 +37,7 @@ export function registerJobs(ctx: AppContext): void {
       const src = store.localPath(media.storageKey);
       try {
         const patch: { thumbKey?: string; waveformKey?: string; proxyKey?: string } = {};
+        let film: { key: string; count: number; interval: number; tileW: number; tileH: number } | undefined;
         if (media.kind !== 'audio') {
           const thumb = `${base}/thumb.jpg`;
           await mkdir(path.dirname(store.localPath(thumb)), { recursive: true });
@@ -53,8 +56,13 @@ export function registerJobs(ctx: AppContext): void {
           const proxy = `${base}/proxy.mp4`;
           await createProxy(src, store.localPath(proxy), 360);
           patch.proxyKey = proxy;
+          // Tira de quadros para a timeline; usa o proxy (360p) por ser bem mais rápido de decodificar.
+          const spec = filmstripSpec(media.duration, media.width, media.height);
+          const filmKey = `${base}/film.jpg`;
+          await createFilmstrip(store.localPath(proxy), store.localPath(filmKey), spec);
+          film = { key: filmKey, ...spec };
         }
-        await db.media.update({ where: { id: media.id }, data: { ...patch, status: 'ready', error: null } });
+        await db.media.update({ where: { id: media.id }, data: { ...patch, ...(film ? { film } : {}), status: 'ready', error: null } });
         events.emit(media.ownerId, { type: 'media', mediaId: media.id, projectId: media.projectId, status: 'ready' });
       } catch (err) {
         const message = err instanceof Error ? err.message.slice(0, 500) : String(err);
