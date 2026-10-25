@@ -118,6 +118,22 @@ test.describe('animações, elementos e áudio', () => {
     await expect.poll(async () => Object.keys((await projectOf(page)).media).length, { timeout: 30_000 }).toBe(2);
   });
 
+  test('forma: gera o PNG transparente, entra numa faixa nova no topo e o preview mostra o fundo nos cantos', async ({ page }) => {
+    await withClip(page, media.blue);
+    await seek(page, 1);
+    await page.getByTestId('tab-elements').click();
+    await page.getByRole('radio', { name: 'Formas' }).click();
+    await page.getByRole('button', { name: 'Forma Círculo' }).click();
+    await expect.poll(async () => (await projectOf(page)).tracks.length, { timeout: 30_000 }).toBe(2);
+    const proj = await projectOf(page);
+    expect(proj.tracks[0]!.kind).toBe('video'); // faixa nova no topo
+    expect(proj.tracks[0]!.clips[0]!.start).toBeCloseTo(1, 2);
+    expect(Object.values(proj.media).some((m) => m.name.startsWith('Círculo'))).toBe(true);
+    await seek(page, 1.5);
+    await expect.poll(async () => near(await previewPixel(page), [255, 255, 255], 40), { timeout: 20_000 }).toBe(true);
+    expect(near(await previewPixel(page, 0.03, 0.05), [0, 0, 255], 50)).toBe(true); // canto: vídeo azul por baixo
+  });
+
   test('gravar voz: grava com o microfone, envia e coloca na faixa de áudio', async ({ page }) => {
     await signup(page);
     await newProject(page, 'Voz');
