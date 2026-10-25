@@ -28,6 +28,7 @@ export const SHORTCUTS: Shortcut[] = [
   { keys: 'M', label: 'Adicionar marcador' },
   { keys: 'N', label: 'Ligar/desligar ímã (snap)' },
   { keys: '+ / −', label: 'Aumentar / diminuir zoom da timeline' },
+  { keys: 'Shift + Z', label: 'Ajustar o projeto à largura da timeline' },
   { keys: 'Ctrl + roda do mouse', label: 'Zoom na timeline' },
   { keys: 'Alt ao arrastar', label: 'Ignora o ímã / seleciona só o clipe (sem vinculados)' },
   { keys: 'Esc', label: 'Limpar seleção' },
@@ -113,6 +114,8 @@ export function useShortcuts(openHelp: () => void, openPalette: () => void): voi
       } else if (e.key === 'End') {
         s.setPlaying(false);
         s.setPlayhead(projectDuration(s.project));
+      } else if (key === 'z' && e.shiftKey) {
+        s.fitTimeline();
       } else if (key === 'm') {
         s.addMarkerAtPlayhead();
       } else if (key === 'n') {

@@ -69,6 +69,7 @@ export function buildCommands(ctx: { openPanel: (t: PanelTab) => void; onExport:
     { id: 'snap', label: 'Alternar ímã (snap)', group: 'Timeline', icon: 'magnet', shortcut: 'N', keywords: 'encaixe', run: () => s().toggleSnapping() },
     { id: 'zoom-in', label: 'Aumentar zoom da timeline', group: 'Timeline', icon: 'zoomIn', shortcut: '+', run: () => s().setZoom(s().zoom * 1.3) },
     { id: 'zoom-out', label: 'Diminuir zoom da timeline', group: 'Timeline', icon: 'zoomOut', shortcut: '-', run: () => s().setZoom(s().zoom / 1.3) },
+    { id: 'fit', label: 'Ajustar timeline à janela', group: 'Timeline', icon: 'maximize', shortcut: 'Shift+Z', keywords: 'zoom caber', run: () => s().fitTimeline() },
     { id: 'select-all', label: 'Selecionar todos os clipes', group: 'Timeline', icon: 'layers', shortcut: 'Ctrl+A', run: () => s().select(s().project.tracks.flatMap((t) => t.clips.map((c) => c.id))) },
     ...(['video', 'audio', 'text', 'caption'] as const).map((k) => ({
       id: `track-${k}`,
