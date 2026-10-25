@@ -33,5 +33,12 @@ Listadas para que ninguém descubra em produção. Itens marcados com 🔧 têm 
 - Foram aplicados rótulos ARIA, foco visível e navegação por teclado nos painéis, mas **não houve auditoria de acessibilidade** (leitor de tela, contraste automatizado).
 - Modelos de texto e rascunhos ficam no IndexedDB do navegador; limpar os dados do site os apaga (o projeto no servidor não é afetado).
 
+## Novidades de interface
+- A **gravação de voz** depende do `MediaRecorder` do navegador e de permissão de microfone; o E2E usa o microfone falso do Chrome (tom sintético), não um microfone real. O WebM gravado não traz duração no cabeçalho: o servidor a mede decodificando o arquivo (mais lento para gravações longas).
+- Os **fundos gerados** (cor sólida e degradê) são imagens PNG criadas pelo FFmpeg no servidor com resolução fixa do projeto; não há fundos animados.
+- As **animações prontas** viram keyframes comuns de posição, escala, rotação e opacidade; não há animações por caractere ou por palavra.
+- A **tira de quadros** da timeline é gerada no processamento da mídia; mídias importadas antes dessa função não a têm e usam a miniatura única.
+- O tema claro/escuro e a largura/abertura dos painéis ficam no `localStorage` do navegador, não na conta.
+
 ## Escala
 - Não houve teste de carga nem de vídeos muito longos (horas). Os limites configuráveis (2 GB por arquivo, 2 h por mídia, 200 mídias por projeto, 3000 clipes por exportação) existem para proteger o servidor, não foram calibrados com medições.
