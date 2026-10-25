@@ -23,6 +23,7 @@ export const SHORTCUTS: Shortcut[] = [
   { keys: 'Ctrl + K', label: 'Abrir a paleta de comandos' },
   { keys: '← / →', label: 'Quadro anterior / próximo' },
   { keys: 'Shift + ← / →', label: 'Voltar / avançar 1 segundo' },
+  { keys: '[ / ]', label: 'Reduzir / aumentar a velocidade do preview' },
   { keys: 'Q / W', label: 'Aparar início / fim do clipe até a cabeça de reprodução' },
   { keys: 'Alt + ← / →', label: 'Empurrar a seleção 1 quadro (com Shift, 1 segundo)' },
   { keys: '↑ / ↓', label: 'Corte anterior / seguinte (bordas de clipes e marcadores)' },
@@ -122,6 +123,10 @@ export function useShortcuts(openHelp: () => void, openPalette: () => void): voi
         s.setPlayhead(projectDuration(s.project));
       } else if (key === 'z' && e.shiftKey) {
         s.fitTimeline();
+      } else if (e.key === '[') {
+        s.stepRate(-1);
+      } else if (e.key === ']') {
+        s.stepRate(1);
       } else if (key === 'q') {
         s.trimToPlayhead('start');
       } else if (key === 'w') {
