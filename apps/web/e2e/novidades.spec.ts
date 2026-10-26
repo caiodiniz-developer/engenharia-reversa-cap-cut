@@ -26,7 +26,7 @@ test.describe('paleta de comandos e tema', () => {
     const input = page.getByRole('combobox', { name: 'Buscar comandos' });
     await expect(input).toBeFocused();
     await input.fill('dividir');
-    await expect(page.getByRole('option', { name: /Dividir clipe/ })).toBeVisible();
+    await expect(page.getByRole('option', { name: /Dividir clipe na cabeça/ })).toBeVisible();
     await page.keyboard.press('Enter');
     await expect.poll(async () => (await clipsOf(page)).length).toBe(2);
     await expect(input).toBeHidden();
