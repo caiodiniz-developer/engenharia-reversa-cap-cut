@@ -55,6 +55,12 @@ import {
   removeKeyframeAt,
   clampParams,
   neighborEdit,
+  sequenceClips,
+  splitAtMarkers,
+  copyAttributes,
+  pasteAttributes,
+  resetClipVisuals,
+  type ClipAttributes,
   setWorkAreaEdge,
   clampWorkArea,
   type WorkArea,
@@ -194,6 +200,8 @@ interface EditorState {
   applyAnimation(clipId: string, presetId: string, duration?: number): void;
   clearAnimations(clipId: string): void;
   closeGaps(trackId: string): void;
+  /** Encosta os clipes selecionados em sequência, sem espaços entre eles. */
+  sequenceSelection(): void;
   markBeats(times: number[]): void;
   setKeyframe(clipId: string, prop: AnimatableProp, value: number): void;
   removeKeyframe(clipId: string, prop: AnimatableProp): void;
@@ -655,6 +663,11 @@ export const useEditor = create<EditorState>((set, get) => {
     },
     clearAnimations(clipId) {
       get().patchClip(clipId, (c) => coreClearAnimations(c), 'Remover animações');
+    },
+    sequenceSelection() {
+      const ids = get().selection;
+      if (ids.length < 2) return toast.info('Selecione pelo menos dois clipes para colocá-los em sequência');
+      get().run('Colocar clipes em sequência', (p) => sequenceClips(p, ids));
     },
     closeGaps(trackId) {
       get().run('Fechar espaços vazios', (p) => coreCloseGaps(p, trackId));
