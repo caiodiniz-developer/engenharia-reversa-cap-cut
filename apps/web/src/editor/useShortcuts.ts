@@ -17,6 +17,7 @@ export const SHORTCUTS: Shortcut[] = [
   { keys: 'Ctrl + Shift + Z  /  Ctrl + Y', label: 'Refazer' },
   { keys: 'Ctrl + C  /  Ctrl + V', label: 'Copiar / colar no cursor' },
   { keys: 'Ctrl + D', label: 'Duplicar' },
+  { keys: 'Ctrl + Alt + C  /  Ctrl + Alt + V', label: 'Copiar / colar atributos (posição, efeitos, keyframes)' },
   { keys: 'Ctrl + A', label: 'Selecionar todos os clipes' },
   { keys: 'Ctrl + G  /  Ctrl + Shift + G', label: 'Agrupar / desagrupar' },
   { keys: 'Ctrl + S', label: 'Salvar agora' },
@@ -79,6 +80,12 @@ export function useShortcuts(openHelp: () => void, openPalette: () => void): voi
       } else if (mod && key === 'y') {
         e.preventDefault();
         s.redo();
+      } else if (mod && e.altKey && key === 'c') {
+        e.preventDefault();
+        s.copySelectionAttributes();
+      } else if (mod && e.altKey && key === 'v') {
+        e.preventDefault();
+        s.pasteSelectionAttributes();
       } else if (mod && key === 'c') {
         s.copySelection();
       } else if (mod && key === 'v') {
