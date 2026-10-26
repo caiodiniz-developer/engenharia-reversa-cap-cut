@@ -50,6 +50,7 @@ export function buildCommands(ctx: { openPanel: (t: PanelTab) => void; onExport:
   };
   const cmds: Command[] = [
     { id: 'play', label: 'Reproduzir / pausar', group: 'Reprodução', icon: 'play', shortcut: 'Espaço', run: () => s().togglePlay() },
+    { id: 'goto', label: 'Ir para o tempo…', group: 'Reprodução', icon: 'search', keywords: 'timecode posição minuto segundo', run: () => window.dispatchEvent(new Event('editor:goto-time')) },
     { id: 'start', label: 'Ir para o início', group: 'Reprodução', icon: 'skipBack', shortcut: 'Home', run: () => (s().setPlaying(false), s().setPlayhead(0)) },
     { id: 'prev-edit', label: 'Ir para o corte anterior', group: 'Reprodução', icon: 'skipBack', shortcut: '↑', keywords: 'borda marcador', run: () => s().jumpToEdit(-1) },
     { id: 'next-edit', label: 'Ir para o próximo corte', group: 'Reprodução', icon: 'skipForward', shortcut: '↓', keywords: 'borda marcador', run: () => s().jumpToEdit(1) },
