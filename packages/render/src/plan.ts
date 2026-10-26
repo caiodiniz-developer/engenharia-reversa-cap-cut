@@ -35,6 +35,8 @@ export interface RenderOptions {
   crf?: number;
   preset?: 'ultrafast' | 'veryfast' | 'fast' | 'medium' | 'slow';
   audioBitrate?: string;
+  /** Exporta um GIF animado (sem áudio). Usa `fps` (padrão 15) e uma paleta otimizada. */
+  gif?: boolean;
   /** Exporta somente o áudio mixado neste formato (sem vídeo, texto ou legendas). */
   audioOnly?: AudioFormat;
   /** Exporta apenas o intervalo [start, end] da timeline (segundos). */
@@ -99,7 +101,8 @@ export function audioFormatArgs(format: AudioFormat, audioBitrate: string): { ar
 }
 
 /** Extensão do arquivo de saída para as opções dadas. */
-export function outputExtension(opts: Pick<RenderOptions, 'codec' | 'audioOnly'>): string {
+export function outputExtension(opts: Pick<RenderOptions, 'codec' | 'audioOnly' | 'gif'>): string {
+  if (opts.gif) return 'gif';
   return opts.audioOnly ? audioFormatArgs(opts.audioOnly, '192k').ext : codecArgs(opts.codec ?? 'h264', 20, 'veryfast', '192k').ext;
 }
 
@@ -115,9 +118,10 @@ export async function buildRenderPlan(
 
   const W = even(opts.width ?? project.settings.width);
   const H = even(opts.height ?? project.settings.height);
-  const fps = opts.fps ?? project.settings.fps;
+  const fps = opts.fps ?? (opts.gif ? 15 : project.settings.fps);
   const sr = project.settings.sampleRate;
   const audioOnly = !!opts.audioOnly;
+  const gif = !!opts.gif;
   const frame = { width: W, height: H };
 
   await mkdir(env.tmpDir, { recursive: true });
@@ -247,7 +251,7 @@ export async function buildRenderPlan(
     const file = env.resolveMedia(clip.mediaId);
     const dur = clip.duration;
     const isVisual = !audioOnly && trackKind === 'video' && !hidden && asset.kind !== 'audio';
-    const wantsAudio = asset.kind !== 'image' && asset.hasAudio && !clip.freeze && !clip.audio.muted && !muted;
+    const wantsAudio = !gif && asset.kind !== 'image' && asset.hasAudio && !clip.freeze && !clip.audio.muted && !muted;
 
     if (!isVisual && !wantsAudio) return;
 
@@ -440,7 +444,9 @@ export async function buildRenderPlan(
     filters.push(`[vcomp]format=yuv420p[vout]`);
   }
 
-  if (audioLabels.length === 0) {
+  if (gif) {
+    filters.push('[vout]split[g0][g1]', '[g0]palettegen=stats_mode=diff[gp]', '[g1][gp]paletteuse=dither=bayer:bayer_scale=5[gout]');
+  } else if (audioLabels.length === 0) {
     filters.push(`anullsrc=r=${sr}:cl=stereo,atrim=duration=${num(total)}[aout]`);
   } else if (audioLabels.length === 1) {
     filters.push(`[${audioLabels[0]}]apad=whole_dur=${num(total)},atrim=duration=${num(total)}[aout]`);
@@ -454,7 +460,7 @@ export async function buildRenderPlan(
   const scriptPath = path.join(env.tmpDir, 'filter_complex.txt');
   await writeFile(scriptPath, filterGraph);
 
-  const codec = opts.audioOnly ? audioFormatArgs(opts.audioOnly, opts.audioBitrate ?? '192k') : codecArgs(opts.codec ?? 'h264', opts.crf ?? 20, opts.preset ?? 'veryfast', opts.audioBitrate ?? '192k');
+  const codec = gif ? { ext: 'gif', args: ['-an', '-loop', '0'] } : opts.audioOnly ? audioFormatArgs(opts.audioOnly, opts.audioBitrate ?? '192k') : codecArgs(opts.codec ?? 'h264', opts.crf ?? 20, opts.preset ?? 'veryfast', opts.audioBitrate ?? '192k');
   const outRange = opts.range ? ['-ss', num(opts.range.start), '-t', num(opts.range.end - opts.range.start)] : ['-t', num(total)];
   const args = [
     '-y',
@@ -467,9 +473,8 @@ export async function buildRenderPlan(
     ...inputs.flat(),
     '-filter_complex_script',
     scriptPath,
-    ...(audioOnly ? ['-vn'] : ['-map', '[vout]']),
-    '-map',
-    '[aout]',
+    ...(audioOnly ? ['-vn'] : ['-map', gif ? '[gout]' : '[vout]']),
+    ...(gif ? [] : ['-map', '[aout]']),
     ...(audioOnly ? [] : ['-r', num(fps)]),
     ...codec.args,
     ...outRange,
