@@ -79,3 +79,25 @@ export function clampWorkArea(area: WorkArea | null, total: number): WorkArea | 
   const end = Math.min(area.end, total);
   return end - area.start >= MIN_WORK_AREA ? { start: area.start, end } : null;
 }
+
+export type ClipKindFilter = 'video' | 'image' | 'audio' | 'text' | 'caption';
+
+/** Ids de todos os clipes de um tipo (vídeo, imagem, áudio, texto ou legenda), ignorando faixas bloqueadas. */
+export function clipIdsByKind(p: Project, kind: ClipKindFilter): string[] {
+  const ids: string[] = [];
+  for (const t of p.tracks) {
+    if (t.locked) continue;
+    for (const c of t.clips) {
+      if (c.type === 'text' && kind === 'text') ids.push(c.id);
+      else if (c.type === 'caption' && kind === 'caption') ids.push(c.id);
+      else if (c.type === 'media') {
+        const asset = p.media[c.mediaId];
+        if (!asset) continue;
+        // Um vídeo numa faixa de áudio conta como áudio (é o que o usuário vê e ouve ali).
+        const k: ClipKindFilter = t.kind === 'audio' ? 'audio' : asset.kind === 'audio' ? 'audio' : asset.kind === 'image' ? 'image' : 'video';
+        if (k === kind) ids.push(c.id);
+      }
+    }
+  }
+  return ids;
+}
