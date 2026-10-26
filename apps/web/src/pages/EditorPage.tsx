@@ -5,6 +5,7 @@ import type { MediaItem, ProjectDoc } from '../api/types';
 import { Icon } from '../components/Icon';
 import { CommandPalette } from '../editor/CommandPalette';
 import { ExportDialog } from '../editor/ExportDialog';
+import { StatusBar } from '../editor/StatusBar';
 import { VersionsDialog } from '../editor/VersionsDialog';
 import { AiPanel } from '../editor/panels/AiPanel';
 import { AnimationsPanel } from '../editor/panels/AnimationsPanel';
@@ -225,6 +226,8 @@ export function EditorPage() {
           <Timeline />
         </section>
       </div>
+
+      <StatusBar />
 
       <ExportDialog projectId={id} open={exporting} onClose={() => setExporting(false)} />
       <VersionsDialog projectId={id} open={versionsOpen} onClose={() => setVersionsOpen(false)} />
