@@ -477,6 +477,18 @@ test.describe('timeline e preview', () => {
     await expect(top.getByRole('button', { name: 'Mover faixa para baixo' })).toHaveCount(1);
   });
 
+  test('estado vazio do preview: "Importar mídia" abre o seletor de arquivos e "Fundos e formas" abre o painel', async ({ page }) => {
+    await signup(page);
+    await newProject(page, 'Vazio');
+    await page.getByTestId('tab-text').click(); // painel diferente de Mídia, para provar que o botão troca de aba
+    const [chooser] = await Promise.all([page.waitForEvent('filechooser'), page.getByTestId('empty-import').click()]);
+    await chooser.setFiles(media.red);
+    await expect(page.getByTestId('media-list')).toContainText('vermelho', { timeout: 60_000 });
+    // com mídia importada mas timeline vazia, o estado vazio continua e leva aos elementos
+    await page.getByRole('button', { name: 'Fundos e formas' }).click();
+    await expect(page.getByTestId('elements-panel')).toBeVisible();
+  });
+
   test('salvar o quadro atual gera um PNG válido', async ({ page }) => {
     await withClip(page);
     await seek(page, 1);
