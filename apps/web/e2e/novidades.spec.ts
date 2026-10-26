@@ -437,6 +437,21 @@ test.describe('timeline e preview', () => {
     await expect(page.getByTestId('density-button')).toHaveText(/Compacta/);
   });
 
+  test('biblioteca: ordenar por "Não usadas primeiro" coloca a mídia fora da timeline no topo', async ({ page }) => {
+    await signup(page);
+    await newProject(page, 'Ordem');
+    await uploadAndWait(page, media.red);
+    const blue = await uploadAndWait(page, media.blue);
+    await blue.dblclick(); // só a azul (primeira por nome) entra na timeline
+    await expect(page.locator('[data-clip-id]')).toHaveCount(1);
+    const names = () => page.getByTestId('media-list').getByRole('button', { name: /Clique duas vezes/ }).evaluateAll((els) => els.map((e) => (e.getAttribute('aria-label') ?? '').toLowerCase()));
+    expect((await names())[0]).toContain('azul'); // por nome
+    await page.getByLabel('Ordenar biblioteca').selectOption('unused');
+    const order = await names();
+    expect(order[0]).toContain('vermelho');
+    expect(order[1]).toContain('azul');
+  });
+
   test('salvar o quadro atual gera um PNG válido', async ({ page }) => {
     await withClip(page);
     await seek(page, 1);
