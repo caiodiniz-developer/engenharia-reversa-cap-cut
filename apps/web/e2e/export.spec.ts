@@ -86,6 +86,26 @@ test.describe('exportação pelo navegador', () => {
     expect(info.duration).toBeGreaterThan(7.5);
   });
 
+  test('predefinições preenchem os campos e voltam a "Personalizada" quando o usuário muda algo', async ({ page }) => {
+    await sequence(page);
+    await page.getByTestId('export-button').click();
+    const dialog = page.getByRole('dialog', { name: 'Exportar vídeo' });
+    const preset = dialog.getByLabel('Predefinição');
+    await preset.selectOption({ label: 'WhatsApp · leve' });
+    await expect(dialog.getByLabel('Resolução')).toHaveValue('480');
+    await expect(dialog.getByLabel('Qualidade')).toHaveValue('26');
+    await dialog.getByLabel('Qualidade').selectOption('18');
+    await expect(preset.locator('option:checked')).toHaveText('Personalizada');
+
+    await preset.selectOption({ label: 'Áudio · MP3' });
+    await expect(dialog.getByRole('radio', { name: 'Somente áudio' })).toBeChecked();
+    await expect(dialog.getByLabel('Formato do áudio')).toHaveValue('mp3');
+
+    await preset.selectOption({ label: 'GIF curto' });
+    await expect(dialog.getByRole('radio', { name: 'GIF' })).toBeChecked();
+    await expect(dialog.getByLabel('Quadros por segundo do GIF')).toHaveValue('12');
+  });
+
   test('exporta somente o áudio em MP3 pelo diálogo e o arquivo não tem vídeo', async ({ page }) => {
     await sequence(page);
     await page.getByTestId('export-button').click();
