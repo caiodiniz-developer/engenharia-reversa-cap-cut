@@ -120,6 +120,8 @@ interface EditorState {
   saveState: SaveState;
   lastSavedAt: number | null;
   clipboard: Clip[];
+  /** Atributos visuais copiados com Ctrl+Alt+C. */
+  attributes: ClipAttributes | null;
 
   load(doc: ProjectDoc, media: MediaItem[]): void;
   reset(): void;
@@ -202,6 +204,9 @@ interface EditorState {
   closeGaps(trackId: string): void;
   /** Encosta os clipes selecionados em sequência, sem espaços entre eles. */
   sequenceSelection(): void;
+  copySelectionAttributes(): void;
+  pasteSelectionAttributes(): void;
+  resetSelectionVisuals(): void;
   /** Divide os clipes selecionados (ou os sob a cabeça) em cada marcador interno. */
   splitSelectionAtMarkers(): void;
   markBeats(times: number[]): void;
@@ -260,6 +265,7 @@ export const useEditor = create<EditorState>((set, get) => {
     saveState: 'saved',
     lastSavedAt: null,
     clipboard: [],
+    attributes: null,
 
     load(doc, media) {
       set({
@@ -673,6 +679,28 @@ export const useEditor = create<EditorState>((set, get) => {
       const before = project.tracks.reduce((n, t) => n + t.clips.length, 0);
       const ok = get().run('Dividir nos marcadores', (p) => splitAtMarkers(p, ids));
       if (ok && get().project.tracks.reduce((n, t) => n + t.clips.length, 0) === before) toast.info('Nenhum marcador cai dentro dos clipes escolhidos');
+    },
+    copySelectionAttributes() {
+      const { project, selection } = get();
+      const id = selection[0];
+      if (!id) return toast.info('Selecione o clipe de onde copiar os atributos');
+      try {
+        set({ attributes: copyAttributes(project, id) });
+        toast.success('Atributos copiados (posição, escala, efeitos, keyframes)');
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : 'Não foi possível copiar os atributos');
+      }
+    },
+    pasteSelectionAttributes() {
+      const { attributes, selection } = get();
+      if (!attributes) return toast.info('Copie os atributos de um clipe primeiro (Ctrl+Alt+C)');
+      if (!selection.length) return toast.info('Selecione os clipes que receberão os atributos');
+      get().run('Colar atributos', (p) => pasteAttributes(p, attributes, selection));
+    },
+    resetSelectionVisuals() {
+      const ids = get().selection;
+      if (!ids.length) return toast.info('Selecione os clipes que deseja redefinir');
+      get().run('Redefinir transformação e efeitos', (p) => resetClipVisuals(p, ids));
     },
     sequenceSelection() {
       const ids = get().selection;
