@@ -202,6 +202,8 @@ interface EditorState {
   closeGaps(trackId: string): void;
   /** Encosta os clipes selecionados em sequência, sem espaços entre eles. */
   sequenceSelection(): void;
+  /** Divide os clipes selecionados (ou os sob a cabeça) em cada marcador interno. */
+  splitSelectionAtMarkers(): void;
   markBeats(times: number[]): void;
   setKeyframe(clipId: string, prop: AnimatableProp, value: number): void;
   removeKeyframe(clipId: string, prop: AnimatableProp): void;
@@ -663,6 +665,14 @@ export const useEditor = create<EditorState>((set, get) => {
     },
     clearAnimations(clipId) {
       get().patchClip(clipId, (c) => coreClearAnimations(c), 'Remover animações');
+    },
+    splitSelectionAtMarkers() {
+      const { project, selection } = get();
+      const ids = selection.length ? selection : project.tracks.filter((t) => !t.locked).flatMap((t) => t.clips.map((c) => c.id));
+      if (!project.markers.length) return toast.info('Adicione marcadores (M) onde deseja dividir');
+      const before = project.tracks.reduce((n, t) => n + t.clips.length, 0);
+      const ok = get().run('Dividir nos marcadores', (p) => splitAtMarkers(p, ids));
+      if (ok && get().project.tracks.reduce((n, t) => n + t.clips.length, 0) === before) toast.info('Nenhum marcador cai dentro dos clipes escolhidos');
     },
     sequenceSelection() {
       const ids = get().selection;
