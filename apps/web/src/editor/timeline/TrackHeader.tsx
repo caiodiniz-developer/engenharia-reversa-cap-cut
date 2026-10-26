@@ -23,7 +23,7 @@ function Toggle({ on, label, icon, onClick }: { on: boolean; label: string; icon
  * Cabeçalho da faixa. Os três controles de estado (ocultar, silenciar, bloquear) ficam sempre visíveis;
  * as ações menos frequentes aparecem sobre o nome ao passar o mouse, para o nome nunca ser espremido.
  */
-export function TrackHeader({ track, index, selected, height }: { track: Track; index: number; selected: boolean; height: number }) {
+export function TrackHeader({ track, index, selected, height, count = 0 }: { track: Track; index: number; selected: boolean; height: number; count?: number }) {
   const patch = useEditor((s) => s.patchTrack);
   const select = useEditor((s) => s.selectTrack);
   const move = useEditor((s) => s.moveTrack);
@@ -80,7 +80,8 @@ export function TrackHeader({ track, index, selected, height }: { track: Track; 
       {/* Ações secundárias: aparecem sobre o nome ao passar o mouse ou ao focar. */}
       <div className="pointer-events-none absolute inset-y-0 left-8 right-[78px] flex items-center justify-end gap-0.5 bg-gradient-to-l from-panel-3 via-panel-3 to-transparent pl-6 opacity-0 transition-opacity focus-within:pointer-events-auto focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100">
         <Toggle on={false} label="Fechar espaços vazios da faixa" icon="minimize" onClick={() => closeGaps(track.id)} />
-        {!compact && <Toggle on={false} label="Mover faixa para cima" icon="chevronUp" onClick={() => move(track.id, index - 1)} />}
+        {!compact && index > 0 && <Toggle on={false} label="Mover faixa para cima" icon="chevronUp" onClick={() => move(track.id, index - 1)} />}
+        {!compact && index < count - 1 && <Toggle on={false} label="Mover faixa para baixo" icon="chevronDown" onClick={() => move(track.id, index + 1)} />}
       </div>
     </div>
   );

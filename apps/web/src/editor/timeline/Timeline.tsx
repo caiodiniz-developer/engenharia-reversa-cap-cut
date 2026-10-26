@@ -301,7 +301,7 @@ export function Timeline() {
             )}
             {project.tracks.map((track, i) => (
               <div key={track.id} className="flex" style={{ height: heights[i] }} data-track-id={track.id}>
-                <TrackHeader track={track} index={i} selected={selectedTrackId === track.id} height={heights[i]!} />
+                <TrackHeader track={track} index={i} selected={selectedTrackId === track.id} height={heights[i]!} count={project.tracks.length} />
                 <div
                   className={`relative border-b border-line/70 ${dropTrack === track.id ? '!bg-accent/10' : i % 2 ? 'bg-panel/40' : ''}`}
                   style={{ width: contentW, opacity: track.hidden ? 0.5 : 1, backgroundImage: 'linear-gradient(to right, rgb(var(--line) / 0.4) 1px, transparent 1px)', backgroundSize: `${gridPx}px 100%` }}
