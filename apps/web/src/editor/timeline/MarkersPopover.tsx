@@ -3,6 +3,9 @@ import { formatTimecode } from '@editor/core';
 import { Icon } from '../../components/Icon';
 import { useEditor } from '../../store/editor';
 
+const MARKER_COLORS = ['#f5a524', '#ef4444', '#22c55e', '#3b82f6', '#a855f7'];
+const nextColor = (c: string) => MARKER_COLORS[(MARKER_COLORS.indexOf(c.toLowerCase()) + 1) % MARKER_COLORS.length]!;
+
 /** Lista de marcadores do projeto: pular até um, renomear ou remover. */
 export function MarkersPopover() {
   const markers = useEditor((s) => s.project.markers);
@@ -48,6 +51,7 @@ export function MarkersPopover() {
             <ul className="max-h-64 overflow-auto py-1">
               {markers.map((m) => (
                 <li key={m.id} className="flex items-center gap-1.5 px-2 py-1 hover:bg-panel-3">
+                  <button type="button" className="h-4 w-4 shrink-0 rounded-full border border-line" style={{ background: m.color }} title="Mudar a cor" aria-label={`Cor do marcador ${m.label || formatTimecode(m.time, fps)}: clique para mudar`} data-color={m.color} onClick={() => useEditor.getState().recolorMarker(m.id, nextColor(m.color))} />
                   <button type="button" className="tnum shrink-0 rounded-md px-1.5 py-1 font-mono text-2xs text-accent hover:bg-panel-2" title="Ir até o marcador" aria-label={`Ir ao marcador ${m.label || formatTimecode(m.time, fps)}`} onClick={() => go(m.time)}>
                     {formatTimecode(m.time, fps)}
                   </button>
