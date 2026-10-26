@@ -269,6 +269,11 @@ test.describe('timeline e preview', () => {
     await pop.getByRole('button', { name: /Ir ao marcador Intro/ }).click();
     expect(await page.evaluate(() => window.__editor.getState().playhead)).toBeCloseTo(1, 3);
 
+    // clicar na bolinha troca a cor (laranja -> vermelho) e a cor vai para o projeto
+    await pop.getByRole('button', { name: /Cor do marcador Intro/ }).click();
+    await expect.poll(async () => (await projectOf(page)).markers[0]!.color).toBe('#ef4444');
+    await expect(pop.getByRole('button', { name: /Cor do marcador Intro/ })).toHaveAttribute('data-color', '#ef4444');
+
     await pop.getByRole('button', { name: /Remover marcador Intro/ }).click();
     await expect(pop.getByRole('listitem')).toHaveCount(1);
     await page.keyboard.press('Escape');
