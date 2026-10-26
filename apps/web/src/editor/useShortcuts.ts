@@ -24,6 +24,7 @@ export const SHORTCUTS: Shortcut[] = [
   { keys: '← / →', label: 'Quadro anterior / próximo' },
   { keys: 'Shift + ← / →', label: 'Voltar / avançar 1 segundo' },
   { keys: '[ / ]', label: 'Reduzir / aumentar a velocidade do preview' },
+  { keys: 'I / O', label: 'Marcar entrada / saída do trecho a exportar (Alt + X limpa)' },
   { keys: 'Q / W', label: 'Aparar início / fim do clipe até a cabeça de reprodução' },
   { keys: 'Alt + ← / →', label: 'Empurrar a seleção 1 quadro (com Shift, 1 segundo)' },
   { keys: '↑ / ↓', label: 'Corte anterior / seguinte (bordas de clipes e marcadores)' },
@@ -127,6 +128,12 @@ export function useShortcuts(openHelp: () => void, openPalette: () => void): voi
         s.stepRate(-1);
       } else if (e.key === ']') {
         s.stepRate(1);
+      } else if (key === 'i') {
+        s.markWorkArea('start');
+      } else if (key === 'o') {
+        s.markWorkArea('end');
+      } else if (e.altKey && key === 'x') {
+        s.clearWorkArea();
       } else if (key === 'q') {
         s.trimToPlayhead('start');
       } else if (key === 'w') {
