@@ -4,6 +4,7 @@ import type { MediaItem } from '../../api/types';
 import { Empty, ProgressBar } from '../../components/controls';
 import { Icon } from '../../components/Icon';
 import { formatBytes, formatDuration } from '../../lib/format';
+import { MEDIA_SORT_LABEL, sortMedia, type MediaSort } from '../../lib/mediaSort';
 import { useEditor } from '../../store/editor';
 import { toast } from '../../store/toasts';
 import { useUploads } from '../../store/uploads';
@@ -23,16 +24,16 @@ export function MediaPanel({ projectId }: { projectId: string }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [filter, setFilter] = useState<Filter>('all');
   const [query, setQuery] = useState('');
+  const [sort, setSort] = useState<MediaSort>('name');
   const [limit, setLimit] = useState(PAGE);
   const [over, setOver] = useState(false);
   const [confirming, setConfirming] = useState<string | null>(null);
 
   const items = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return Object.values(media)
-      .filter((m) => (filter === 'all' || m.kind === filter) && (!q || m.name.toLowerCase().includes(q)))
-      .sort((a, b) => a.name.localeCompare(b.name, 'pt'));
-  }, [media, filter, query]);
+    const filtered = Object.values(media).filter((m) => (filter === 'all' || m.kind === filter) && (!q || m.name.toLowerCase().includes(q)));
+    return sortMedia(filtered, sort, new Set(usedIds.split(',').filter(Boolean)));
+  }, [media, filter, query, sort, usedIds]);
 
   const send = (files: FileList | File[]) => {
     for (const f of Array.from(files)) void upload(projectId, f);
@@ -76,6 +77,13 @@ export function MediaPanel({ projectId }: { projectId: string }) {
         </button>
         <p className="text-2xs leading-relaxed text-mute">Os arquivos são enviados ao servidor para gerar prévias e exportar. Arraste e solte aqui.</p>
         <input className="field" placeholder="Buscar na biblioteca" aria-label="Buscar na biblioteca" value={query} onChange={(e) => setQuery(e.target.value)} />
+        <select className="field" aria-label="Ordenar biblioteca" value={sort} onChange={(e) => setSort(e.target.value as MediaSort)}>
+          {(Object.keys(MEDIA_SORT_LABEL) as MediaSort[]).map((k) => (
+            <option key={k} value={k}>
+              {MEDIA_SORT_LABEL[k]}
+            </option>
+          ))}
+        </select>
         <div className="flex gap-1 rounded-lg bg-panel-2 p-1" role="tablist" aria-label="Filtrar por tipo">
           {(['all', 'video', 'audio', 'image'] as Filter[]).map((f) => (
             <button key={f} type="button" role="tab" aria-selected={filter === f} onClick={() => setFilter(f)} className={`flex-1 rounded-md px-2 py-1 text-2xs font-medium transition-colors ${filter === f ? 'bg-panel-3 text-ink shadow-sm' : 'text-mute hover:text-ink'}`}>
