@@ -24,6 +24,8 @@ const QUALITY = [
 export function ExportDialog({ projectId, open, onClose }: { projectId: string; open: boolean; onClose: () => void }) {
   const project = useEditor((s) => s.project);
   const jobs = useJobs((s) => s.jobs);
+  const workArea = useEditor((s) => s.workArea);
+  const [useRange, setUseRange] = useState(true);
   const [codec, setCodec] = useState<Codec>('h264');
   const [res, setRes] = useState<Res>('project');
   const [fps, setFps] = useState<string>('project');
@@ -34,7 +36,9 @@ export function ExportDialog({ projectId, open, onClose }: { projectId: string; 
   const [current, setCurrent] = useState<{ exportId: string; jobId: string } | null>(null);
   const [history, setHistory] = useState<ExportInfo[]>([]);
 
-  const duration = projectDuration(project);
+  const fullDuration = projectDuration(project);
+  const range = workArea && useRange ? workArea : null;
+  const duration = range ? range.end - range.start : fullDuration;
   const job = current ? jobs[current.jobId] : undefined;
   const running = job && (job.status === 'queued' || job.status === 'running');
 
@@ -57,7 +61,8 @@ export function ExportDialog({ projectId, open, onClose }: { projectId: string; 
     setBusy(true);
     try {
       await saveNow(); // exporta o documento salvo no servidor
-      const body = kind === 'audio' ? { audioOnly: audioFormat } : { codec, crf: Number(crf), width, height, ...(fps !== 'project' ? { fps: Number(fps) } : {}), preset: 'veryfast' };
+      const rangeBody = range ? { range: { start: range.start, end: range.end } } : {};
+      const body = kind === 'audio' ? { audioOnly: audioFormat, ...rangeBody } : { ...rangeBody, codec, crf: Number(crf), width, height, ...(fps !== 'project' ? { fps: Number(fps) } : {}), preset: 'veryfast' };
       const r = await api.post<{ exportId: string; jobId: string }>(`/api/projects/${projectId}/exports`, body);
       useJobs.getState().track(r.jobId, 'export', projectId);
       setCurrent(r);
@@ -135,6 +140,12 @@ export function ExportDialog({ projectId, open, onClose }: { projectId: string; 
         <Select label="Resolução" value={res} onChange={setRes} options={[{ value: 'project', label: `Do projeto (${project.settings.width}×${project.settings.height})` }, { value: '2160', label: '4K (lado menor 2160)' }, { value: '1080', label: 'Full HD (1080)' }, { value: '720', label: 'HD (720)' }, { value: '480', label: 'SD (480)' }]} />
         <Select label="Quadros por segundo" value={fps} onChange={setFps} options={[{ value: 'project', label: `Do projeto (${project.settings.fps})` }, ...[24, 25, 30, 50, 60].map((f) => ({ value: String(f), label: `${f} fps` }))]} />
       </div>
+      )}
+      {workArea && (
+        <label className="mb-2 flex items-center gap-2 text-xs">
+          <input type="checkbox" checked={useRange} onChange={(e) => setUseRange(e.target.checked)} data-testid="use-range" />
+          Exportar só o trecho marcado ({formatDuration(workArea.start)} – {formatDuration(workArea.end)})
+        </label>
       )}
       <p className="mb-3 text-2xs text-mute">
         Saída: {kind === 'audio' ? `áudio ${audioFormat.toUpperCase()}` : `${width}×${height}`} · duração {formatDuration(duration)}
