@@ -457,6 +457,26 @@ test.describe('timeline e preview', () => {
     expect(order[1]).toContain('azul');
   });
 
+  test('mover faixa para baixo reordena as faixas (a de cima fica por último)', async ({ page }) => {
+    await withClip(page);
+    await page.keyboard.press('Control+k');
+    await page.getByRole('combobox', { name: 'Buscar comandos' }).fill('adicionar faixa de video');
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('combobox', { name: 'Buscar comandos' })).toBeHidden();
+    const order = async () => (await projectOf(page)).tracks.map((t) => t.name);
+    const before = await order();
+    expect(before).toHaveLength(2);
+    const header = page.getByTestId('track-header-video').first();
+    await header.hover();
+    await header.getByRole('button', { name: 'Mover faixa para baixo' }).click();
+    await expect.poll(order).toEqual([before[1], before[0]]);
+    // a nova primeira faixa já não oferece "para cima"
+    const top = page.getByTestId('track-header-video').first();
+    await top.hover();
+    await expect(top.getByRole('button', { name: 'Mover faixa para cima' })).toHaveCount(0);
+    await expect(top.getByRole('button', { name: 'Mover faixa para baixo' })).toHaveCount(1);
+  });
+
   test('salvar o quadro atual gera um PNG válido', async ({ page }) => {
     await withClip(page);
     await seek(page, 1);
