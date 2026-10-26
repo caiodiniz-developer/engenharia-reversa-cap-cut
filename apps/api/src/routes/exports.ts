@@ -8,12 +8,16 @@ import { contentDisposition, sanitizeFilename, signResource, verifyResource } fr
 
 const MAX_PIXELS = 3840 * 2160;
 const MAX_CLIPS = 3000;
+const MAX_GIF_SECONDS = 30;
+const MAX_GIF_PIXELS = 1280 * 720;
 
 const ExportOptions = z.object({
   width: z.number().int().min(16).max(7680).optional(),
   height: z.number().int().min(16).max(7680).optional(),
   fps: z.number().min(1).max(60).optional(),
   codec: z.enum(['h264', 'h265', 'vp9']).default('h264'),
+  /** GIF animado (sem áudio): limitado em tamanho e duração para proteger o servidor. */
+  gif: z.boolean().optional(),
   /** Exporta somente o áudio mixado, neste formato. */
   audioOnly: z.enum(['mp3', 'wav', 'm4a']).optional(),
   /** 0 = melhor qualidade, 51 = pior. */
@@ -22,7 +26,7 @@ const ExportOptions = z.object({
   range: z.object({ start: z.number().min(0), end: z.number().positive() }).refine((r) => r.end > r.start, 'Intervalo inválido').optional(),
 });
 
-const MIME: Record<string, string> = { '.mp4': 'video/mp4', '.webm': 'video/webm', '.mp3': 'audio/mpeg', '.m4a': 'audio/mp4', '.wav': 'audio/wav' };
+const MIME: Record<string, string> = { '.mp4': 'video/mp4', '.webm': 'video/webm', '.mp3': 'audio/mpeg', '.m4a': 'audio/mp4', '.wav': 'audio/wav', '.gif': 'image/gif' };
 
 function presentJob(job: { id: string; type: string; status: string; progress: number; error: string | null; result: unknown; createdAt: Date; startedAt: Date | null; finishedAt: Date | null }) {
   return { id: job.id, type: job.type, status: job.status, progress: job.progress, error: job.error, result: job.result, createdAt: job.createdAt, startedAt: job.startedAt, finishedAt: job.finishedAt };
@@ -46,6 +50,12 @@ export function exportRoutes(ctx: AppContext): Router {
       if (duration <= 0) throw new HttpError(422, 'O projeto está vazio: adicione clipes antes de exportar', 'empty_project');
       if (duration > ctx.config.MAX_MEDIA_SECONDS) throw new HttpError(422, 'Duração acima do limite de exportação', 'too_long');
       if (doc.tracks.reduce((n, t) => n + t.clips.length, 0) > MAX_CLIPS) throw new HttpError(422, 'Projeto com clipes demais para exportar', 'too_complex');
+      if (opts.gif) {
+        if (opts.audioOnly) throw new HttpError(422, 'Escolha GIF ou somente áudio, não os dois', 'validation');
+        const seconds = opts.range ? Math.min(opts.range.end, duration) - opts.range.start : duration;
+        if (seconds > MAX_GIF_SECONDS) throw new HttpError(422, `GIF aceita até ${MAX_GIF_SECONDS} s: marque um trecho menor`, 'too_long');
+        if (w * hgt > MAX_GIF_PIXELS) throw new HttpError(422, 'GIF aceita no máximo 1280×720: escolha uma resolução menor', 'too_big');
+      }
       const notReady = await ctx.db.media.count({ where: { projectId: project.id, id: { in: Object.keys(doc.media) }, NOT: { status: 'ready' } } });
       if (notReady) throw new HttpError(409, 'Há mídias ainda em processamento', 'media_not_ready');
 
