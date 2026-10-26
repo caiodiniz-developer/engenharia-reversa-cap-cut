@@ -83,6 +83,7 @@ import {
   type TransitionType,
 } from '@editor/core';
 import type { MediaItem, ProjectDoc } from '../api/types';
+import { TRACK_DENSITIES, type TrackDensity } from '../editor/timeline/geometry';
 import { toast } from './toasts';
 
 export type PanelTab = 'media' | 'audio' | 'text' | 'effects' | 'transitions' | 'animations' | 'elements' | 'ai';
@@ -90,6 +91,16 @@ export type SaveState = 'saved' | 'dirty' | 'saving' | 'error' | 'conflict' | 'o
 
 export const MIN_ZOOM = 4;
 export const MAX_ZOOM = 600;
+const DENSITY_KEY = 'editor.timeline.density';
+function readDensity(): TrackDensity {
+  try {
+    const v = localStorage.getItem(DENSITY_KEY);
+    if (v === 'compact' || v === 'normal' || v === 'tall') return v;
+  } catch {
+    /* sem armazenamento: usa o padrão */
+  }
+  return 'normal';
+}
 /** Velocidades disponíveis para o preview. */
 export const PLAYBACK_RATES = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2] as const;
 
@@ -115,6 +126,8 @@ interface EditorState {
   rate: number;
   /** Trecho marcado com I/O: usado para exportar só uma parte (não é salvo no projeto). */
   workArea: WorkArea | null;
+  /** Altura das faixas da timeline (preferência do navegador). */
+  trackDensity: TrackDensity;
   zoom: number;
   snapping: boolean;
   guides: boolean;
@@ -163,6 +176,8 @@ interface EditorState {
   /** Marca a entrada (start) ou a saída (end) do trecho na cabeça de reprodução. */
   markWorkArea(edge: 'start' | 'end'): void;
   clearWorkArea(): void;
+  setTrackDensity(d: TrackDensity): void;
+  cycleTrackDensity(): void;
   stepRate(dir: 1 | -1): void;
   setZoom(z: number): void;
   toggleSnapping(): void;
@@ -262,6 +277,7 @@ export const useEditor = create<EditorState>((set, get) => {
     loop: false,
     rate: 1,
     workArea: null,
+    trackDensity: readDensity(),
     zoom: 60,
     snapping: true,
     guides: false,
@@ -424,6 +440,18 @@ export const useEditor = create<EditorState>((set, get) => {
       const area = setWorkAreaEdge(get().workArea, edge, get().playhead, duration());
       if (!area) return toast.info('Posicione a cabeça de reprodução dentro do projeto para marcar o trecho');
       set({ workArea: area });
+    },
+    setTrackDensity(d) {
+      set({ trackDensity: d });
+      try {
+        localStorage.setItem(DENSITY_KEY, d);
+      } catch {
+        /* preferência é opcional */
+      }
+    },
+    cycleTrackDensity() {
+      const i = TRACK_DENSITIES.indexOf(get().trackDensity);
+      get().setTrackDensity(TRACK_DENSITIES[(i + 1) % TRACK_DENSITIES.length]!);
     },
     clearWorkArea() {
       set({ workArea: null });
