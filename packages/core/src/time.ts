@@ -26,3 +26,34 @@ export function formatTimecode(t: number, fps: number): string {
   const p = (n: number, w = 2) => String(n).padStart(w, '0');
   return `${p(hh)}:${p(mm)}:${p(ss)}:${p(frames)}`;
 }
+
+/**
+ * Interpreta um tempo digitado pelo usuário e devolve segundos (ou `null` se inválido).
+ * Aceita: `90` e `1.5` (segundos), `1:30` (min:s), `1:02:03` (h:min:s), `00:00:01:15` (h:min:s:quadros),
+ * `2m30s`, `1h5m`, `45s` e `12f` (quadros).
+ */
+export function parseTimecode(text: string, fps: number): number | null {
+  const s = text.trim().toLowerCase().replace(',', '.');
+  if (!s) return null;
+  let out: number | null = null;
+  if (/^\d+(\.\d+)?$/.test(s)) out = Number(s);
+  else if (/^\d+f$/.test(s)) out = Number(s.slice(0, -1)) / fps;
+  else if (/^(\d+h)?(\d+m)?(\d+(\.\d+)?s)?$/.test(s) && /[hms]/.test(s)) {
+    const m = /^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+(?:\.\d+)?)s)?$/.exec(s)!;
+    out = Number(m[1] ?? 0) * 3600 + Number(m[2] ?? 0) * 60 + Number(m[3] ?? 0);
+  } else if (/^\d+(:\d+){1,3}$/.test(s) || /^\d+:\d+:\d+(\.\d+)?$/.test(s) || /^\d+:\d+(\.\d+)?$/.test(s)) {
+    const parts = s.split(':');
+    const nums = parts.map(Number);
+    if (parts.length === 4) {
+      const [h, m, sec, f] = nums as [number, number, number, number];
+      if (f >= Math.ceil(fps)) return null;
+      out = h * 3600 + m * 60 + sec + f / fps;
+    } else if (parts.length === 3) {
+      out = nums[0]! * 3600 + nums[1]! * 60 + nums[2]!;
+    } else {
+      out = nums[0]! * 60 + nums[1]!;
+    }
+    if (parts.length >= 2 && nums.slice(1, 3).some((n) => n >= 60)) return null;
+  }
+  return out !== null && Number.isFinite(out) && out >= 0 ? round6(out) : null;
+}
