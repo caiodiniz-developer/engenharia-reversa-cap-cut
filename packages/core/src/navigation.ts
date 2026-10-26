@@ -42,3 +42,40 @@ export function clipIdsAt(p: Project, time: number): string[] {
   const eps = 1e-6;
   return p.tracks.filter((t) => !t.locked).flatMap((t) => t.clips.filter((c) => time > c.start + eps && time < clipEnd(c) - eps).map((c) => c.id));
 }
+
+/** Área de trabalho: intervalo [start, end] da timeline usado para exportar só um trecho. */
+export interface WorkArea {
+  start: number;
+  end: number;
+}
+
+const MIN_WORK_AREA = 0.1;
+
+/**
+ * Define a borda inicial ("in") ou final ("out") da área de trabalho no instante `time`.
+ * Sem área prévia, a outra borda assume o começo/fim do projeto. Se a borda nova ultrapassa a
+ * outra, a outra volta ao limite do projeto. Devolve `null` quando o resultado seria vazio.
+ */
+export function setWorkAreaEdge(area: WorkArea | null, edge: 'start' | 'end', time: number, total: number): WorkArea | null {
+  if (total <= 0) return null;
+  const t = Math.min(Math.max(time, 0), total);
+  let start = area?.start ?? 0;
+  let end = area?.end ?? total;
+  if (edge === 'start') {
+    start = t;
+    if (end - start < MIN_WORK_AREA) end = total;
+  } else {
+    end = t;
+    if (end - start < MIN_WORK_AREA) start = 0;
+  }
+  start = Math.round(start * 1e6) / 1e6;
+  end = Math.round(end * 1e6) / 1e6;
+  return end - start >= MIN_WORK_AREA ? { start, end } : null;
+}
+
+/** Ajusta a área ao tamanho atual do projeto (ex.: depois de encurtar a timeline). */
+export function clampWorkArea(area: WorkArea | null, total: number): WorkArea | null {
+  if (!area) return null;
+  const end = Math.min(area.end, total);
+  return end - area.start >= MIN_WORK_AREA ? { start: area.start, end } : null;
+}
