@@ -217,4 +217,28 @@ describe('exportação', () => {
     const res = await u.post(`/api/projects/${p.id}/exports`, { audioOnly: 'flac' });
     expect(res.status).toBe(400);
   });
+
+  it('exporta GIF animado de um trecho e recusa GIF longo, grande ou combinado com áudio', async () => {
+    const u = await registerUser(t);
+    const p = await readyProject(u);
+    const ok = await u.post(`/api/projects/${p.id}/exports`, { gif: true, width: 160, height: 90, fps: 10, range: { start: 0, end: 2 } });
+    expect(ok.status).toBe(202);
+    await t.built.ctx.queue.onIdle();
+    const dl = await u.get(`/api/exports/${ok.body.exportId}/download-url`);
+    const file = await t.http.get(toPath(dl.body.url)).buffer(true).parse((res, cb) => {
+      const chunks: Buffer[] = [];
+      res.on('data', (c: Buffer) => chunks.push(c));
+      res.on('end', () => cb(null, Buffer.concat(chunks)));
+    });
+    expect(file.headers['content-type']).toBe('image/gif');
+    const out = path.join(t.dir, 'animado.gif');
+    await writeFile(out, file.body as Buffer);
+    const info = await probeMedia(out);
+    expect(info).toMatchObject({ videoCodec: 'gif', width: 160, height: 90 });
+    expect(info.duration).toBeGreaterThan(1.8);
+    expect(info.duration).toBeLessThan(2.3);
+
+    expect((await u.post(`/api/projects/${p.id}/exports`, { gif: true, width: 1920, height: 1080, range: { start: 0, end: 2 } })).status).toBe(422);
+    expect((await u.post(`/api/projects/${p.id}/exports`, { gif: true, audioOnly: 'mp3', width: 160, height: 90 })).status).toBe(422);
+  });
 });
