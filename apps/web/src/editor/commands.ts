@@ -80,6 +80,7 @@ export function buildCommands(ctx: { openPanel: (t: PanelTab) => void; onExport:
     { id: 'extract', label: 'Extrair áudio do vídeo', group: 'Edição', icon: 'mic', enabled: oneMedia, run: () => s().extractAudioOf(s().selection[0]!) },
     { id: 'freeze', label: 'Congelar quadro', group: 'Edição', icon: 'snowflake', enabled: oneMedia, run: () => s().freeze(s().selection[0]!) },
     { id: 'marker', label: 'Adicionar marcador', group: 'Timeline', icon: 'flag', shortcut: 'M', run: () => s().addMarkerAtPlayhead() },
+    { id: 'density', label: 'Alternar altura das faixas (compacta, normal, alta)', group: 'Timeline', icon: 'layers', keywords: 'tamanho densidade', run: () => s().cycleTrackDensity() },
     { id: 'snap', label: 'Alternar ímã (snap)', group: 'Timeline', icon: 'magnet', shortcut: 'N', keywords: 'encaixe', run: () => s().toggleSnapping() },
     { id: 'zoom-in', label: 'Aumentar zoom da timeline', group: 'Timeline', icon: 'zoomIn', shortcut: '+', run: () => s().setZoom(s().zoom * 1.3) },
     { id: 'zoom-out', label: 'Diminuir zoom da timeline', group: 'Timeline', icon: 'zoomOut', shortcut: '-', run: () => s().setZoom(s().zoom / 1.3) },
