@@ -4,7 +4,7 @@ import { Icon } from '../components/Icon';
 import { PlayerEngine } from '../engine/player';
 import { getEngine, setEngine } from '../engine/registry';
 import { aspectLabel } from '../lib/format';
-import { PLAYBACK_RATES, selectDuration, useEditor } from '../store/editor';
+import { PLAYBACK_RATES, selectDuration, useEditor, type PanelTab } from '../store/editor';
 import { toast } from '../store/toasts';
 
 function Timecode() {
@@ -71,6 +71,13 @@ function saveFrame() {
     setTimeout(() => URL.revokeObjectURL(url), 3000);
     toast.success('Quadro salvo como PNG');
   }, 'image/png');
+}
+
+/** Abre uma aba do painel lateral; com `pick`, já abre o seletor de arquivos da biblioteca. */
+function openPanel(tab: PanelTab, pick = false) {
+  useEditor.getState().setPanel(tab);
+  window.dispatchEvent(new Event('editor:open-panel'));
+  if (pick) setTimeout(() => document.querySelector<HTMLInputElement>('[data-testid="file-input"]')?.click(), 80);
 }
 
 export function Preview() {
@@ -150,6 +157,17 @@ export function Preview() {
               <Icon name="film" size={30} />
               <p className="text-sm font-medium">Seu vídeo aparece aqui</p>
               <p className="max-w-[260px] text-2xs text-white/50">Importe mídias na aba Mídia e dê dois cliques para adicioná-las à timeline.</p>
+              <div className="pointer-events-auto mt-2 flex flex-wrap items-center justify-center gap-2">
+                <button type="button" className="btn btn-primary h-8 px-3" onClick={() => openPanel('media', true)} data-testid="empty-import">
+                  <Icon name="upload" size={14} /> Importar mídia
+                </button>
+                <button type="button" className="btn h-8 px-3" onClick={() => openPanel('elements')}>
+                  <Icon name="layers" size={14} /> Fundos e formas
+                </button>
+                <button type="button" className="btn h-8 px-3" onClick={() => openPanel('text')}>
+                  <Icon name="type" size={14} /> Texto
+                </button>
+              </div>
             </div>
           )}
           {guides && (
