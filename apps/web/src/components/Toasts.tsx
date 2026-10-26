@@ -16,15 +16,15 @@ export function Toasts() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 24 }}
             transition={{ duration: 0.16 }}
-            className={`pointer-events-auto flex items-start gap-2 rounded-lg border bg-panel-2 px-3 py-2.5 text-xs shadow-xl ${
-              t.kind === 'error' ? 'border-danger/50' : t.kind === 'success' ? 'border-ok/50' : 'border-line'
+            className={`pointer-events-auto flex items-start gap-2.5 overflow-hidden rounded-xl border border-l-4 bg-panel-2 px-3 py-2.5 text-xs shadow-pop ${
+              t.kind === 'error' ? 'border-danger/40 border-l-danger' : t.kind === 'success' ? 'border-ok/40 border-l-ok' : 'border-line border-l-accent'
             }`}
           >
-            <span className={t.kind === 'error' ? 'text-danger' : t.kind === 'success' ? 'text-ok' : 'text-accent'}>
+            <span className={`mt-px ${t.kind === 'error' ? 'text-danger' : t.kind === 'success' ? 'text-ok' : 'text-accent'}`}>
               <Icon name={t.kind === 'error' ? 'alert' : t.kind === 'success' ? 'check' : 'sparkles'} />
             </span>
             <p className="flex-1 leading-snug">{t.message}</p>
-            <button type="button" className="text-mute hover:text-ink" aria-label="Dispensar" onClick={() => dismiss(t.id)}>
+            <button type="button" className="rounded p-0.5 text-mute transition-colors hover:bg-panel-3 hover:text-ink" aria-label="Dispensar" onClick={() => dismiss(t.id)}>
               <Icon name="x" size={14} />
             </button>
           </motion.div>
