@@ -66,6 +66,26 @@ test.describe('exportação pelo navegador', () => {
     await expect(page.getByTestId('work-area')).toHaveCount(0);
   });
 
+  test('GIF: o diálogo usa 480 por padrão e exporta um GIF sem áudio', async ({ page }) => {
+    await sequence(page); // 8 s de vídeo
+    await page.getByTestId('export-button').click();
+    const dialog = page.getByRole('dialog', { name: 'Exportar vídeo' });
+    await dialog.getByRole('radio', { name: 'GIF' }).click();
+    await expect(dialog.getByLabel('Resolução do GIF')).toHaveValue('480');
+    await expect(dialog.getByTestId('start-export')).toBeEnabled();
+    await dialog.getByTestId('start-export').click();
+    await expect(dialog.getByTestId('export-status')).toContainText('Exportação concluída', { timeout: 120_000 });
+    const [download] = await Promise.all([page.waitForEvent('download'), dialog.getByTestId('download-button').click()]);
+    expect(download.suggestedFilename()).toMatch(/.gif$/);
+    const file = path.join(await mkdtemp(path.join(os.tmpdir(), 'e2e-dl-')), download.suggestedFilename());
+    await download.saveAs(file);
+    const info = await probeMedia(file);
+    expect(info.videoCodec).toBe('gif');
+    expect(info.width).toBe(854);
+    expect(info.hasAudio).toBe(false);
+    expect(info.duration).toBeGreaterThan(7.5);
+  });
+
   test('exporta somente o áudio em MP3 pelo diálogo e o arquivo não tem vídeo', async ({ page }) => {
     await sequence(page);
     await page.getByTestId('export-button').click();
