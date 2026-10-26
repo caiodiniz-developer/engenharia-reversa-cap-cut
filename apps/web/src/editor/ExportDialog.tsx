@@ -30,7 +30,7 @@ export function ExportDialog({ projectId, open, onClose }: { projectId: string; 
   const [res, setRes] = useState<Res>('project');
   const [fps, setFps] = useState<string>('project');
   const [crf, setCrf] = useState('21');
-  const [kind, setKind] = useState<'video' | 'audio'>('video');
+  const [kind, setKind] = useState<'video' | 'audio' | 'gif'>('video');
   const [audioFormat, setAudioFormat] = useState<AudioFormat>('mp3');
   const [busy, setBusy] = useState(false);
   const [current, setCurrent] = useState<{ exportId: string; jobId: string } | null>(null);
@@ -39,6 +39,7 @@ export function ExportDialog({ projectId, open, onClose }: { projectId: string; 
   const fullDuration = projectDuration(project);
   const range = workArea && useRange ? workArea : null;
   const duration = range ? range.end - range.start : fullDuration;
+  const gifTooLong = kind === 'gif' && duration > 30;
   const job = current ? jobs[current.jobId] : undefined;
   const running = job && (job.status === 'queued' || job.status === 'running');
 
@@ -57,12 +58,21 @@ export function ExportDialog({ projectId, open, onClose }: { projectId: string; 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, job?.status]);
 
+  /** GIF é limitado a 720p; ao escolhê-lo, sai de resoluções maiores. */
+  function changeKind(next: 'video' | 'audio' | 'gif') {
+    setKind(next);
+    if (next === 'gif') {
+      if (res !== '480' && res !== '720') setRes('480');
+      if (fps === 'project' || Number(fps) > 30) setFps('15');
+    }
+  }
+
   async function start() {
     setBusy(true);
     try {
       await saveNow(); // exporta o documento salvo no servidor
       const rangeBody = range ? { range: { start: range.start, end: range.end } } : {};
-      const body = kind === 'audio' ? { audioOnly: audioFormat, ...rangeBody } : { ...rangeBody, codec, crf: Number(crf), width, height, ...(fps !== 'project' ? { fps: Number(fps) } : {}), preset: 'veryfast' };
+      const body = kind === 'audio' ? { audioOnly: audioFormat, ...rangeBody } : kind === 'gif' ? { ...rangeBody, gif: true, width, height, fps: Number(fps === 'project' ? 15 : fps) } : { ...rangeBody, codec, crf: Number(crf), width, height, ...(fps !== 'project' ? { fps: Number(fps) } : {}), preset: 'veryfast' };
       const r = await api.post<{ exportId: string; jobId: string }>(`/api/projects/${projectId}/exports`, body);
       useJobs.getState().track(r.jobId, 'export', projectId);
       setCurrent(r);
@@ -126,12 +136,18 @@ export function ExportDialog({ projectId, open, onClose }: { projectId: string; 
       </div>
 
       <div className="mb-3">
-        <Segmented label="Tipo de exportação" value={kind} onChange={setKind} options={[{ value: 'video', label: 'Vídeo' }, { value: 'audio', label: 'Somente áudio' }]} />
+        <Segmented label="Tipo de exportação" value={kind} onChange={changeKind} options={[{ value: 'video', label: 'Vídeo' }, { value: 'audio', label: 'Somente áudio' }, { value: 'gif', label: 'GIF' }]} />
       </div>
 
       {kind === 'audio' ? (
         <div className="grid grid-cols-2 gap-x-4">
           <Select label="Formato do áudio" value={audioFormat} onChange={setAudioFormat} options={[{ value: 'mp3', label: 'MP3 (compatível)' }, { value: 'm4a', label: 'M4A · AAC' }, { value: 'wav', label: 'WAV (sem compressão)' }]} />
+        </div>
+      ) : kind === 'gif' ? (
+        <div className="grid grid-cols-2 gap-x-4">
+          <Select label="Resolução do GIF" value={res} onChange={setRes} options={[{ value: '480', label: 'Pequeno (480)' }, { value: '720', label: 'Médio (720)' }]} />
+          <Select label="Quadros por segundo do GIF" value={fps} onChange={setFps} options={[10, 12, 15, 20, 24].map((f) => ({ value: String(f), label: `${f} fps` }))} />
+          <p className="col-span-2 mb-2 text-2xs text-mute">GIF não tem áudio e aceita até 30 s: marque um trecho com I e O para exportar só uma parte.</p>
         </div>
       ) : (
       <div className="grid grid-cols-2 gap-x-4">
@@ -148,7 +164,7 @@ export function ExportDialog({ projectId, open, onClose }: { projectId: string; 
         </label>
       )}
       <p className="mb-3 text-2xs text-mute">
-        Saída: {kind === 'audio' ? `áudio ${audioFormat.toUpperCase()}` : `${width}×${height}`} · duração {formatDuration(duration)}
+        Saída: {kind === 'audio' ? `áudio ${audioFormat.toUpperCase()}` : kind === 'gif' ? `GIF ${width}×${height}` : `${width}×${height}`} · duração {formatDuration(duration)}
       </p>
 
       {job && (
@@ -181,10 +197,11 @@ export function ExportDialog({ projectId, open, onClose }: { projectId: string; 
         <button type="button" className="btn" onClick={onClose}>
           Fechar
         </button>
-        <button type="button" className="btn btn-primary" disabled={busy || !!running || duration <= 0} onClick={() => void start()} data-testid="start-export">
+        <button type="button" className="btn btn-primary" disabled={busy || !!running || duration <= 0 || gifTooLong} onClick={() => void start()} data-testid="start-export">
           {busy ? 'Enviando…' : 'Exportar'}
         </button>
       </div>
+      {gifTooLong && <p className="mt-2 text-right text-2xs text-danger" role="alert">O GIF aceita até 30 s. Marque um trecho menor com I e O.</p>}
       {duration <= 0 && <p className="mt-2 text-right text-2xs text-mute">Adicione clipes à timeline para exportar.</p>}
 
       {localRecordingSupported() && (
@@ -216,7 +233,7 @@ export function ExportDialog({ projectId, open, onClose }: { projectId: string; 
             {history.slice(0, 5).map((h) => (
               <li key={h.id} className="flex items-center justify-between rounded-md bg-panel-2 px-2 py-1.5 text-2xs">
                 <span className="text-mute">
-                  {String(h.options.audioOnly ?? h.options.codec ?? '').toUpperCase()} · {h.job.status === 'succeeded' ? (h.ready ? formatBytes(h.sizeBytes ?? 0) : 'expirado') : h.job.status}
+                  {String(h.options.gif ? 'gif' : (h.options.audioOnly ?? h.options.codec ?? '')).toUpperCase()} · {h.job.status === 'succeeded' ? (h.ready ? formatBytes(h.sizeBytes ?? 0) : 'expirado') : h.job.status}
                 </span>
                 {h.ready && (
                   <button type="button" className="text-accent hover:underline" onClick={() => void download(h.id)}>
