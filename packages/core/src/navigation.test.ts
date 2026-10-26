@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { addMarker } from './ops/tracks';
-import { clampWorkArea, clipIdsAt, clipIdsBySide, editPoints, neighborEdit, setWorkAreaEdge } from './navigation';
-import { addClip, fixtureProject, mediaClip } from './testing';
+import { clampWorkArea, clipIdsByKind, clipIdsAt, clipIdsBySide, editPoints, neighborEdit, setWorkAreaEdge } from './navigation';
+import { addClip, fixtureProject, mediaClip, videoAsset } from './testing';
+import { addTrack } from './ops/tracks';
+import { addMedia, createProject } from './project';
+import { CaptionClipSchema, TextClipSchema } from './schema';
 
 function build() {
   const { project, trackId } = fixtureProject();
@@ -84,5 +87,47 @@ describe('área de trabalho (entrada e saída)', () => {
     expect(clampWorkArea({ start: 2, end: 9 }, 6)).toEqual({ start: 2, end: 6 });
     expect(clampWorkArea({ start: 5, end: 9 }, 5.05)).toBeNull();
     expect(clampWorkArea(null, 5)).toBeNull();
+  });
+});
+
+describe('clipIdsByKind', () => {
+  function mixed() {
+    let p = createProject('misto', { fps: 30 });
+    p = addMedia(p, videoAsset('v1', 10));
+    p = addMedia(p, { ...videoAsset('i1', 5), kind: 'image', hasAudio: false, name: 'foto.png' });
+    p = addMedia(p, { ...videoAsset('a1', 10), kind: 'audio', width: 0, height: 0, name: 'musica.mp3' });
+    const tv = addTrack(p, 'video');
+    const ta = addTrack(tv.project, 'audio');
+    const tt = addTrack(ta.project, 'text');
+    const tc = addTrack(tt.project, 'caption');
+    const v = mediaClip('v1', 0, 3);
+    const i = mediaClip('i1', 3, 2);
+    const a = mediaClip('a1', 0, 4);
+    const va = mediaClip('v1', 4, 2); // vídeo posto numa faixa de áudio
+    const text = TextClipSchema.parse({ id: 'tx1', type: 'text', start: 0, duration: 2, text: 'Oi' });
+    const cap = CaptionClipSchema.parse({ id: 'cp1', type: 'caption', start: 0, duration: 2, text: 'Legenda' });
+    let q = addClip(tc.project, tv.track.id, v);
+    q = addClip(q, tv.track.id, i);
+    q = addClip(q, ta.track.id, a);
+    q = addClip(q, ta.track.id, va);
+    q = addClip(q, tt.track.id, text);
+    q = addClip(q, tc.track.id, cap);
+    return { q, v, i, a, va, trackV: tv.track.id };
+  }
+
+  it('separa vídeo, imagem, áudio, texto e legenda', () => {
+    const { q, v, i, a, va } = mixed();
+    expect(clipIdsByKind(q, 'video')).toEqual([v.id]);
+    expect(clipIdsByKind(q, 'image')).toEqual([i.id]);
+    expect(clipIdsByKind(q, 'audio').sort()).toEqual([a.id, va.id].sort());
+    expect(clipIdsByKind(q, 'text')).toEqual(['tx1']);
+    expect(clipIdsByKind(q, 'caption')).toEqual(['cp1']);
+  });
+
+  it('ignora faixas bloqueadas', () => {
+    const { q, trackV } = mixed();
+    const locked = { ...q, tracks: q.tracks.map((t) => (t.id === trackV ? { ...t, locked: true } : t)) };
+    expect(clipIdsByKind(locked, 'video')).toEqual([]);
+    expect(clipIdsByKind(locked, 'text')).toEqual(['tx1']);
   });
 });
