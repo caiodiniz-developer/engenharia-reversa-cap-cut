@@ -43,7 +43,8 @@ export function Timeline() {
   const viewTo = Math.ceil((scroll.left + viewW) / 512) * 512 + 512;
   const view = useMemo(() => ({ from: viewFrom, to: viewTo }), [viewFrom, viewTo]);
   const gridPx = rulerStep(zoom).major * zoom;
-  const heights = useMemo(() => project.tracks.map((t) => trackHeight(t.kind)), [project.tracks]);
+  const density = useEditor((s) => s.trackDensity);
+  const heights = useMemo(() => project.tracks.map((t) => trackHeight(t.kind, density)), [project.tracks, density]);
   const lanesH = heights.reduce((a, b) => a + b, 0);
 
   useEffect(() => {
