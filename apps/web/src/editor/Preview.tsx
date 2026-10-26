@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { formatTimecode } from '@editor/core';
+import { formatTimecode, parseTimecode } from '@editor/core';
 import { Icon } from '../components/Icon';
 import { PlayerEngine } from '../engine/player';
 import { getEngine, setEngine } from '../engine/registry';
@@ -11,10 +11,46 @@ function Timecode() {
   const playhead = useEditor((s) => s.playhead);
   const fps = useEditor((s) => s.project.settings.fps);
   const duration = useEditor(selectDuration);
+  const [editing, setEditing] = useState(false);
+
+  useEffect(() => {
+    const open = () => setEditing(true);
+    window.addEventListener('editor:goto-time', open);
+    return () => window.removeEventListener('editor:goto-time', open);
+  }, []);
+
+  const commit = (text: string) => {
+    setEditing(false);
+    if (!text.trim()) return;
+    const t = parseTimecode(text, fps);
+    if (t === null) return toast.error('Tempo inválido. Exemplos: 90, 1:30, 00:00:01:15, 2m30s');
+    const st = useEditor.getState();
+    st.setPlaying(false);
+    st.setPlayhead(t);
+    if (t > duration + 1e-6) toast.info('O tempo digitado passa do fim do projeto: a cabeça foi para o fim');
+  };
+
   return (
     <div className="tnum font-mono text-[15px] leading-none" aria-label="Posição atual" data-testid="timecode">
-      <span className="text-ink">{formatTimecode(playhead, fps)}</span>
-      <span className="text-mute"> / {formatTimecode(duration, fps)}</span>
+      {editing ? (
+        <input
+          autoFocus
+          className="field h-7 w-36 px-2 font-mono text-[13px]"
+          aria-label="Ir para o tempo"
+          placeholder="ex.: 1:30"
+          defaultValue=""
+          onBlur={(e) => commit(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+            if (e.key === 'Escape') setEditing(false);
+          }}
+        />
+      ) : (
+        <button type="button" className="rounded px-1 py-0.5 text-left hover:bg-panel-3" title="Clique para ir a um tempo (ou use a paleta: Ir para o tempo)" onClick={() => setEditing(true)}>
+          <span className="text-ink">{formatTimecode(playhead, fps)}</span>
+          <span className="text-mute"> / {formatTimecode(duration, fps)}</span>
+        </button>
+      )}
     </div>
   );
 }
