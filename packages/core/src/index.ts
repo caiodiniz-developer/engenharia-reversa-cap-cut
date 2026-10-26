@@ -13,6 +13,7 @@ export * from './analysis';
 export * from './ops/tracks';
 export * from './ops/clips';
 export * from './ops/advanced';
+export * from './ops/arrange';
 export { assertTrackValid } from './ops/helpers';
 export * from './textdraw';
 export * from './lut';
