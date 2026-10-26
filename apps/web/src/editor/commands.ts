@@ -83,6 +83,8 @@ export function buildCommands(ctx: { openPanel: (t: PanelTab) => void; onExport:
     { id: 'zoom-in', label: 'Aumentar zoom da timeline', group: 'Timeline', icon: 'zoomIn', shortcut: '+', run: () => s().setZoom(s().zoom * 1.3) },
     { id: 'zoom-out', label: 'Diminuir zoom da timeline', group: 'Timeline', icon: 'zoomOut', shortcut: '-', run: () => s().setZoom(s().zoom / 1.3) },
     { id: 'fit', label: 'Ajustar timeline à janela', group: 'Timeline', icon: 'maximize', shortcut: 'Shift+Z', keywords: 'zoom caber', run: () => s().fitTimeline() },
+    { id: 'sequence', label: 'Colocar clipes selecionados em sequência', group: 'Timeline', icon: 'layers', enabled: () => s().selection.length > 1, keywords: 'encostar juntar organizar', run: () => s().sequenceSelection() },
+    { id: 'split-markers', label: 'Dividir clipes nos marcadores', group: 'Timeline', icon: 'scissors', keywords: 'cortar marcador', run: () => s().splitSelectionAtMarkers() },
     { id: 'select-after', label: 'Selecionar clipes à direita da cabeça', group: 'Timeline', icon: 'layers', keywords: 'depois seguintes', run: () => s().selectSide('after') },
     { id: 'select-before', label: 'Selecionar clipes à esquerda da cabeça', group: 'Timeline', icon: 'layers', keywords: 'antes anteriores', run: () => s().selectSide('before') },
     { id: 'select-all', label: 'Selecionar todos os clipes', group: 'Timeline', icon: 'layers', shortcut: 'Ctrl+A', run: () => s().select(s().project.tracks.flatMap((t) => t.clips.map((c) => c.id))) },
