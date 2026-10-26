@@ -4,6 +4,7 @@ import { api, ApiError } from '../api/client';
 import type { ExportInfo } from '../api/types';
 import { Modal, ProgressBar, Segmented, Select } from '../components/controls';
 import { Icon } from '../components/Icon';
+import { EXPORT_PRESETS, getExportPreset, matchPreset } from '../lib/exportPresets';
 import { formatBytes, formatDuration } from '../lib/format';
 import { localRecordingSupported, recordLocalDraft, RecordCancelled } from '../lib/localRecord';
 import { useEditor } from '../store/editor';
@@ -57,6 +58,18 @@ export function ExportDialog({ projectId, open, onClose }: { projectId: string; 
     if (open) void refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, job?.status]);
+
+  const presetId = matchPreset({ kind, codec, res, fps: fps as never, crf: crf as never, audioFormat });
+  function applyPreset(id: string) {
+    const p = getExportPreset(id);
+    if (!p) return;
+    setKind(p.kind);
+    setCodec(p.codec);
+    setRes(p.res);
+    setFps(p.fps);
+    setCrf(p.crf);
+    setAudioFormat(p.audioFormat);
+  }
 
   /** GIF é limitado a 720p; ao escolhê-lo, sai de resoluções maiores. */
   function changeKind(next: 'video' | 'audio' | 'gif') {
@@ -134,6 +147,9 @@ export function ExportDialog({ projectId, open, onClose }: { projectId: string; 
       <div className="mb-3 card px-3 py-2 text-2xs text-mute">
         A renderização acontece no servidor: suas mídias já enviadas são processadas por lá e o arquivo final fica disponível para download por tempo limitado (24 h por padrão).
       </div>
+
+      <Select label="Predefinição" value={presetId} onChange={applyPreset} options={[...EXPORT_PRESETS.map((p) => ({ value: p.id, label: p.label })), ...(presetId === 'custom' ? [{ value: 'custom', label: 'Personalizada' }] : [])]} />
+      {getExportPreset(presetId) && <p className="-mt-1 mb-3 text-2xs text-mute">{getExportPreset(presetId)!.description}</p>}
 
       <div className="mb-3">
         <Segmented label="Tipo de exportação" value={kind} onChange={changeKind} options={[{ value: 'video', label: 'Vídeo' }, { value: 'audio', label: 'Somente áudio' }, { value: 'gif', label: 'GIF' }]} />
