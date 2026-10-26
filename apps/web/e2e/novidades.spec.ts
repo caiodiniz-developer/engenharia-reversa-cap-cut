@@ -420,6 +420,23 @@ test.describe('timeline e preview', () => {
     await expect(bar).toContainText('Ímã desligado');
   });
 
+  test('altura das faixas alterna entre compacta, normal e alta e é lembrada ao recarregar', async ({ page }) => {
+    await withClip(page);
+    const lane = page.locator('[data-track-id]').first();
+    const h = async () => (await lane.boundingBox())!.height;
+    const btn = page.getByTestId('density-button');
+    await expect(btn).toHaveText(/Normal/);
+    const normal = await h();
+    await btn.click();
+    await expect(btn).toHaveText(/Alta/);
+    expect(await h()).toBeGreaterThan(normal + 10);
+    await btn.click();
+    await expect(btn).toHaveText(/Compacta/);
+    expect(await h()).toBeLessThan(normal - 10);
+    await page.reload();
+    await expect(page.getByTestId('density-button')).toHaveText(/Compacta/);
+  });
+
   test('salvar o quadro atual gera um PNG válido', async ({ page }) => {
     await withClip(page);
     await seek(page, 1);
