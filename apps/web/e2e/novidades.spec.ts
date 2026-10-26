@@ -306,6 +306,60 @@ test.describe('timeline e preview', () => {
     expect(await rate()).toBe(0.25);
   });
 
+  test('copiar e colar atributos (Ctrl+Alt+C/V) e redefinir pela paleta', async ({ page }) => {
+    const first = await withClip(page);
+    await page.keyboard.press('Control+d');
+    await expect.poll(async () => (await clipsOf(page)).length).toBe(2);
+    const second = (await clipsOf(page)).find((c) => c.id !== first.id)!;
+    const scaleOf = async (id: string) => (await projectOf(page)).tracks.flatMap((t) => t.clips).find((c) => c.id === id) as unknown as { transform: { scale: number } };
+    await page.evaluate((id) => {
+      const s = window.__editor.getState() as unknown as { patchClip(id: string, fn: (c: { transform: object }) => object, label: string): void };
+      s.patchClip(id, (c) => ({ ...c, transform: { ...c.transform, scale: 1.7 } }), 'teste');
+    }, first.id);
+    await page.locator(`[data-clip-id="${first.id}"]`).click();
+    await page.keyboard.press('Control+Alt+c');
+    await page.locator(`[data-clip-id="${second.id}"]`).click();
+    expect((await scaleOf(second.id)).transform.scale).toBe(1);
+    await page.keyboard.press('Control+Alt+v');
+    await expect.poll(async () => (await scaleOf(second.id)).transform.scale).toBeCloseTo(1.7, 3);
+
+    await page.keyboard.press('Control+k');
+    await page.getByRole('combobox', { name: 'Buscar comandos' }).fill('redefinir transformacao');
+    await page.keyboard.press('Enter');
+    await expect.poll(async () => (await scaleOf(second.id)).transform.scale).toBe(1);
+    expect((await scaleOf(first.id)).transform.scale).toBeCloseTo(1.7, 3); // a origem não muda
+  });
+
+  test('colocar clipes em sequência e dividir nos marcadores pela paleta', async ({ page }) => {
+    await withClip(page);
+    await seek(page, 2);
+    await page.keyboard.press('s');
+    await expect.poll(async () => (await clipsOf(page)).length).toBe(2);
+    const [a, b] = await clipsOf(page);
+    await page.evaluate((id) => {
+      const s = window.__editor.getState() as unknown as { moveSelection(ids: string[], d: number, p: string): boolean };
+      s.moveSelection([id], 3, id);
+    }, b!.id);
+    expect((await clipsOf(page))[1]!.start).toBeCloseTo(5, 3);
+    await page.keyboard.press('Control+a');
+    await page.keyboard.press('Control+k');
+    await page.getByRole('combobox', { name: 'Buscar comandos' }).fill('colocar clipes selecionados em sequencia');
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('combobox', { name: 'Buscar comandos' })).toBeHidden();
+    await expect.poll(async () => (await clipsOf(page))[1]!.start).toBeCloseTo(a!.duration, 3);
+
+    // marcadores em 0,5 e 1: divide o primeiro clipe em três
+    await seek(page, 0.5);
+    await page.keyboard.press('m');
+    await seek(page, 1);
+    await page.keyboard.press('m');
+    await page.locator(`[data-clip-id="${a!.id}"]`).click();
+    await page.keyboard.press('Control+k');
+    await page.getByRole('combobox', { name: 'Buscar comandos' }).fill('dividir clipes nos marcadores');
+    await page.keyboard.press('Enter');
+    await expect.poll(async () => (await clipsOf(page)).length).toBe(4);
+  });
+
   test('salvar o quadro atual gera um PNG válido', async ({ page }) => {
     await withClip(page);
     await seek(page, 1);
