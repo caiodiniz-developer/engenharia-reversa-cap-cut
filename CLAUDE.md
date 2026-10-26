@@ -25,6 +25,8 @@
 - Operações de timeline são funções imutáveis em `packages/core/src/ops`; a interface chama `useEditor.run(...)`, que trata `TimelineError`.
 - Mudou o schema do projeto? Suba `SCHEMA_VERSION` e registre a migração em `packages/core/src/migrate.ts`. Mudou o Prisma? Gere uma migração em `apps/api/prisma/migrations`.
 - Nunca exponha chaves no frontend nem aceite comandos/argumentos do navegador para o FFmpeg.
+- Ação nova de edição: operação pura em `packages/core/src/ops` (com teste), ação no store, comando em `apps/web/src/editor/commands.ts` (paleta Ctrl+K) e, se houver tecla, linha em `SHORTCUTS` de `useShortcuts.ts`.
+- Nos E2E, depois de executar um comando da paleta ou fechar um diálogo, espere o combobox/diálogo ficar oculto antes de usar atalhos de teclado (o atalho é ignorado enquanto o diálogo existe no DOM).
 
 ## Ambiente Windows com pouco disco
 - Se o disco do sistema estiver cheio, use um `.npmrc` local (ignorado pelo git) com `store-dir` e `virtual-store-dir` em outro disco e defina `TEMP`/`TMP`, `PGDATA_DIR`, `STORAGE_DIR`, `TEMP_DIR`, `PLAYWRIGHT_BROWSERS_PATH` apontando para ele.
