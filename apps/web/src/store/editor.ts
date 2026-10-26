@@ -243,6 +243,7 @@ interface EditorState {
   addMarkerAtPlayhead(): void;
   removeMarker(id: string): void;
   renameMarker(id: string, label: string): void;
+  recolorMarker(id: string, color: string): void;
   setSettings(patch: Partial<ProjectSettings>): void;
   rename(name: string): void;
 }
@@ -833,6 +834,10 @@ export const useEditor = create<EditorState>((set, get) => {
     },
     addMarkerAtPlayhead() {
       get().run('Adicionar marcador', (p) => addMarker(p, get().playhead, `Marcador ${p.markers.length + 1}`).project);
+    },
+    recolorMarker(id, color) {
+      if (!/^#[0-9a-fA-F]{6}$/.test(color)) return;
+      get().run('Mudar cor do marcador', (p) => updateMarker(p, id, { color }));
     },
     renameMarker(id, label) {
       get().run('Renomear marcador', (p) => updateMarker(p, id, { label: label.trim().slice(0, 80) }), { coalesceKey: `marker:${id}` });
