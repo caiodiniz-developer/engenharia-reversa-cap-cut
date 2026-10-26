@@ -360,6 +360,30 @@ test.describe('timeline e preview', () => {
     await expect.poll(async () => (await clipsOf(page)).length).toBe(4);
   });
 
+  test('timecode clicável: digitar 0:02, 00:00:01:15 e um valor inválido', async ({ page }) => {
+    await withClip(page);
+    const head = () => page.evaluate(() => window.__editor.getState().playhead);
+    const fps = await page.evaluate(() => window.__editor.getState().project.settings.fps);
+    await page.getByTestId('timecode').getByRole('button').click();
+    const input = page.getByRole('textbox', { name: 'Ir para o tempo' });
+    await input.fill('0:02');
+    await input.press('Enter');
+    expect(await head()).toBeCloseTo(2, 3);
+
+    await page.keyboard.press('Control+k');
+    await page.getByRole('combobox', { name: 'Buscar comandos' }).fill('ir para o tempo');
+    await page.keyboard.press('Enter');
+    await page.getByRole('textbox', { name: 'Ir para o tempo' }).fill('00:00:01:15');
+    await page.keyboard.press('Enter');
+    expect(await head()).toBeCloseTo(1 + 15 / fps, 2);
+
+    await page.getByTestId('timecode').getByRole('button').click();
+    await page.getByRole('textbox', { name: 'Ir para o tempo' }).fill('abc');
+    await page.keyboard.press('Enter');
+    await expect(page.getByText(/Tempo inválido/)).toBeVisible();
+    expect(await head()).toBeCloseTo(1 + 15 / fps, 2); // não se mexe
+  });
+
   test('salvar o quadro atual gera um PNG válido', async ({ page }) => {
     await withClip(page);
     await seek(page, 1);
