@@ -98,7 +98,8 @@ Cada ✅ aponta o teste que o exercita. "E2E" = Playwright no Chrome com API, Vi
 | Tira de quadros (miniaturas) nos clipes de vídeo | ✅ | render `filmstrip.test`, API `media.test`, E2E `novidades` |
 | Saltar entre cortes (↑/↓) por bordas de clipes e marcadores | ✅ | core `navigation.test`, E2E `novidades` |
 | Aparar até a cabeça (Q/W), empurrar seleção (Alt+setas), selecionar à direita/esquerda | ✅ | core `navigation.test`, E2E `novidades` |
-| Lista de marcadores (ir, renomear, remover) | ✅ | E2E `novidades` |
+| Lista de marcadores (ir, renomear, trocar a cor, remover) | ✅ | E2E `novidades` |
+| Mover faixa para cima/baixo; estado vazio do preview com atalhos (importar, fundos e formas, texto) | ✅ | E2E `novidades` |
 | Velocidade do preview (0,25× a 2×; não afeta a exportação) | ✅ | E2E `novidades` (movimento da cabeça medido; o som em velocidades diferentes de 1× não foi avaliado) |
 | Copiar/colar atributos (Ctrl+Alt+C/V), redefinir transformação, colocar em sequência, dividir nos marcadores | ✅ | core `ops/arrange.test`, E2E `novidades` |
 | Ir para um tempo digitado (clique no timecode ou pela paleta; 1:30, 00:00:01:15, 2m30s) | ✅ | core `time.test`, E2E `novidades` |
