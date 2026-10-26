@@ -23,6 +23,7 @@ export function Timeline() {
   const zoom = useEditor((s) => s.zoom);
   const media = useEditor((s) => s.media);
   const selectedTrackId = useEditor((s) => s.selectedTrackId);
+  const workArea = useEditor((s) => s.workArea);
   const playing = useEditor((s) => s.playing);
   const store = useEditor;
 
@@ -256,6 +257,9 @@ export function Timeline() {
             <div className="sticky left-0 z-40 flex shrink-0 items-center border-b border-r border-line bg-panel px-3 text-2xs uppercase tracking-wide text-mute" style={{ width: HEADER_W }}>
               Faixas
             </div>
+            {workArea && (
+              <div className="pointer-events-none absolute top-0 z-[41] border-x-2 border-accent bg-accent/20" style={{ left: HEADER_W + workArea.start * zoom, width: (workArea.end - workArea.start) * zoom, height: RULER_H }} data-testid="work-area" aria-label="Trecho marcado" />
+            )}
             <Ruler
               pps={zoom}
               scrollLeft={scroll.left}
@@ -330,6 +334,12 @@ export function Timeline() {
             ))}
             {/* Referência de coordenadas das faixas e retângulo de seleção (não captura eventos) */}
             <div ref={lanesRef} className="pointer-events-none absolute top-0" style={{ left: HEADER_W, width: contentW, height: Math.max(lanesH, 1) }} data-testid="lanes" aria-hidden="true">
+              {workArea && (
+                <>
+                  <div className="absolute top-0 bg-bg/55" style={{ left: 0, width: workArea.start * zoom, height: Math.max(lanesH, 1) }} />
+                  <div className="absolute top-0 bg-bg/55" style={{ left: workArea.end * zoom, width: Math.max(0, contentW - workArea.end * zoom), height: Math.max(lanesH, 1) }} />
+                </>
+              )}
               {marquee && <div className="absolute border border-accent bg-accent/15" style={{ left: marquee.x, top: marquee.y, width: marquee.w, height: marquee.h }} />}
             </div>
           </div>
