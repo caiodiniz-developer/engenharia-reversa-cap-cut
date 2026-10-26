@@ -384,6 +384,25 @@ test.describe('timeline e preview', () => {
     expect(await head()).toBeCloseTo(1 + 15 / fps, 2); // não se mexe
   });
 
+  test('paleta: selecionar todos os textos / vídeos escolhe só o tipo pedido', async ({ page }) => {
+    await withClip(page);
+    await page.getByTestId('tab-text').click();
+    await page.getByRole('button', { name: 'Adicionar texto Título' }).click();
+    await expect.poll(async () => (await clipsOf(page)).length).toBe(2);
+    const pick = async (query: string) => {
+      await page.keyboard.press('Control+k');
+      await page.getByRole('combobox', { name: 'Buscar comandos' }).fill(query);
+      await page.keyboard.press('Enter');
+      await expect(page.getByRole('combobox', { name: 'Buscar comandos' })).toBeHidden();
+      return page.evaluate(() => window.__editor.getState().selection);
+    };
+    const clips = await clipsOf(page);
+    const text = clips.find((c) => c.type === 'text')!;
+    const video = clips.find((c) => c.type === 'media')!;
+    expect(await pick('selecionar todos os textos')).toEqual([text.id]);
+    expect(await pick('selecionar todos os videos')).toEqual([video.id]);
+  });
+
   test('salvar o quadro atual gera um PNG válido', async ({ page }) => {
     await withClip(page);
     await seek(page, 1);
