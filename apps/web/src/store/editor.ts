@@ -55,6 +55,9 @@ import {
   removeKeyframeAt,
   clampParams,
   neighborEdit,
+  setWorkAreaEdge,
+  clampWorkArea,
+  type WorkArea,
   clipIdsAt,
   clipIdsBySide,
   cuesToCaptionClips,
@@ -102,6 +105,8 @@ interface EditorState {
   loop: boolean;
   /** Velocidade de reprodução do preview (não altera o projeto nem a exportação). */
   rate: number;
+  /** Trecho marcado com I/O: usado para exportar só uma parte (não é salvo no projeto). */
+  workArea: WorkArea | null;
   zoom: number;
   snapping: boolean;
   guides: boolean;
@@ -143,6 +148,9 @@ interface EditorState {
   toggleMute(): void;
   toggleLoop(): void;
   setRate(r: number): void;
+  /** Marca a entrada (start) ou a saída (end) do trecho na cabeça de reprodução. */
+  markWorkArea(edge: 'start' | 'end'): void;
+  clearWorkArea(): void;
   stepRate(dir: 1 | -1): void;
   setZoom(z: number): void;
   toggleSnapping(): void;
@@ -234,6 +242,7 @@ export const useEditor = create<EditorState>((set, get) => {
     muted: false,
     loop: false,
     rate: 1,
+    workArea: null,
     zoom: 60,
     snapping: true,
     guides: false,
@@ -251,6 +260,7 @@ export const useEditor = create<EditorState>((set, get) => {
         media: Object.fromEntries(media.map((m) => [m.id, m])),
         selection: [],
         selectedTrackId: null,
+        workArea: null,
         playhead: 0,
         playing: false,
         saveState: 'saved',
@@ -268,7 +278,7 @@ export const useEditor = create<EditorState>((set, get) => {
       if (history === get().history) return;
       // Remove da seleção clipes que deixaram de existir.
       const selection = get().selection.filter((id) => findClip(project, id));
-      set({ history, project, selection, saveState: get().saveState === 'conflict' ? 'conflict' : 'dirty' });
+      set({ history, project, selection, workArea: clampWorkArea(get().workArea, projectDuration(project)), saveState: get().saveState === 'conflict' ? 'conflict' : 'dirty' });
     },
 
     run(label, fn, opts) {
@@ -383,6 +393,14 @@ export const useEditor = create<EditorState>((set, get) => {
     },
     toggleMute() {
       set({ muted: !get().muted });
+    },
+    markWorkArea(edge) {
+      const area = setWorkAreaEdge(get().workArea, edge, get().playhead, duration());
+      if (!area) return toast.info('Posicione a cabeça de reprodução dentro do projeto para marcar o trecho');
+      set({ workArea: area });
+    },
+    clearWorkArea() {
+      set({ workArea: null });
     },
     setRate(r) {
       set({ rate: Math.max(PLAYBACK_RATES[0]!, Math.min(PLAYBACK_RATES[PLAYBACK_RATES.length - 1]!, r)) });
