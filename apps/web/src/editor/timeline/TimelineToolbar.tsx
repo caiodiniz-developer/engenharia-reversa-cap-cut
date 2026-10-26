@@ -4,6 +4,7 @@ import { findClip, type TrackKind } from '@editor/core';
 import { Icon, type IconName } from '../../components/Icon';
 import { MAX_ZOOM, MIN_ZOOM, selectCanRedo, selectCanUndo, useEditor } from '../../store/editor';
 import { toast } from '../../store/toasts';
+import { DENSITY_LABEL } from './geometry';
 import { MarkersPopover } from './MarkersPopover';
 
 function Tool({ icon, label, onClick, disabled, pressed, shortcut }: { icon: IconName; label: string; onClick: () => void; disabled?: boolean; pressed?: boolean; shortcut?: string }) {
@@ -20,6 +21,7 @@ export function TimelineToolbar() {
   // Assina só o necessário: o cursor muda a cada quadro e não deve re-renderizar a barra de ferramentas.
   const sel = useEditor(useShallow((st) => ({ selection: st.selection, project: st.project, snapping: st.snapping, zoom: st.zoom, selectedTrackId: st.selectedTrackId })));
   const s = { ...useEditor.getState(), ...sel };
+  const density = useEditor((st) => st.trackDensity);
   const canUndo = useEditor(selectCanUndo);
   const canRedo = useEditor(selectCanRedo);
   const [adding, setAdding] = useState(false);
@@ -50,6 +52,9 @@ export function TimelineToolbar() {
       <MarkersPopover />
       <Tool icon="minimize" label="Fechar espaços vazios da faixa selecionada" onClick={() => (s.selectedTrackId ? s.closeGaps(s.selectedTrackId) : toast.info('Clique no cabeçalho de uma faixa para selecioná-la'))} />
       <Sep />
+      <button type="button" className="btn h-7 px-2 text-2xs" onClick={s.cycleTrackDensity} title="Altura das faixas: clique para alternar entre compacta, normal e alta" aria-label={`Altura das faixas: ${DENSITY_LABEL[density]}`} data-testid="density-button">
+        <Icon name="layers" size={12} /> {DENSITY_LABEL[density]}
+      </button>
       <Tool icon="magnet" label="Ímã (snap)" shortcut="N" onClick={s.toggleSnapping} pressed={s.snapping} />
       <div className="relative">
         <button type="button" className="btn h-7 px-2.5" aria-haspopup="menu" aria-expanded={adding} onClick={() => setAdding(!adding)}>
