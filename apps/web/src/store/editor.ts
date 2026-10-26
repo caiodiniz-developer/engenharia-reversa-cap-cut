@@ -66,6 +66,8 @@ import {
   type WorkArea,
   clipIdsAt,
   clipIdsBySide,
+  clipIdsByKind,
+  type ClipKindFilter,
   cuesToCaptionClips,
   type AnimatableProp,
   type CaptionClip,
@@ -142,6 +144,8 @@ interface EditorState {
   setPlaying(v: boolean): void;
   togglePlay(): void;
   stepFrames(n: number): void;
+  /** Seleciona todos os clipes de um tipo (vídeo, imagem, áudio, texto, legenda). */
+  selectByKind(kind: ClipKindFilter): void;
   /** Seleciona todos os clipes à direita (ou à esquerda) da cabeça de reprodução. */
   selectSide(side: 'after' | 'before'): void;
   /** Apara o início (ou o fim) dos clipes selecionados — ou dos que estão sob a cabeça — até a cabeça de reprodução. */
@@ -371,6 +375,12 @@ export const useEditor = create<EditorState>((set, get) => {
     stepFrames(n) {
       set({ playing: false });
       get().setPlayhead(get().playhead + n / fps());
+    },
+    selectByKind(kind) {
+      const ids = clipIdsByKind(get().project, kind);
+      const names = { video: 'vídeo', image: 'imagem', audio: 'áudio', text: 'texto', caption: 'legenda' };
+      if (!ids.length) return toast.info('Não há clipes de ' + names[kind] + ' (em faixas desbloqueadas)');
+      set({ selection: ids });
     },
     selectSide(side) {
       const ids = clipIdsBySide(get().project, get().playhead, side);
