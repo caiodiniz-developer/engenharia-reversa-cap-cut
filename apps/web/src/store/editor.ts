@@ -232,6 +232,8 @@ interface EditorState {
   closeGaps(trackId: string): void;
   /** Encosta os clipes selecionados em sequência, sem espaços entre eles. */
   sequenceSelection(): void;
+  /** Ajusta o zoom e a rolagem para a seleção ocupar a largura da timeline. */
+  zoomToSelection(): void;
   /** Liga/desliga um estado em todas as faixas de uma vez (se alguma está desligada, liga todas; senão desliga todas). */
   toggleAllTracks(prop: 'locked' | 'hidden' | 'muted'): void;
   /** Estica o fim dos clipes selecionados até a cabeça de reprodução (imagens, textos, legendas e vídeos com mídia sobrando). */
@@ -853,6 +855,22 @@ export const useEditor = create<EditorState>((set, get) => {
       const on = tracks.some((t) => !t[prop]);
       const label = { locked: 'Bloquear faixas', hidden: 'Ocultar faixas', muted: 'Silenciar faixas' }[prop];
       get().run(on ? label : 'Desfazer: ' + label.toLowerCase(), (p) => tracks.reduce((acc, t) => setTrackProps(acc, t.id, { [prop]: on }), p));
+    },
+    zoomToSelection() {
+      const { project, selection } = get();
+      const clips = selection.map((id) => findClip(project, id)?.clip).filter((c): c is Clip => !!c);
+      if (!clips.length) return toast.info('Selecione clipes para dar zoom neles');
+      const start = Math.min(...clips.map((c) => c.start));
+      const end = Math.max(...clips.map(clipEnd));
+      const el = document.querySelector<HTMLElement>('[data-testid="timeline"]');
+      const width = Math.max(200, (el?.clientWidth ?? 900) - 260);
+      get().setZoom(width / Math.max(end - start, 0.25));
+      get().setPlayhead(start);
+      // a rolagem horizontal acompanha o início da seleção
+      requestAnimationFrame(() => {
+        const scroller = el?.querySelector<HTMLElement>('.overflow-auto');
+        if (scroller) scroller.scrollLeft = Math.max(0, start * get().zoom - 24);
+      });
     },
     sequenceSelection() {
       const ids = get().selection;
