@@ -18,6 +18,8 @@ export function TopBar({ onExport, onHelp, onPalette, onToggleProps }: { onExpor
   const activeJobs = useJobs((s) => Object.values(s.jobs).filter((j) => j.status === 'running' || j.status === 'queued').length);
   const theme = useTheme((s) => s.theme);
   const toggleTheme = useTheme((s) => s.toggle);
+  const propsCollapsed = useEditor((s) => s.propsCollapsed);
+  const togglePropsCollapsed = useEditor((s) => s.togglePropsCollapsed);
   const [menu, setMenu] = useState<'history' | 'jobs' | null>(null);
   const [draft, setDraft] = useState<string | null>(null);
 
@@ -103,7 +105,15 @@ export function TopBar({ onExport, onHelp, onPalette, onToggleProps }: { onExpor
         <button type="button" className="btn-icon" aria-label="Atalhos de teclado" title="Atalhos (?)" onClick={onHelp}>
           <Icon name="keyboard" />
         </button>
-        <button type="button" className="btn-icon lg:hidden" aria-label="Painel de propriedades" title="Propriedades" onClick={onToggleProps}>
+        <button
+          type="button"
+          className="btn-icon"
+          aria-label="Painel de propriedades"
+          aria-pressed={!propsCollapsed}
+          title="Mostrar/ocultar propriedades"
+          onClick={() => (window.matchMedia('(min-width: 1024px)').matches ? togglePropsCollapsed() : onToggleProps())}
+          data-testid="props-toggle"
+        >
           <Icon name="panelRight" />
         </button>
         <button type="button" className="btn btn-primary ml-2 h-8 px-4 shadow-sm" onClick={onExport} data-testid="export-button">
