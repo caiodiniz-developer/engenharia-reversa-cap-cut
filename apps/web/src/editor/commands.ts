@@ -1,4 +1,4 @@
-import { findClip } from '@editor/core';
+import { findClip, POSITION_LABEL, POSITION_PRESETS } from '@editor/core';
 import type { IconName } from '../components/Icon';
 import { saveNow } from '../store/persist';
 import { useEditor, type PanelTab } from '../store/editor';
@@ -85,6 +85,16 @@ export function buildCommands(ctx: { openPanel: (t: PanelTab) => void; onExport:
     { id: 'zoom-in', label: 'Aumentar zoom da timeline', group: 'Timeline', icon: 'zoomIn', shortcut: '+', run: () => s().setZoom(s().zoom * 1.3) },
     { id: 'zoom-out', label: 'Diminuir zoom da timeline', group: 'Timeline', icon: 'zoomOut', shortcut: '-', run: () => s().setZoom(s().zoom / 1.3) },
     { id: 'fit', label: 'Ajustar timeline à janela', group: 'Timeline', icon: 'maximize', shortcut: 'Shift+Z', keywords: 'zoom caber', run: () => s().fitTimeline() },
+    ...([['upper', 'MAIÚSCULAS'], ['lower', 'minúsculas'], ['title', 'Cada Palavra Maiúscula'], ['sentence', 'Primeira letra da frase']] as const).map(([mode, label]) => ({
+      id: 'case-' + mode,
+      label: 'Texto: ' + label,
+      group: 'Texto',
+      icon: 'type' as IconName,
+      enabled: hasSel,
+      keywords: 'caixa alta baixa capitalizar converter',
+      run: () => s().changeCaseSelection(mode),
+    })),
+    { id: 'find-replace', label: 'Localizar e substituir texto…', group: 'Texto', icon: 'search', keywords: 'trocar buscar substituir palavra', run: () => window.dispatchEvent(new Event('editor:open-replace')) },
     { id: 'sequence', label: 'Colocar clipes selecionados em sequência', group: 'Timeline', icon: 'layers', enabled: () => s().selection.length > 1, keywords: 'encostar juntar organizar', run: () => s().sequenceSelection() },
     { id: 'split-markers', label: 'Dividir clipes nos marcadores', group: 'Timeline', icon: 'scissors', keywords: 'cortar marcador', run: () => s().splitSelectionAtMarkers() },
     ...([['video', 'vídeos'], ['image', 'imagens'], ['audio', 'áudios'], ['text', 'textos'], ['caption', 'legendas']] as const).map(([k, label]) => ({
