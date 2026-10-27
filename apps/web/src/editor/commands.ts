@@ -167,6 +167,8 @@ export function buildCommands(ctx: { openPanel: (t: PanelTab) => void; onExport:
     })),
     { id: 'remove-track', label: 'Remover faixa selecionada', group: 'Timeline', icon: 'trash', enabled: () => !!s().selectedTrackId, run: () => s().removeTrack(s().selectedTrackId!) },
     { id: 'close-gaps', label: 'Fechar espaços vazios da faixa selecionada', group: 'Timeline', icon: 'minimize', enabled: () => !!s().selectedTrackId, run: () => s().closeGaps(s().selectedTrackId!) },
+    { id: 'focus', label: 'Modo foco (esconder painéis)', group: 'Aparência', icon: 'minimize', shortcut: 'F', keywords: 'tela cheia zen concentrar', run: () => s().toggleFocusMode() },
+    { id: 'props-toggle', label: 'Mostrar/ocultar o painel de propriedades', group: 'Aparência', icon: 'panelRight', keywords: 'direita recolher', run: () => s().togglePropsCollapsed() },
     { id: 'guides', label: 'Mostrar/ocultar guias de composição', group: 'Preview', icon: 'grid', run: () => s().toggleGuides() },
     { id: 'mute', label: 'Silenciar/ativar o som do preview', group: 'Preview', icon: 'volumeOff', run: () => s().toggleMute() },
     { id: 'save', label: 'Salvar agora', group: 'Projeto', icon: 'cloud', shortcut: 'Ctrl+S', run: () => void saveNow() },
