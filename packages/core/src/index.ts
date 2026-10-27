@@ -14,6 +14,8 @@ export * from './ops/tracks';
 export * from './ops/clips';
 export * from './ops/advanced';
 export * from './ops/arrange';
+export * from './ops/repeat';
+export * from './ops/textedit';
 export { assertTrackValid } from './ops/helpers';
 export * from './textdraw';
 export * from './lut';
