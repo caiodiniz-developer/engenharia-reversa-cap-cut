@@ -5,6 +5,7 @@ import type { MediaItem, ProjectDoc } from '../api/types';
 import { Icon } from '../components/Icon';
 import { CommandPalette } from '../editor/CommandPalette';
 import { ExportDialog } from '../editor/ExportDialog';
+import { ReplaceDialog } from '../editor/ReplaceDialog';
 import { StatusBar } from '../editor/StatusBar';
 import { VersionsDialog } from '../editor/VersionsDialog';
 import { AiPanel } from '../editor/panels/AiPanel';
@@ -77,6 +78,12 @@ export function EditorPage() {
 
   // A paleta de comandos pede para abrir um painel (e ele precisa estar visível).
   const [versionsOpen, setVersionsOpen] = useState(false);
+  const [replaceOpen, setReplaceOpen] = useState(false);
+  useEffect(() => {
+    const open = () => setReplaceOpen(true);
+    window.addEventListener('editor:open-replace', open);
+    return () => window.removeEventListener('editor:open-replace', open);
+  }, []);
   useEffect(() => {
     const open = () => setVersionsOpen(true);
     window.addEventListener('editor:open-versions', open);
@@ -231,6 +238,7 @@ export function EditorPage() {
 
       <ExportDialog projectId={id} open={exporting} onClose={() => setExporting(false)} />
       <VersionsDialog projectId={id} open={versionsOpen} onClose={() => setVersionsOpen(false)} />
+      <ReplaceDialog open={replaceOpen} onClose={() => setReplaceOpen(false)} />
       <ShortcutsDialog open={help} onClose={() => setHelp(false)} />
       <CommandPalette open={palette} onClose={() => setPalette(false)} onExport={() => setExporting(true)} onHelp={openHelp} />
     </div>
