@@ -11,6 +11,23 @@ beforeAll(async () => {
 afterAll(() => t.close());
 
 describe('mídia', () => {
+  it('renomeia a mídia (só o nome de exibição), higieniza o texto e respeita a posse', async () => {
+    const a = await registerUser(t);
+    const b = await registerUser(t);
+    const p = await createProjectFor(a);
+    const m = await uploadMedia(t, a, p.id, await makeVideo(t.dir, 'renomear.mp4', { duration: 1, color: '0000ff' }));
+    const res = await a.patch(`/api/media/${m.id}`).send({ name: '  Cena   final\n/../x  ' });
+    expect(res.status).toBe(200);
+    expect(res.body.media.name).toBe('Cena final .. x');
+    expect(res.body.media.status).toBe('ready');
+    expect((await a.get(`/api/media/${m.id}`)).body.media.name).toBe('Cena final .. x');
+
+    expect((await a.patch(`/api/media/${m.id}`).send({ name: '   ' })).status).toBe(400);
+    expect((await a.patch(`/api/media/${m.id}`).send({ name: 'x'.repeat(121) })).status).toBe(400);
+    expect((await b.patch(`/api/media/${m.id}`).send({ name: 'invasor' })).status).toBe(404);
+    expect((await a.get(`/api/media/${m.id}`)).body.media.name).toBe('Cena final .. x');
+  });
+
   it('envia vídeo, extrai metadados e gera thumbnail, waveform e proxy', async () => {
     const u = await registerUser(t);
     const p = await createProjectFor(u);
