@@ -1,6 +1,7 @@
 import type { Clip, MediaClip, TextClip, CaptionClip } from '@editor/core';
 import { Check, NumberField, Section } from '../../components/controls';
 import { useEditor } from '../../store/editor';
+import { PositionGrid } from './PositionGrid';
 import { KeyframeButton, setAnimatable, valueAt } from './shared';
 
 type Visual = MediaClip | TextClip | CaptionClip;
@@ -31,6 +32,7 @@ export function TransformSection({ clips }: { clips: Visual[] }) {
 
   return (
     <Section title="Transformação">
+      {clip.type === 'media' && <PositionGrid />}
       {num('x', 'Posição X', -150, 150, 1, '%', 100)}
       {num('y', 'Posição Y', -150, 150, 1, '%', 100)}
       {num('scale', 'Escala', 1, 500, 1, '%', 100)}
