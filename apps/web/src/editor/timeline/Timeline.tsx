@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { clipEnd, collectSnapPoints, findClip, formatTimecode, projectDuration, snapRange, snapTime, type Clip, type Track } from '@editor/core';
+import { ClipContextMenu } from './ClipContextMenu';
 import { Icon } from '../../components/Icon';
 import { MAX_ZOOM, MIN_ZOOM, useEditor } from '../../store/editor';
 import { toast } from '../../store/toasts';
@@ -130,6 +131,17 @@ export function Timeline() {
     drag.current = { kind: 'move', ids, primaryId: clip.id, startX: e.clientX, origStart: clip.start, length: clip.duration, applied: 0, active: false, clickSelect };
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
+  };
+
+  const [menu, setMenu] = useState<{ x: number; y: number } | null>(null);
+  const onClipContext = (e: React.MouseEvent, clip: Clip) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const s = store.getState();
+    if (!s.selection.includes(clip.id)) s.select([clip.id]);
+    const track = s.project.tracks.find((t) => t.clips.some((c) => c.id === clip.id));
+    if (track) s.selectTrack(track.id);
+    setMenu({ x: e.clientX, y: e.clientY });
   };
 
   const onTrimDown = (e: React.PointerEvent, clip: Clip, edge: 'start' | 'end') => {
@@ -328,6 +340,7 @@ export function Timeline() {
                       view={view}
                       onPointerDown={onClipPointerDown}
                       onTrimDown={onTrimDown}
+                      onContext={onClipContext}
                     />
                   ))}
                 </div>
@@ -349,6 +362,7 @@ export function Timeline() {
           <Playhead zoom={zoom} height={RULER_H + lanesH + 24} />
         </div>
       </div>
+      {menu && <ClipContextMenu x={menu.x} y={menu.y} onClose={() => setMenu(null)} />}
     </div>
   );
 }
