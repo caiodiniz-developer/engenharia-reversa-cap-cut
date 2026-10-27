@@ -211,3 +211,31 @@ test.describe('paleta', () => {
     await expect(page.getByTestId('command-list').getByRole('option').nth(0)).toContainText('Adicionar marcador');
   });
 });
+
+test.describe('layout', () => {
+  test('modo foco (F) esconde trilho e painéis; o botão de saída e o F voltam; propriedades recolhem e lembram', async ({ page }) => {
+    await withClip(page);
+    await expect(page.getByTestId('properties')).toBeVisible();
+    await expect(page.getByTestId('tab-media')).toBeVisible();
+
+    await page.keyboard.press('f');
+    await expect(page.getByTestId('tab-media')).toHaveCount(0);
+    await expect(page.getByTestId('properties')).toHaveCount(0);
+    await expect(page.getByTestId('timeline')).toBeVisible();
+    await expect(page.getByTestId('preview-canvas')).toBeVisible();
+    await page.getByTestId('exit-focus').click();
+    await expect(page.getByTestId('tab-media')).toBeVisible();
+    await expect(page.getByTestId('properties')).toBeVisible();
+
+    // recolher só as propriedades
+    await page.getByTestId('props-toggle').click();
+    await expect(page.getByTestId('properties')).toBeHidden();
+    await expect(page.getByTestId('tab-media')).toBeVisible();
+    await page.reload();
+    await expect(page.getByTestId('editor')).toBeVisible();
+    const aside = page.getByRole('complementary', { name: 'Propriedades' });
+    await expect(aside).toBeHidden();
+    await page.getByTestId('props-toggle').click();
+    await expect(aside).toBeVisible();
+  });
+});
