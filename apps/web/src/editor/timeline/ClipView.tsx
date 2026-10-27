@@ -92,9 +92,11 @@ export interface ClipViewProps {
   view: { from: number; to: number };
   onPointerDown: (e: React.PointerEvent, clip: Clip) => void;
   onTrimDown: (e: React.PointerEvent, clip: Clip, edge: 'start' | 'end') => void;
+  /** Botão direito sobre o clipe (abre o menu de contexto). */
+  onContext?: (e: React.MouseEvent, clip: Clip) => void;
 }
 
-function ClipViewBase({ clip, trackKind, trackLocked, pps, selected, media, height, view, onPointerDown, onTrimDown }: ClipViewProps) {
+function ClipViewBase({ clip, trackKind, trackLocked, pps, selected, media, height, view, onPointerDown, onTrimDown, onContext }: ClipViewProps) {
   const width = Math.max(2, clip.duration * pps);
   const inner = height - 8;
   const mc = clip.type === 'media' ? (clip as MediaClip) : undefined;
@@ -130,6 +132,7 @@ function ClipViewBase({ clip, trackKind, trackLocked, pps, selected, media, heig
         backgroundRepeat: thumb ? 'repeat-x' : undefined,
       }}
       onPointerDown={(e) => onPointerDown(e, clip)}
+      onContextMenu={(e) => onContext?.(e, clip)}
     >
       {showFilm && mc && media && <Filmstrip clip={mc} media={media} pps={pps} height={inner} view={view} />}
       {showWave && peaks && <Waveform peaks={peaks} from={srcFrom} to={srcTo} width={width} height={showFilm ? 22 : inner - 2} />}
