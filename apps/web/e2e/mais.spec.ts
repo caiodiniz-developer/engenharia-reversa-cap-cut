@@ -239,3 +239,22 @@ test.describe('layout', () => {
     await expect(aside).toBeVisible();
   });
 });
+
+test.describe('clipes na timeline', () => {
+  test('tooltip e selos refletem velocidade, volume, mudo e fades', async ({ page }) => {
+    const c = await withClip(page);
+    const clip = page.locator(`[data-clip-id="${c.id}"]`);
+    await expect(clip).toHaveAttribute('title', /início 0:00 · duração/);
+    await palette(page, 'velocidade do clipe 2');
+    await palette(page, 'volume do clipe −10');
+    await palette(page, 'fade de entrada e saida de 0,5');
+    await expect(clip).toHaveAttribute('title', /velocidade 2×.*volume 90%.*fade 0:00\.5 \/ 0:00\.5/);
+    await expect(clip.getByTestId('fade-in-ramp')).toBeVisible();
+    await expect(clip.getByTestId('fade-out-ramp')).toBeVisible();
+    await expect(clip).toContainText('90%');
+    await palette(page, 'silenciar reativar o som do clipe');
+    await expect(clip).toHaveAttribute('title', /sem som/);
+    await palette(page, 'remover fades');
+    await expect(clip.getByTestId('fade-in-ramp')).toHaveCount(0);
+  });
+});
