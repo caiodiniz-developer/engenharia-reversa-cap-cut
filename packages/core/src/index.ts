@@ -15,6 +15,7 @@ export * from './ops/clips';
 export * from './ops/advanced';
 export * from './ops/arrange';
 export * from './ops/repeat';
+export * from './ops/duration';
 export * from './ops/captions';
 export * from './ops/trackdup';
 export * from './ops/textedit';
