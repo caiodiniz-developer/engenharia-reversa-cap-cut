@@ -21,3 +21,5 @@ export * from './textdraw';
 export * from './lut';
 export * from './animation';
 export * from './navigation';
+export * from './layout';
+export * from './chapters';
