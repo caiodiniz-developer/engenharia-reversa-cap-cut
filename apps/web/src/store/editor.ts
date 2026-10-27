@@ -232,6 +232,8 @@ interface EditorState {
   closeGaps(trackId: string): void;
   /** Encosta os clipes selecionados em sequência, sem espaços entre eles. */
   sequenceSelection(): void;
+  /** Define a velocidade de todos os clipes de mídia selecionados. */
+  setSelectionSpeed(speed: number): void;
   /** Soma `delta` (ex.: 0,1) ao volume dos clipes selecionados (0 a 400%). */
   nudgeVolume(delta: number): void;
   /** Aplica fade de entrada e/ou saída (segundos; 0 remove) aos clipes de áudio/vídeo selecionados. */
@@ -907,6 +909,12 @@ export const useEditor = create<EditorState>((set, get) => {
       if (!targets.length) return toast.info('Selecione clipes de áudio ou vídeo');
       const mute = targets.some((c) => !c.audio.muted);
       get().run(mute ? 'Silenciar clipes' : 'Reativar o som dos clipes', (p) => targets.reduce((acc, c) => updateClip(acc, c.id, (x) => ({ ...x, audio: { ...(x as MediaClip).audio, muted: mute } }) as Clip), p));
+    },
+    setSelectionSpeed(speed) {
+      const { project, selection } = get();
+      const ids = selection.filter((id) => findClip(project, id)?.clip.type === 'media');
+      if (!ids.length) return toast.info('Selecione clipes de vídeo ou áudio');
+      get().run('Alterar velocidade', (p) => ids.reduce((acc, id) => setSpeed(acc, id, speed), p));
     },
     sequenceSelection() {
       const ids = get().selection;
