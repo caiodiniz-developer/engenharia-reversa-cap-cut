@@ -60,6 +60,8 @@ export function EditorPage() {
   const panel = useEditor((s) => s.panel);
   const setPanel = useEditor((s) => s.setPanel);
   const saveState = useEditor((s) => s.saveState);
+  const focusMode = useEditor((s) => s.focusMode);
+  const propsCollapsed = useEditor((s) => s.propsCollapsed);
   const left = useResizable('left', 320, 260, 520, 'x');
   const right = useResizable('right', 330, 280, 520, 'x', true);
   const timeline = useResizable('timeline', 320, 180, 680, 'y', true);
@@ -156,6 +158,8 @@ export function EditorPage() {
   }
 
   const tool = TOOLS.find((t) => t.id === panel)!;
+  const showSide = !focusMode;
+  const showProps = !focusMode && !propsCollapsed;
 
   return (
     <div className="flex h-full flex-col bg-bg" data-testid="editor">
@@ -184,15 +188,15 @@ export function EditorPage() {
 
       <div className="flex min-h-0 flex-1 flex-col">
         <div className="relative flex min-h-0 flex-1">
-          <ToolRail
+          {showSide && <ToolRail
             value={panel}
             onChange={(t) => {
               setPanel(t);
               togglePanel(true);
             }}
-          />
+          />}
 
-          {panelOpen && (
+          {showSide && panelOpen && (
             <>
               <aside className="flex shrink-0 flex-col bg-panel" style={{ width: left.size }} aria-label="Biblioteca e ferramentas">
                 <header className="flex h-11 shrink-0 items-center justify-between border-b border-line px-3">
@@ -222,10 +226,17 @@ export function EditorPage() {
             <Preview />
           </main>
 
-          <Divider axis="x" onPointerDown={right.startDrag} onNudge={(d) => right.nudge(-d)} label="Redimensionar painel de propriedades" />
-          <aside className={`${propsOpen ? 'absolute bottom-0 right-0 top-0 z-40 shadow-pop' : 'hidden'} shrink-0 bg-panel lg:static lg:block lg:shadow-none`} style={{ width: right.size }} aria-label="Propriedades">
-            <Properties />
-          </aside>
+          {showProps && <Divider axis="x" onPointerDown={right.startDrag} onNudge={(d) => right.nudge(-d)} label="Redimensionar painel de propriedades" />}
+          {!focusMode && (
+            <aside className={`${propsOpen ? 'absolute bottom-0 right-0 top-0 z-40 shadow-pop' : 'hidden'} shrink-0 bg-panel ${propsCollapsed ? '' : 'lg:static lg:block lg:shadow-none'}`} style={{ width: right.size }} aria-label="Propriedades">
+              <Properties />
+            </aside>
+          )}
+          {focusMode && (
+            <button type="button" className="btn absolute right-3 top-3 z-40 h-8 px-3 shadow-pop" onClick={() => useEditor.getState().toggleFocusMode()} data-testid="exit-focus">
+              <Icon name="minimize" size={14} /> Sair do modo foco
+            </button>
+          )}
         </div>
 
         <Divider axis="y" onPointerDown={timeline.startDrag} onNudge={(d) => timeline.nudge(-d)} label="Redimensionar timeline" />
