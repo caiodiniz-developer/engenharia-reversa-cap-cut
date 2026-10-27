@@ -5,6 +5,7 @@ import type { MediaItem, ProjectDoc } from '../api/types';
 import { Icon } from '../components/Icon';
 import { CommandPalette } from '../editor/CommandPalette';
 import { ExportDialog } from '../editor/ExportDialog';
+import { CleanupDialog } from '../editor/CleanupDialog';
 import { ReplaceDialog } from '../editor/ReplaceDialog';
 import { StatusBar } from '../editor/StatusBar';
 import { VersionsDialog } from '../editor/VersionsDialog';
@@ -81,6 +82,12 @@ export function EditorPage() {
   // A paleta de comandos pede para abrir um painel (e ele precisa estar visível).
   const [versionsOpen, setVersionsOpen] = useState(false);
   const [replaceOpen, setReplaceOpen] = useState(false);
+  const [cleanupOpen, setCleanupOpen] = useState(false);
+  useEffect(() => {
+    const open = () => setCleanupOpen(true);
+    window.addEventListener('editor:open-cleanup', open);
+    return () => window.removeEventListener('editor:open-cleanup', open);
+  }, []);
   useEffect(() => {
     const open = () => setReplaceOpen(true);
     window.addEventListener('editor:open-replace', open);
@@ -250,6 +257,7 @@ export function EditorPage() {
       <ExportDialog projectId={id} open={exporting} onClose={() => setExporting(false)} />
       <VersionsDialog projectId={id} open={versionsOpen} onClose={() => setVersionsOpen(false)} />
       <ReplaceDialog open={replaceOpen} onClose={() => setReplaceOpen(false)} />
+      <CleanupDialog open={cleanupOpen} onClose={() => setCleanupOpen(false)} />
       <ShortcutsDialog open={help} onClose={() => setHelp(false)} />
       <CommandPalette open={palette} onClose={() => setPalette(false)} onExport={() => setExporting(true)} onHelp={openHelp} />
     </div>
