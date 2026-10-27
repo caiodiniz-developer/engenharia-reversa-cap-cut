@@ -1,5 +1,5 @@
 import { useShallow } from 'zustand/react/shallow';
-import { projectDuration } from '@editor/core';
+import { findClip, formatTimecode, projectDuration } from '@editor/core';
 import { aspectLabel, formatDuration } from '../lib/format';
 import { useEditor } from '../store/editor';
 
@@ -14,6 +14,7 @@ export function StatusBar() {
       clips: st.project.tracks.reduce((n, t) => n + t.clips.length, 0),
       total: projectDuration(st.project),
       selected: st.selection.length,
+      one: st.selection.length === 1 ? (findClip(st.project, st.selection[0]!)?.clip ?? null) : null,
       zoom: st.zoom,
       rate: st.rate,
       area: st.workArea,
@@ -32,6 +33,11 @@ export function StatusBar() {
       {s.selected > 0 && (
         <span className="text-accent" data-testid="status-selected">
           {s.selected} {s.selected === 1 ? 'selecionado' : 'selecionados'}
+        </span>
+      )}
+      {s.one && (
+        <span className="tnum font-mono text-ink/80" data-testid="status-clip" title="Início e duração do clipe selecionado">
+          {formatTimecode(s.one.start, s.fps)} + {formatTimecode(s.one.duration, s.fps)}
         </span>
       )}
       <span className="ml-auto flex items-center gap-3">
