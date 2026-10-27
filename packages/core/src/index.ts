@@ -25,3 +25,4 @@ export * from './animation';
 export * from './navigation';
 export * from './layout';
 export * from './chapters';
+export * from './usage';
