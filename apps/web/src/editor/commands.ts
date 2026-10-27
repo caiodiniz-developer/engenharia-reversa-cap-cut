@@ -118,6 +118,9 @@ export function buildCommands(ctx: { openPanel: (t: PanelTab) => void; onExport:
     })),
     { id: 'extend', label: 'Estender o clipe até a cabeça de reprodução', group: 'Edição', icon: 'skipForward', enabled: hasSel, keywords: 'esticar alongar', run: () => s().extendToPlayhead() },
     { id: 'dup-track', label: 'Duplicar a faixa selecionada', group: 'Timeline', icon: 'copy', enabled: () => !!s().selectedTrackId, keywords: 'copiar faixa', run: () => s().duplicateTrackById(s().selectedTrackId!) },
+    { id: 'lock-all', label: 'Bloquear / desbloquear todas as faixas', group: 'Timeline', icon: 'lock', run: () => s().toggleAllTracks('locked') },
+    { id: 'hide-all', label: 'Ocultar / mostrar todas as faixas', group: 'Timeline', icon: 'eyeOff', run: () => s().toggleAllTracks('hidden') },
+    { id: 'mute-all', label: 'Silenciar / reativar o som de todas as faixas', group: 'Timeline', icon: 'volumeOff', run: () => s().toggleAllTracks('muted') },
     { id: 'sequence', label: 'Colocar clipes selecionados em sequência', group: 'Timeline', icon: 'layers', enabled: () => s().selection.length > 1, keywords: 'encostar juntar organizar', run: () => s().sequenceSelection() },
     { id: 'split-markers', label: 'Dividir clipes nos marcadores', group: 'Timeline', icon: 'scissors', keywords: 'cortar marcador', run: () => s().splitSelectionAtMarkers() },
     ...([['video', 'vídeos'], ['image', 'imagens'], ['audio', 'áudios'], ['text', 'textos'], ['caption', 'legendas']] as const).map(([k, label]) => ({
