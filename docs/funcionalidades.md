@@ -125,6 +125,7 @@ Cada ✅ aponta o teste que o exercita. "E2E" = Playwright no Chrome com API, Vi
 | Atalhos agrupados por categoria com busca sem acento | ✅ | web `shortcutGroups.test`, E2E `mais` |
 | Legendas: juntar em uma, atrasar/adiantar 0,5 s e achar as rápidas demais (> 20 caracteres/s) | ✅ | core `ops/captions.test`, E2E `mais` |
 | Limpar mídias não usadas (lista, remove arquivos e mantém as em uso) | ✅ | core `usage.test`, E2E `mais` |
+| Duração fixa (1, 2, 3, 5 ou 10 s) para vários clipes de uma vez | ✅ | core `ops/duration.test`, E2E `mais` |
 | Fechar espaços vazios de uma faixa | ✅ | core `ops/advanced.test`, E2E `novidades` |
 | Salvar o quadro atual como PNG | ✅ | E2E `novidades` (assinatura PNG verificada) |
 | Modelos de projeto (vertical curto etc.), busca, renomear, duplicar e capa dos projetos | ✅ | web `templates.test`, API `projects.test`, E2E `novidades` |
