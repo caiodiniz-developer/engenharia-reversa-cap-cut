@@ -322,3 +322,41 @@ test.describe('ajuda', () => {
     await expect(dialog).toBeHidden();
   });
 });
+
+test.describe('legendas', () => {
+  test('juntar, deslocar e achar legendas rápidas demais', async ({ page }) => {
+    await withClip(page);
+    await page.evaluate(() => {
+      const s = window.__editor.getState() as unknown as { addCaptions(c: Array<{ start: number; end: number; text: string }>): void };
+      s.addCaptions([
+        { start: 0, end: 1, text: 'Olá' },
+        { start: 1, end: 2, text: 'mundo' },
+        { start: 2.1, end: 2.6, text: 'Esta legenda é longa demais para meio segundo' },
+      ]);
+    });
+    const caps = async () => (await projectOf(page)).tracks.filter((t) => t.kind === 'caption').flatMap((t) => t.clips) as unknown as Array<{ id: string; start: number; duration: number; text: string }>;
+    await expect.poll(async () => (await caps()).length).toBe(3);
+
+    // rápidas demais: só a terceira (46 caracteres em 0,5 s)
+    await palette(page, 'legendas rapidas demais');
+    const fast = await page.evaluate(() => window.__editor.getState().selection);
+    expect(fast).toEqual([(await caps())[2]!.id]);
+
+    // atrasar tudo em 0,5 s (sem legenda selecionada além da rápida: só ela é deslocada — então limpa a seleção)
+    await page.keyboard.press('Escape');
+    await palette(page, 'atrasar as legendas');
+    await expect.poll(async () => (await caps()).map((c) => c.start)).toEqual([0.5, 1.5, 2.6]);
+    await palette(page, 'adiantar as legendas');
+    await expect.poll(async () => (await caps()).map((c) => c.start)).toEqual([0, 1, 2.1]);
+
+    // juntar as duas primeiras
+    const [a, b] = await caps();
+    await page.evaluate((ids) => (window.__editor.getState() as unknown as { select(ids: string[]): void }).select(ids), [a!.id, b!.id]);
+    await palette(page, 'juntar legendas selecionadas');
+    await expect.poll(async () => (await caps()).length).toBe(2);
+    const merged = (await caps()).find((c) => c.id === a!.id)!;
+    expect(merged).toMatchObject({ start: 0, duration: 2, text: 'Olá mundo' });
+    await page.keyboard.press('Control+z');
+    await expect.poll(async () => (await caps()).length).toBe(3);
+  });
+});
