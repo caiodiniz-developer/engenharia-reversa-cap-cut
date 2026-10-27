@@ -56,6 +56,15 @@ import {
   clampParams,
   neighborEdit,
   sequenceClips,
+  repeatClip,
+  changeTextCase,
+  replaceInText,
+  duplicateTrack,
+  positionFor,
+  coverScale,
+  markersToChapters,
+  type TextCase,
+  type PositionPreset,
   splitAtMarkers,
   copyAttributes,
   pasteAttributes,
@@ -223,6 +232,8 @@ interface EditorState {
   closeGaps(trackId: string): void;
   /** Encosta os clipes selecionados em sequência, sem espaços entre eles. */
   sequenceSelection(): void;
+  /** Repete o clipe selecionado N vezes logo depois dele. */
+  repeatSelection(times: number): void;
   copySelectionAttributes(): void;
   pasteSelectionAttributes(): void;
   resetSelectionVisuals(): void;
@@ -740,6 +751,17 @@ export const useEditor = create<EditorState>((set, get) => {
       const ids = get().selection;
       if (!ids.length) return toast.info('Selecione os clipes que deseja redefinir');
       get().run('Redefinir transformação e efeitos', (p) => resetClipVisuals(p, ids));
+    },
+    repeatSelection(times) {
+      const ids = get().selection;
+      if (ids.length !== 1) return toast.info('Selecione um único clipe para repeti-lo');
+      let created: string[] = [];
+      const ok = get().run('Repetir clipe', (p) => {
+        const r = repeatClip(p, ids[0]!, times);
+        created = r.newIds;
+        return r.project;
+      });
+      if (ok) set({ selection: [ids[0]!, ...created] });
     },
     sequenceSelection() {
       const ids = get().selection;
