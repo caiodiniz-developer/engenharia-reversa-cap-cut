@@ -45,6 +45,7 @@ Cada ✅ aponta o teste que o exercita. "E2E" = Playwright no Chrome com API, Vi
 | Crossfade automático em transições | ✅ | render `render4` (o nível na sobreposição não dobra) |
 | Equalizador de 3 bandas, balanço, mixagem multipista | ✅ | render `render4` (graves ±12 dB, pan, soma de faixas medidos) |
 | Exportar só o áudio (MP3, M4A, WAV), com intervalo | ✅ | render `audioassets.test`, API `exports.test`, E2E `export` |
+| Tamanho estimado da exportação só de áudio (WAV exato, MP3 ±15%, M4A como teto) | ✅ | web `audioSize.test`, render `audiosize.test` (arquivos reais) |
 | Marcar trecho (I/O) na régua e exportar só ele | ✅ | core `navigation.test`, API `exports.test` (range), E2E `export` |
 | Exportar em GIF animado (até 30 s e 720p) | ✅ | render `gif.test`, API `exports.test`, E2E `export` |
 | Predefinições de exportação (YouTube, redes sociais, WhatsApp, 4K, WebM, GIF, MP3) | ✅ | web `exportPresets.test`, E2E `export` |
