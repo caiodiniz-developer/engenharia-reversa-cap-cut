@@ -88,7 +88,7 @@ body {
     transform: rotate(90deg);
   }
   .btn {
-    @apply inline-flex h-8 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-line bg-panel-2 px-3 text-xs font-medium text-ink transition-colors hover:border-mute/40 hover:bg-panel-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-40;
+    @apply inline-flex h-8 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg border border-line bg-panel-2 px-3 text-xs font-medium text-ink transition-colors hover:border-mute/40 hover:bg-panel-3 active:translate-y-px focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-40;
   }
   .btn-primary {
     @apply border-transparent bg-accent text-accent-ink hover:bg-accent/90;
