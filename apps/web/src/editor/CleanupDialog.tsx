@@ -60,7 +60,7 @@ export function CleanupDialog({ open, onClose }: { open: boolean; onClose: () =>
             <button type="button" className="btn" onClick={onClose} disabled={busy}>
               Cancelar
             </button>
-            <button type="button" className="btn border-danger bg-danger text-white" onClick={() => void run()} disabled={busy} data-testid="cleanup-run">
+            <button type="button" className="btn btn-danger" onClick={() => void run()} disabled={busy} data-testid="cleanup-run">
               <Icon name="trash" size={14} /> {busy ? 'Removendo…' : `Remover ${unused.length}`}
             </button>
           </div>
