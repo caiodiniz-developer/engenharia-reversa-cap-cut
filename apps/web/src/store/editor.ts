@@ -232,6 +232,17 @@ interface EditorState {
   closeGaps(trackId: string): void;
   /** Encosta os clipes selecionados em sequência, sem espaços entre eles. */
   sequenceSelection(): void;
+  /** Encosta os clipes visuais selecionados na borda/canto escolhido do quadro. */
+  placeSelection(preset: PositionPreset): void;
+  /** Escala os clipes de mídia selecionados para cobrir o quadro inteiro. */
+  fillFrameSelection(): void;
+  /** Gira os clipes visuais selecionados em graus (soma à rotação atual). */
+  rotateSelection(deg: number): void;
+  duplicateTrackById(id: string): void;
+  /** Muda a caixa (maiúsculas, minúsculas, título, frase) dos textos e legendas selecionados. */
+  changeCaseSelection(mode: TextCase): void;
+  /** Localiza e substitui em todos os textos/legendas (ou só na seleção). Devolve quantas trocas fez. */
+  replaceAllText(find: string, replacement: string, opts?: { matchCase?: boolean; onlySelection?: boolean }): number;
   /** Repete o clipe selecionado N vezes logo depois dele. */
   repeatSelection(times: number): void;
   copySelectionAttributes(): void;
@@ -762,6 +773,68 @@ export const useEditor = create<EditorState>((set, get) => {
         return r.project;
       });
       if (ok) set({ selection: [ids[0]!, ...created] });
+    },
+    changeCaseSelection(mode) {
+      const ids = get().selection;
+      if (!ids.length) return toast.info('Selecione textos ou legendas');
+      get().run('Mudar caixa do texto', (p) => changeTextCase(p, ids, mode));
+    },
+    replaceAllText(find, replacement, opts) {
+      if (!find) return 0;
+      let count = 0;
+      const ids = opts?.onlySelection ? get().selection : undefined;
+      get().run('Localizar e substituir', (p) => {
+        const r = replaceInText(p, find, replacement, { matchCase: opts?.matchCase, ids });
+        count = r.count;
+        return r.project;
+      });
+      return count;
+    },
+    duplicateTrackById(id) {
+      let newId: string | null = null;
+      const ok = get().run('Duplicar faixa', (p) => {
+        const r = duplicateTrack(p, id);
+        newId = r.track.id;
+        return r.project;
+      });
+      if (ok && newId) set({ selectedTrackId: newId });
+    },
+    placeSelection(preset) {
+      const { project, selection, media } = get();
+      const frame = { width: project.settings.width, height: project.settings.height };
+      const targets = selection.map((id) => findClip(project, id)?.clip).filter((c): c is MediaClip => c?.type === 'media' && !!media[c.mediaId] && media[c.mediaId]!.kind !== 'audio');
+      if (!targets.length) return toast.info('Selecione um vídeo ou imagem para posicionar');
+      get().run('Posicionar clipe', (p) =>
+        targets.reduce((acc, c) => {
+          const item = media[c.mediaId]!;
+          const pos = positionFor(preset, { width: item.width, height: item.height }, frame, c.transform.scale);
+          return updateClip(acc, c.id, (x) => ({ ...x, transform: { ...(x as MediaClip).transform, x: pos.x, y: pos.y } }) as Clip);
+        }, p),
+      );
+    },
+    fillFrameSelection() {
+      const { project, selection, media } = get();
+      const frame = { width: project.settings.width, height: project.settings.height };
+      const targets = selection.map((id) => findClip(project, id)?.clip).filter((c): c is MediaClip => c?.type === 'media' && !!media[c.mediaId] && media[c.mediaId]!.kind !== 'audio');
+      if (!targets.length) return toast.info('Selecione um vídeo ou imagem para preencher o quadro');
+      get().run('Preencher o quadro', (p) =>
+        targets.reduce((acc, c) => {
+          const item = media[c.mediaId]!;
+          return updateClip(acc, c.id, (x) => ({ ...x, transform: { ...(x as MediaClip).transform, scale: coverScale({ width: item.width, height: item.height }, frame), x: 0, y: 0 } }) as Clip);
+        }, p),
+      );
+    },
+    rotateSelection(deg) {
+      const { project, selection } = get();
+      const targets = selection.map((id) => findClip(project, id)?.clip).filter((c): c is Clip => !!c && c.type !== 'caption');
+      if (!targets.length) return toast.info('Selecione um clipe visual para girar');
+      get().run('Girar clipe', (p) =>
+        targets.reduce((acc, c) => updateClip(acc, c.id, (x) => {
+          const t = (x as MediaClip).transform;
+          const rotation = ((((t.rotation + deg) % 360) + 540) % 360) - 180; // mantém entre -180 e 180
+          return { ...x, transform: { ...t, rotation } } as Clip;
+        }), p),
+      );
     },
     sequenceSelection() {
       const ids = get().selection;
