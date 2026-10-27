@@ -305,3 +305,20 @@ test.describe('propriedades', () => {
     await expect.poll(async () => (await clipOf(page, c.id)).transform.rotation).toBe(90);
   });
 });
+
+test.describe('ajuda', () => {
+  test('lista de atalhos por categoria com busca sem acento', async ({ page }) => {
+    await withClip(page);
+    await page.keyboard.press('?');
+    const dialog = page.getByRole('dialog', { name: 'Atalhos de teclado' });
+    await expect(dialog).toBeVisible();
+    for (const cat of ['Reprodução', 'Edição', 'Timeline', 'Seleção', 'Projeto e interface']) await expect(dialog.getByRole('region', { name: cat })).toBeVisible();
+    await dialog.getByLabel('Buscar atalho').fill('dar zoom');
+    await expect(dialog.getByRole('region')).toHaveCount(1);
+    await expect(dialog.getByRole('region', { name: 'Timeline' })).toContainText('Shift + F');
+    await dialog.getByLabel('Buscar atalho').fill('zzzz');
+    await expect(dialog.getByText(/Nenhum atalho corresponde/)).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+  });
+});
