@@ -2,6 +2,7 @@ import { memo, useEffect, useRef } from 'react';
 import type { Clip, MediaClip } from '@editor/core';
 import type { MediaItem } from '../../api/types';
 import { Icon } from '../../components/Icon';
+import { clipTooltip } from './clipInfo';
 import { useWaveform } from './useWaveform';
 
 const COLORS: Record<string, string> = {
@@ -115,6 +116,7 @@ function ClipViewBase({ clip, trackKind, trackLocked, pps, selected, media, heig
       aria-label={`${label}${selected ? ' (selecionado)' : ''}`}
       aria-pressed={selected}
       data-clip-id={clip.id}
+      title={clipTooltip(clip, label)}
       data-selected={selected}
       className={`group absolute top-1 overflow-hidden rounded-lg text-white outline-none transition-shadow ${COLORS[trackKind] ?? 'bg-clip-video'} ${
         selected ? 'z-10 shadow-[0_0_0_2px_rgb(var(--ink)),0_4px_14px_rgba(0,0,0,.45)]' : 'shadow-[inset_0_0_0_1px_rgba(0,0,0,.35)] hover:brightness-110'
@@ -137,12 +139,21 @@ function ClipViewBase({ clip, trackKind, trackLocked, pps, selected, media, heig
         {mc?.linkId && wide && <Icon name="link" size={10} />}
         {mc?.reverse && wide && <Icon name="rewind" size={10} />}
         {mc && mc.speed !== 1 && wide && <span className="rounded bg-black/50 px-1 font-mono">{mc.speed}×</span>}
+        {mc?.audio.muted && wide && <Icon name="volumeOff" size={10} />}
+        {mc && !mc.audio.muted && Math.abs(mc.audio.volume - 1) > 1e-6 && wide && <span className="rounded bg-black/50 px-1 font-mono">{Math.round(mc.audio.volume * 100)}%</span>}
         {mc?.freeze && wide && <Icon name="snowflake" size={10} />}
         {effects > 0 && wide && <Icon name="wand" size={10} />}
         {mc && mc.stabilize > 0 && wide && <Icon name="maximize" size={10} />}
         {kfCount > 0 && wide && <Icon name="diamond" size={9} />}
         {wide && <span className="truncate drop-shadow">{label}</span>}
       </div>
+
+      {mc && mc.audio.fadeIn > 0 && (
+        <div className="pointer-events-none absolute bottom-0 left-0 h-3 bg-gradient-to-tr from-black/60 via-black/25 to-transparent" style={{ width: Math.min(width, mc.audio.fadeIn * pps), clipPath: 'polygon(0 0, 100% 100%, 0 100%)' }} data-testid="fade-in-ramp" />
+      )}
+      {mc && mc.audio.fadeOut > 0 && (
+        <div className="pointer-events-none absolute bottom-0 right-0 h-3 bg-gradient-to-tl from-black/60 via-black/25 to-transparent" style={{ width: Math.min(width, mc.audio.fadeOut * pps), clipPath: 'polygon(100% 0, 100% 100%, 0 100%)' }} data-testid="fade-out-ramp" />
+      )}
 
       {mc?.transitionIn && <div className="pointer-events-none absolute left-0 top-0 h-full bg-gradient-to-r from-white/60 to-transparent" style={{ width: Math.max(4, mc.transitionIn.duration * pps) }} title={`Transição: ${mc.transitionIn.type}`} />}
       {clip.type === 'caption' && clip.words.length > 0 && width > 40 && (
