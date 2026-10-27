@@ -106,6 +106,16 @@ Cada ✅ aponta o teste que o exercita. "E2E" = Playwright no Chrome com API, Vi
 | Selecionar todos os vídeos, imagens, áudios, textos ou legendas (paleta) | ✅ | core `navigation.test`, E2E `novidades` |
 | Barra de estado e altura das faixas (compacta/normal/alta, lembrada no navegador) | ✅ | web `geometry.test`, E2E `novidades` |
 | Ordenar a biblioteca (nome, duração, tamanho, não usadas primeiro) | ✅ | web `mediaSort.test`, E2E `novidades` |
+| Repetir um clipe N vezes (2×, 3×, 5×) | ✅ | core `ops/repeat.test`, E2E `mais` |
+| Texto: MAIÚSCULAS, minúsculas, Cada Palavra Maiúscula, frase | ✅ | core `ops/textedit.test`, E2E `mais` |
+| Localizar e substituir em textos e legendas (literal, com opção de maiúsculas e só na seleção) | ✅ | core `ops/textedit.test`, E2E `mais` |
+| Duplicar faixa com clipes (ids, ligações e grupos novos) | ✅ | core `ops/trackdup.test`, E2E `mais` |
+| Posicionar na grade 3×3, preencher o quadro (cover) e girar 90° (Shift+R) | ✅ | core `layout.test`, E2E `mais` |
+| Estender o clipe até a cabeça de reprodução | ✅ | E2E `mais` |
+| Bloquear/ocultar/silenciar todas as faixas de uma vez | ✅ | E2E `mais` |
+| Zoom na seleção (Shift+F) | ✅ | E2E `mais` |
+| Volume ±10%, mudo, fades de 0,5/1/2 s e velocidade 0,5×–2× por comando | ✅ | E2E `mais` |
+| Copiar capítulos dos marcadores no formato do YouTube | ✅ | core `chapters.test`, E2E `mais` |
 | Fechar espaços vazios de uma faixa | ✅ | core `ops/advanced.test`, E2E `novidades` |
 | Salvar o quadro atual como PNG | ✅ | E2E `novidades` (assinatura PNG verificada) |
 | Modelos de projeto (vertical curto etc.), busca, renomear, duplicar e capa dos projetos | ✅ | web `templates.test`, API `projects.test`, E2E `novidades` |
