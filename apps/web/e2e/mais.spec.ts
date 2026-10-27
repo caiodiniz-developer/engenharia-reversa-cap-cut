@@ -390,3 +390,20 @@ test.describe('limpeza da biblioteca', () => {
     await expect(page.getByTestId('cleanup-empty')).toBeVisible();
   });
 });
+
+test.describe('duração', () => {
+  test('duração fixa para a seleção: o texto vira 1 s, o desfazer volta e depois vira 2 s', async ({ page }) => {
+    await withClip(page);
+    await page.getByTestId('tab-text').click();
+    await page.getByRole('button', { name: 'Adicionar texto Título' }).click();
+    await expect.poll(async () => (await clipsOf(page)).filter((c) => c.type === 'text').length).toBe(1);
+    const text = (await clipsOf(page)).find((c) => c.type === 'text')!;
+    const before = text.duration;
+    await palette(page, 'duracao de 1 s para a selecao');
+    await expect.poll(async () => (await clipOf(page, text.id)).duration).toBe(1);
+    await page.keyboard.press('Control+z');
+    await expect.poll(async () => (await clipOf(page, text.id)).duration).toBe(before);
+    await palette(page, 'duracao de 2 s para a selecao');
+    await expect.poll(async () => (await clipOf(page, text.id)).duration).toBe(2);
+  });
+});
