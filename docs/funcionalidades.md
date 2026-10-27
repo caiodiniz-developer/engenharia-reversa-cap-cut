@@ -121,6 +121,7 @@ Cada ✅ aponta o teste que o exercita. "E2E" = Playwright no Chrome com API, Vi
 | Comandos recentes primeiro na paleta | ✅ | web `recentCommands.test`, E2E `mais` |
 | Clipes na timeline com tooltip detalhado, selos de volume/mudo e rampas de fade | ✅ | web `clipInfo.test`, E2E `mais` |
 | Menu de contexto do clipe (botão direito) com as ações mais usadas | ✅ | web `ClipContextMenu.test`, E2E `mais` |
+| Atalhos agrupados por categoria com busca sem acento | ✅ | web `shortcutGroups.test`, E2E `mais` |
 | Fechar espaços vazios de uma faixa | ✅ | core `ops/advanced.test`, E2E `novidades` |
 | Salvar o quadro atual como PNG | ✅ | E2E `novidades` (assinatura PNG verificada) |
 | Modelos de projeto (vertical curto etc.), busca, renomear, duplicar e capa dos projetos | ✅ | web `templates.test`, API `projects.test`, E2E `novidades` |
