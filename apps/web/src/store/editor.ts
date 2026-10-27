@@ -56,6 +56,9 @@ import {
   clampParams,
   neighborEdit,
   sequenceClips,
+  mergeCaptions,
+  shiftCaptions,
+  fastCaptionIds,
   repeatClip,
   changeTextCase,
   replaceInText,
@@ -247,6 +250,8 @@ interface EditorState {
   closeGaps(trackId: string): void;
   /** Encosta os clipes selecionados em sequência, sem espaços entre eles. */
   sequenceSelection(): void;
+  /** Junta as legendas selecionadas (mesma faixa) em uma só. */
+  mergeSelectedCaptions(): void;
   /** Copia os marcadores como capítulos (m:ss Nome) para a área de transferência. */
   copyChapters(): Promise<void>;
   /** Define a velocidade de todos os clipes de mídia selecionados. */
@@ -965,6 +970,17 @@ export const useEditor = create<EditorState>((set, get) => {
       } catch {
         toast.error('Não foi possível copiar. Permita o acesso à área de transferência.');
       }
+    },
+    mergeSelectedCaptions() {
+      const ids = get().selection;
+      if (ids.length < 2) return toast.info('Selecione duas ou mais legendas da mesma faixa');
+      let merged: string | null = null;
+      const ok = get().run('Juntar legendas', (p) => {
+        const r = mergeCaptions(p, ids);
+        merged = r.mergedId;
+        return r.project;
+      });
+      if (ok && merged) set({ selection: [merged] });
     },
     sequenceSelection() {
       const ids = get().selection;
