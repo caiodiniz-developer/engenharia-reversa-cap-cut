@@ -121,6 +121,8 @@ export function buildCommands(ctx: { openPanel: (t: PanelTab) => void; onExport:
     { id: 'lock-all', label: 'Bloquear / desbloquear todas as faixas', group: 'Timeline', icon: 'lock', run: () => s().toggleAllTracks('locked') },
     { id: 'hide-all', label: 'Ocultar / mostrar todas as faixas', group: 'Timeline', icon: 'eyeOff', run: () => s().toggleAllTracks('hidden') },
     { id: 'mute-all', label: 'Silenciar / reativar o som de todas as faixas', group: 'Timeline', icon: 'volumeOff', run: () => s().toggleAllTracks('muted') },
+    { id: 'zoom-sel', label: 'Dar zoom na seleção', group: 'Timeline', icon: 'zoomIn', shortcut: 'Shift+F', enabled: hasSel, keywords: 'aproximar foco', run: () => s().zoomToSelection() },
+    { id: 'chapters', label: 'Copiar capítulos dos marcadores (YouTube)', group: 'Projeto', icon: 'flag', keywords: 'timestamps descrição índice', run: () => void s().copyChapters() },
     { id: 'sequence', label: 'Colocar clipes selecionados em sequência', group: 'Timeline', icon: 'layers', enabled: () => s().selection.length > 1, keywords: 'encostar juntar organizar', run: () => s().sequenceSelection() },
     { id: 'split-markers', label: 'Dividir clipes nos marcadores', group: 'Timeline', icon: 'scissors', keywords: 'cortar marcador', run: () => s().splitSelectionAtMarkers() },
     ...([['video', 'vídeos'], ['image', 'imagens'], ['audio', 'áudios'], ['text', 'textos'], ['caption', 'legendas']] as const).map(([k, label]) => ({
