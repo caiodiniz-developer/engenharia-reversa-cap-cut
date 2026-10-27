@@ -284,3 +284,24 @@ test.describe('menu de contexto', () => {
     await expect.poll(async () => (await clipOf(page, c.id)).audio.muted).toBe(true);
   });
 });
+
+test.describe('propriedades', () => {
+  test('grade 3×3 posiciona, "Preencher quadro" e "Girar 90°" mexem na transformação', async ({ page }) => {
+    const c = await withClip(page);
+    const grid = page.getByTestId('position-grid');
+    await expect(grid).toBeVisible();
+    await page.evaluate((id) => {
+      const s = window.__editor.getState() as unknown as { patchClip(id: string, fn: (c: { transform: object }) => object, label: string): void };
+      s.patchClip(id, (x) => ({ ...x, transform: { ...x.transform, scale: 0.4 } }), 'teste');
+    }, c.id);
+    await grid.getByRole('button', { name: 'Posicionar: Canto inferior direito' }).click();
+    await expect.poll(async () => (await clipOf(page, c.id)).transform.x).toBeCloseTo(0.3, 3);
+    expect((await clipOf(page, c.id)).transform.y).toBeCloseTo(0.3, 3);
+    await grid.getByRole('button', { name: 'Posicionar: Centro' }).click();
+    await expect.poll(async () => (await clipOf(page, c.id)).transform.x).toBe(0);
+    await grid.getByRole('button', { name: 'Preencher quadro' }).click();
+    await expect.poll(async () => (await clipOf(page, c.id)).transform.scale).toBeGreaterThan(0.99);
+    await grid.getByRole('button', { name: 'Girar 90°' }).click();
+    await expect.poll(async () => (await clipOf(page, c.id)).transform.rotation).toBe(90);
+  });
+});
