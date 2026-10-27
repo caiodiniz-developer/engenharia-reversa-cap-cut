@@ -56,6 +56,7 @@ import {
   clampParams,
   neighborEdit,
   sequenceClips,
+  setClipsDuration,
   mergeCaptions,
   shiftCaptions,
   fastCaptionIds,
@@ -250,6 +251,8 @@ interface EditorState {
   closeGaps(trackId: string): void;
   /** Encosta os clipes selecionados em sequência, sem espaços entre eles. */
   sequenceSelection(): void;
+  /** Dá a mesma duração (s) a todos os clipes selecionados. */
+  setSelectionDuration(seconds: number): void;
   /** Desloca as legendas selecionadas (ou todas, sem seleção de legendas) por `delta` segundos. */
   shiftCaptionTimes(delta: number): void;
   /** Seleciona as legendas rápidas demais para ler (acima de 20 caracteres por segundo). */
@@ -997,6 +1000,11 @@ export const useEditor = create<EditorState>((set, get) => {
       if (!ids.length) return toast.success('Nenhuma legenda passa de 20 caracteres por segundo');
       set({ selection: ids });
       toast.info(ids.length === 1 ? '1 legenda rápida demais selecionada' : ids.length + ' legendas rápidas demais selecionadas');
+    },
+    setSelectionDuration(seconds) {
+      const ids = get().selection;
+      if (!ids.length) return toast.info('Selecione os clipes que terão a nova duração');
+      get().run('Definir duração', (p) => setClipsDuration(p, ids, seconds));
     },
     sequenceSelection() {
       const ids = get().selection;
