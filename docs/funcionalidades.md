@@ -116,6 +116,7 @@ Cada ✅ aponta o teste que o exercita. "E2E" = Playwright no Chrome com API, Vi
 | Zoom na seleção (Shift+F) | ✅ | E2E `mais` |
 | Volume ±10%, mudo, fades de 0,5/1/2 s e velocidade 0,5×–2× por comando | ✅ | E2E `mais` |
 | Copiar capítulos dos marcadores no formato do YouTube | ✅ | core `chapters.test`, E2E `mais` |
+| Renomear mídia na biblioteca (nome de exibição; arquivo intacto) | ✅ | API `media.test`, E2E `mais` |
 | Fechar espaços vazios de uma faixa | ✅ | core `ops/advanced.test`, E2E `novidades` |
 | Salvar o quadro atual como PNG | ✅ | E2E `novidades` (assinatura PNG verificada) |
 | Modelos de projeto (vertical curto etc.), busca, renomear, duplicar e capa dos projetos | ✅ | web `templates.test`, API `projects.test`, E2E `novidades` |
