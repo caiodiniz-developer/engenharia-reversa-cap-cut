@@ -232,6 +232,8 @@ interface EditorState {
   closeGaps(trackId: string): void;
   /** Encosta os clipes selecionados em sequência, sem espaços entre eles. */
   sequenceSelection(): void;
+  /** Copia os marcadores como capítulos (m:ss Nome) para a área de transferência. */
+  copyChapters(): Promise<void>;
   /** Define a velocidade de todos os clipes de mídia selecionados. */
   setSelectionSpeed(speed: number): void;
   /** Soma `delta` (ex.: 0,1) ao volume dos clipes selecionados (0 a 400%). */
@@ -915,6 +917,17 @@ export const useEditor = create<EditorState>((set, get) => {
       const ids = selection.filter((id) => findClip(project, id)?.clip.type === 'media');
       if (!ids.length) return toast.info('Selecione clipes de vídeo ou áudio');
       get().run('Alterar velocidade', (p) => ids.reduce((acc, id) => setSpeed(acc, id, speed), p));
+    },
+    async copyChapters() {
+      const { project } = get();
+      if (project.markers.length < 1) return void toast.info('Adicione marcadores (M) para gerar os capítulos');
+      const text = markersToChapters(project.markers);
+      try {
+        await navigator.clipboard.writeText(text);
+        toast.success(text.split('\n').length + ' capítulos copiados');
+      } catch {
+        toast.error('Não foi possível copiar. Permita o acesso à área de transferência.');
+      }
     },
     sequenceSelection() {
       const ids = get().selection;
