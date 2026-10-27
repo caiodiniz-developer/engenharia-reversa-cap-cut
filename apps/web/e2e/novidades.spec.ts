@@ -414,8 +414,10 @@ test.describe('timeline e preview', () => {
     await expect(bar).toContainText('16:9');
     await expect(bar).toContainText('1 faixa · 1 clipe');
     await expect(page.getByTestId('status-selected')).toHaveText('1 selecionado');
+    await expect(page.getByTestId('status-clip')).toHaveText(/^00:00:00:00 \+ 00:00:0\d:\d\d$/); // início 0 + duração do clipe
     await page.keyboard.press('Escape');
     await expect(page.getByTestId('status-selected')).toHaveCount(0);
+    await expect(page.getByTestId('status-clip')).toHaveCount(0);
     await seek(page, 1);
     await page.keyboard.press('i');
     await expect(page.getByTestId('status-range')).toContainText('Trecho 0:01');
