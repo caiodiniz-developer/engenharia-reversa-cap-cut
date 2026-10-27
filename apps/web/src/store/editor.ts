@@ -924,7 +924,8 @@ export const useEditor = create<EditorState>((set, get) => {
       const text = markersToChapters(project.markers);
       try {
         await navigator.clipboard.writeText(text);
-        toast.success(text.split('\n').length + ' capítulos copiados');
+        const n = text.split('\n').length;
+        toast.success(n === 1 ? '1 capítulo copiado' : n + ' capítulos copiados');
       } catch {
         toast.error('Não foi possível copiar. Permita o acesso à área de transferência.');
       }
