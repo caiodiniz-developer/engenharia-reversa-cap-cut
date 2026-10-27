@@ -101,6 +101,13 @@ export type SaveState = 'saved' | 'dirty' | 'saving' | 'error' | 'conflict' | 'o
 export const MIN_ZOOM = 4;
 export const MAX_ZOOM = 600;
 const DENSITY_KEY = 'editor.timeline.density';
+function readFlag(key: string): boolean {
+  try {
+    return localStorage.getItem(key) === '1';
+  } catch {
+    return false;
+  }
+}
 function readDensity(): TrackDensity {
   try {
     const v = localStorage.getItem(DENSITY_KEY);
@@ -137,6 +144,10 @@ interface EditorState {
   workArea: WorkArea | null;
   /** Altura das faixas da timeline (preferência do navegador). */
   trackDensity: TrackDensity;
+  /** Modo foco: esconde trilho, painel lateral e propriedades para sobrar só preview e timeline. */
+  focusMode: boolean;
+  /** Propriedades recolhidas em telas largas (preferência do navegador). */
+  propsCollapsed: boolean;
   zoom: number;
   snapping: boolean;
   guides: boolean;
@@ -187,6 +198,8 @@ interface EditorState {
   clearWorkArea(): void;
   setTrackDensity(d: TrackDensity): void;
   cycleTrackDensity(): void;
+  toggleFocusMode(): void;
+  togglePropsCollapsed(): void;
   stepRate(dir: 1 | -1): void;
   setZoom(z: number): void;
   toggleSnapping(): void;
@@ -319,6 +332,8 @@ export const useEditor = create<EditorState>((set, get) => {
     rate: 1,
     workArea: null,
     trackDensity: readDensity(),
+    focusMode: false,
+    propsCollapsed: readFlag('editor.layout.propsCollapsed'),
     zoom: 60,
     snapping: true,
     guides: false,
@@ -488,6 +503,18 @@ export const useEditor = create<EditorState>((set, get) => {
         localStorage.setItem(DENSITY_KEY, d);
       } catch {
         /* preferência é opcional */
+      }
+    },
+    toggleFocusMode() {
+      set({ focusMode: !get().focusMode });
+    },
+    togglePropsCollapsed() {
+      const v = !get().propsCollapsed;
+      set({ propsCollapsed: v });
+      try {
+        localStorage.setItem('editor.layout.propsCollapsed', v ? '1' : '0');
+      } catch {
+        /* preferência opcional */
       }
     },
     cycleTrackDensity() {
