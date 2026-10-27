@@ -28,6 +28,7 @@ export function MediaPanel({ projectId }: { projectId: string }) {
   const [limit, setLimit] = useState(PAGE);
   const [over, setOver] = useState(false);
   const [confirming, setConfirming] = useState<string | null>(null);
+  const [renaming, setRenaming] = useState<string | null>(null);
 
   const items = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -38,6 +39,18 @@ export function MediaPanel({ projectId }: { projectId: string }) {
   const send = (files: FileList | File[]) => {
     for (const f of Array.from(files)) void upload(projectId, f);
   };
+
+  async function rename(m: MediaItem, raw: string) {
+    setRenaming(null);
+    const name = raw.trim();
+    if (!name || name === m.name) return;
+    try {
+      const r = await api.patch<{ media: MediaItem }>(`/api/media/${m.id}`, { name });
+      useEditor.getState().setMediaName(m.id, r.media.name);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Não foi possível renomear a mídia');
+    }
+  }
 
   async function remove(m: MediaItem) {
     try {
@@ -147,15 +160,36 @@ export function MediaPanel({ projectId }: { projectId: string }) {
                       {used.has(m.id) && <span className="absolute left-1 top-1 rounded bg-accent px-1 text-2xs font-medium text-bg">Em uso</span>}
                     </div>
                     <div className="px-1.5 py-1">
-                      <p className="truncate text-2xs font-medium" title={m.name}>
-                        {m.name}
-                      </p>
+                      {renaming === m.id ? (
+                        <input
+                          autoFocus
+                          className="field h-5 w-full px-1 text-2xs"
+                          aria-label={`Novo nome de ${m.name}`}
+                          defaultValue={m.name}
+                          maxLength={120}
+                          onClick={(e) => e.stopPropagation()}
+                          onDoubleClick={(e) => e.stopPropagation()}
+                          onBlur={(e) => void rename(m, e.target.value)}
+                          onKeyDown={(e) => {
+                            e.stopPropagation();
+                            if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+                            if (e.key === 'Escape') setRenaming(null);
+                          }}
+                        />
+                      ) : (
+                        <p className="truncate text-2xs font-medium" title={m.name}>
+                          {m.name}
+                        </p>
+                      )}
                       <p className="text-2xs text-mute">{formatBytes(m.size)}</p>
                     </div>
                   </div>
                   <div className="absolute right-1 top-1 flex gap-1 opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100">
                     <button type="button" className="btn-icon !h-6 !w-6 bg-bg/80 backdrop-blur" aria-label={`Adicionar ${m.name} à timeline`} disabled={m.status !== 'ready'} onClick={() => addToTimeline(m.id)}>
                       <Icon name="plus" size={13} />
+                    </button>
+                    <button type="button" className="btn-icon !h-6 !w-6 bg-bg/80 backdrop-blur" aria-label={`Renomear ${m.name}`} onClick={() => setRenaming(m.id)}>
+                      <Icon name="pencil" size={13} />
                     </button>
                     <button type="button" className="btn-icon !h-6 !w-6 bg-bg/80 backdrop-blur" aria-label={`Remover ${m.name}`} onClick={() => (used.has(m.id) ? setConfirming(m.id) : void remove(m))}>
                       <Icon name="trash" size={13} />
