@@ -35,6 +35,8 @@ const MIME_OK = /^(video|audio|image)\//;
 
 const SHAPE_NAMES: Record<(typeof SHAPES)[number], string> = { circle: 'Círculo', square: 'Quadrado', rounded: 'Retângulo arredondado', triangle: 'Triângulo', star: 'Estrela', heart: 'Coração', arrow: 'Seta', line: 'Linha' };
 
+const RenameMedia = z.object({ name: z.string().trim().min(1, 'Informe um nome').max(120, 'Nome longo demais (máx. 120)') });
+
 const HexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Use o formato #rrggbb');
 const Generate = z.object({
   kind: z.enum(['solid', 'gradient', 'shape']),
@@ -350,6 +352,18 @@ export function mediaRoutes(ctx: AppContext): Router {
     auth,
     h(async (req, res) => {
       res.json({ media: presentMedia(ctx, await ownedMedia(ctx, req.params.id!, req.userId), req.userId) });
+    }),
+  );
+
+  r.patch(
+    '/media/:id',
+    auth,
+    h(async (req, res) => {
+      const body = parse(RenameMedia, req.body);
+      const m = await ownedMedia(ctx, req.params.id!, req.userId);
+      // Só o nome de exibição muda: o arquivo no armazenamento e a chave continuam os mesmos.
+      const updated = await ctx.db.media.update({ where: { id: m.id }, data: { originalName: body.name.replace(/[\u0000-\u001f\u007f/\\]/g, ' ').replace(/\s+/g, ' ').trim() || m.originalName } });
+      res.json({ media: presentMedia(ctx, updated, req.userId) });
     }),
   );
 
