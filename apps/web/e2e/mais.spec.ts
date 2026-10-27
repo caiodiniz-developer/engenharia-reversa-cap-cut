@@ -165,3 +165,28 @@ test.describe('faixas, texto e marcadores', () => {
     expect(text).toBe('0:00 Marcador 1'); // o 2º marcador está a menos de 10 s do primeiro e é omitido (regra do YouTube)
   });
 });
+
+test.describe('biblioteca', () => {
+  test('renomear mídia: o nome muda na biblioteca, no projeto e continua após recarregar', async ({ page }) => {
+    await withClip(page);
+    const item = page.getByTestId('media-list').getByRole('listitem').first();
+    await item.hover();
+    await item.getByRole('button', { name: /^Renomear / }).click();
+    const input = item.getByRole('textbox');
+    await input.fill('Cena de abertura');
+    await input.press('Enter');
+    await expect(item).toContainText('Cena de abertura');
+    await expect.poll(async () => Object.values((await projectOf(page)).media)[0]!.name).toBe('Cena de abertura');
+
+    // Esc cancela sem alterar
+    await item.hover();
+    await item.getByRole('button', { name: /^Renomear / }).click();
+    await item.getByRole('textbox').fill('Outro nome');
+    await item.getByRole('textbox').press('Escape');
+    await expect(item).toContainText('Cena de abertura');
+
+    await expect.poll(async () => page.evaluate(() => window.__editor.getState().saveState)).toBe('saved');
+    await page.reload();
+    await expect(page.getByTestId('media-list')).toContainText('Cena de abertura');
+  });
+});
