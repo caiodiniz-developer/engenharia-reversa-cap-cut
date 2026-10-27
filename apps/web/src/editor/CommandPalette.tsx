@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '../components/Icon';
+import { loadRecent, pushRecent, saveRecent, withRecentFirst } from '../lib/recentCommands';
 import { useEditor } from '../store/editor';
 import { buildCommands, searchCommands } from './commands';
 
@@ -13,6 +14,7 @@ export function CommandPalette({ open, onClose, onExport, onHelp }: { open: bool
   const [index, setIndex] = useState(0);
   const input = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
+  const [recent, setRecent] = useState<string[]>(() => loadRecent());
 
   const commands = useMemo(
     () =>
@@ -33,7 +35,13 @@ export function CommandPalette({ open, onClose, onExport, onHelp }: { open: bool
     [navigate, onExport, onHelp, setPanel],
   );
   // `enabled` é avaliado a cada abertura: depende da seleção atual.
-  const results = useMemo(() => (open ? searchCommands(commands, query).filter((c) => c.enabled?.() ?? true) : []), [commands, query, open]);
+  const results = useMemo(() => {
+    if (!open) return [];
+    const found = searchCommands(commands, query).filter((c) => c.enabled?.() ?? true);
+    // Sem busca, os comandos usados há pouco aparecem primeiro.
+    return query.trim() ? found : withRecentFirst(found, recent);
+  }, [commands, query, open, recent]);
+  const recentSet = useMemo(() => new Set(query.trim() ? [] : recent), [query, recent]);
 
   useEffect(() => {
     if (open) {
@@ -51,6 +59,9 @@ export function CommandPalette({ open, onClose, onExport, onHelp }: { open: bool
     const c = results[i];
     if (!c) return;
     onClose();
+    const next = pushRecent(recent, c.id);
+    setRecent(next);
+    saveRecent(next);
     // Executa depois de fechar para o foco voltar ao editor antes da ação.
     setTimeout(() => c.run(), 0);
   };
@@ -96,6 +107,7 @@ export function CommandPalette({ open, onClose, onExport, onHelp }: { open: bool
                 <li key={c.id} id={`cmd-${c.id}`} role="option" aria-selected={i === index} onMouseMove={() => setIndex(i)} onClick={() => run(i)} className={`flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-xs ${i === index ? 'bg-accent/15 text-ink' : 'text-ink/85'}`}>
                   <Icon name={c.icon} size={15} className={i === index ? 'text-accent' : 'text-mute'} />
                   <span className="flex-1 truncate">{c.label}</span>
+                  {recentSet.has(c.id) && <span className="rounded bg-panel-3 px-1.5 py-0.5 text-[10px] font-medium text-accent" data-testid="recent-chip">Recente</span>}
                   <span className="text-2xs text-mute">{c.group}</span>
                   {c.shortcut && <span className="kbd">{c.shortcut}</span>}
                 </li>
