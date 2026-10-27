@@ -107,6 +107,17 @@ export function buildCommands(ctx: { openPanel: (t: PanelTab) => void; onExport:
     { id: 'fill-frame', label: 'Preencher o quadro com o clipe', group: 'Posição', icon: 'maximize', enabled: hasSel, keywords: 'cobrir cover escala ajustar', run: () => s().fillFrameSelection() },
     { id: 'rotate-right', label: 'Girar 90° para a direita', group: 'Posição', icon: 'redo', shortcut: 'Shift+R', enabled: hasSel, keywords: 'rotacionar', run: () => s().rotateSelection(90) },
     { id: 'rotate-left', label: 'Girar 90° para a esquerda', group: 'Posição', icon: 'undo', enabled: hasSel, keywords: 'rotacionar', run: () => s().rotateSelection(-90) },
+    ...([2, 3, 5] as const).map((n) => ({
+      id: 'repeat-' + n,
+      label: 'Repetir o clipe ' + n + ' vezes',
+      group: 'Edição',
+      icon: 'copyPlus' as IconName,
+      enabled: () => s().selection.length === 1,
+      keywords: 'loop duplicar várias vezes',
+      run: () => s().repeatSelection(n),
+    })),
+    { id: 'extend', label: 'Estender o clipe até a cabeça de reprodução', group: 'Edição', icon: 'skipForward', enabled: hasSel, keywords: 'esticar alongar', run: () => s().extendToPlayhead() },
+    { id: 'dup-track', label: 'Duplicar a faixa selecionada', group: 'Timeline', icon: 'copy', enabled: () => !!s().selectedTrackId, keywords: 'copiar faixa', run: () => s().duplicateTrackById(s().selectedTrackId!) },
     { id: 'sequence', label: 'Colocar clipes selecionados em sequência', group: 'Timeline', icon: 'layers', enabled: () => s().selection.length > 1, keywords: 'encostar juntar organizar', run: () => s().sequenceSelection() },
     { id: 'split-markers', label: 'Dividir clipes nos marcadores', group: 'Timeline', icon: 'scissors', keywords: 'cortar marcador', run: () => s().splitSelectionAtMarkers() },
     ...([['video', 'vídeos'], ['image', 'imagens'], ['audio', 'áudios'], ['text', 'textos'], ['caption', 'legendas']] as const).map(([k, label]) => ({
