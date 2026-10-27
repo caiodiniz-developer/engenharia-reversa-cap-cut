@@ -190,3 +190,24 @@ test.describe('biblioteca', () => {
     await expect(page.getByTestId('media-list')).toContainText('Cena de abertura');
   });
 });
+
+test.describe('paleta', () => {
+  test('comandos usados aparecem primeiro, com a etiqueta Recente, e a ordem sobrevive ao recarregar', async ({ page }) => {
+    await withClip(page);
+    await palette(page, 'alternar tema');
+    await palette(page, 'adicionar marcador');
+    await page.keyboard.press('Control+k');
+    const options = page.getByTestId('command-list').getByRole('option');
+    await expect(options.nth(0)).toContainText('Adicionar marcador');
+    await expect(options.nth(1)).toContainText('Alternar tema claro/escuro');
+    await expect(page.getByTestId('recent-chip')).toHaveCount(2);
+    // digitando, a lista volta à busca normal (sem etiqueta)
+    await page.getByRole('combobox', { name: 'Buscar comandos' }).fill('zoom');
+    await expect(page.getByTestId('recent-chip')).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    await page.reload();
+    await expect(page.getByTestId('editor')).toBeVisible();
+    await page.keyboard.press('Control+k');
+    await expect(page.getByTestId('command-list').getByRole('option').nth(0)).toContainText('Adicionar marcador');
+  });
+});
