@@ -232,6 +232,12 @@ interface EditorState {
   closeGaps(trackId: string): void;
   /** Encosta os clipes selecionados em sequência, sem espaços entre eles. */
   sequenceSelection(): void;
+  /** Soma `delta` (ex.: 0,1) ao volume dos clipes selecionados (0 a 400%). */
+  nudgeVolume(delta: number): void;
+  /** Aplica fade de entrada e/ou saída (segundos; 0 remove) aos clipes de áudio/vídeo selecionados. */
+  setFades(fadeIn: number | null, fadeOut: number | null): void;
+  /** Alterna o mudo dos clipes selecionados. */
+  toggleMuteSelection(): void;
   /** Ajusta o zoom e a rolagem para a seleção ocupar a largura da timeline. */
   zoomToSelection(): void;
   /** Liga/desliga um estado em todas as faixas de uma vez (se alguma está desligada, liga todas; senão desliga todas). */
@@ -871,6 +877,36 @@ export const useEditor = create<EditorState>((set, get) => {
         const scroller = el?.querySelector<HTMLElement>('.overflow-auto');
         if (scroller) scroller.scrollLeft = Math.max(0, start * get().zoom - 24);
       });
+    },
+    nudgeVolume(delta) {
+      const { project, selection } = get();
+      const targets = selection.map((id) => findClip(project, id)?.clip).filter((c): c is MediaClip => c?.type === 'media');
+      if (!targets.length) return toast.info('Selecione clipes de áudio ou vídeo');
+      get().run('Ajustar volume', (p) =>
+        targets.reduce((acc, c) => updateClip(acc, c.id, (x) => {
+          const a = (x as MediaClip).audio;
+          return { ...x, audio: { ...a, volume: Math.min(4, Math.max(0, round6(a.volume + delta))) } } as Clip;
+        }), p),
+      );
+    },
+    setFades(fadeIn, fadeOut) {
+      const { project, selection } = get();
+      const targets = selection.map((id) => findClip(project, id)?.clip).filter((c): c is MediaClip => c?.type === 'media');
+      if (!targets.length) return toast.info('Selecione clipes de áudio ou vídeo');
+      get().run('Ajustar fades', (p) =>
+        targets.reduce((acc, c) => updateClip(acc, c.id, (x) => {
+          const a = (x as MediaClip).audio;
+          const half = x.duration / 2; // entrada + saída nunca passam do clipe
+          return { ...x, audio: { ...a, fadeIn: fadeIn === null ? a.fadeIn : Math.min(fadeIn, half), fadeOut: fadeOut === null ? a.fadeOut : Math.min(fadeOut, half) } } as Clip;
+        }), p),
+      );
+    },
+    toggleMuteSelection() {
+      const { project, selection } = get();
+      const targets = selection.map((id) => findClip(project, id)?.clip).filter((c): c is MediaClip => c?.type === 'media');
+      if (!targets.length) return toast.info('Selecione clipes de áudio ou vídeo');
+      const mute = targets.some((c) => !c.audio.muted);
+      get().run(mute ? 'Silenciar clipes' : 'Reativar o som dos clipes', (p) => targets.reduce((acc, c) => updateClip(acc, c.id, (x) => ({ ...x, audio: { ...(x as MediaClip).audio, muted: mute } }) as Clip), p));
     },
     sequenceSelection() {
       const ids = get().selection;
