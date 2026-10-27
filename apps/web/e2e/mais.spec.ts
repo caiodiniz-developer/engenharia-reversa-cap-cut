@@ -258,3 +258,29 @@ test.describe('clipes na timeline', () => {
     await expect(clip.getByTestId('fade-in-ramp')).toHaveCount(0);
   });
 });
+
+test.describe('menu de contexto', () => {
+  test('botão direito no clipe seleciona, abre o menu e executa ações (repetir, desabilitados e Esc)', async ({ page }) => {
+    const c = await withClip(page);
+    await page.keyboard.press('Escape'); // limpa a seleção
+    const clip = page.locator(`[data-clip-id="${c.id}"]`);
+    await clip.click({ button: 'right' });
+    const menu = page.getByTestId('clip-menu');
+    await expect(menu).toBeVisible();
+    expect(await page.evaluate(() => window.__editor.getState().selection)).toEqual([c.id]); // o clipe foi selecionado
+    // sem atributos copiados, "Colar atributos" fica desabilitado; "Agrupar" também (só um clipe)
+    await expect(menu.getByRole('menuitem', { name: /Colar atributos/ })).toBeDisabled();
+    await expect(menu.getByRole('menuitem', { name: /Agrupar clipes/ })).toBeDisabled();
+    await page.keyboard.press('Escape');
+    await expect(menu).toBeHidden();
+
+    await clip.click({ button: 'right' });
+    await page.getByTestId('clip-menu').getByRole('menuitem', { name: /Repetir o clipe 2 vezes/ }).click();
+    await expect.poll(async () => (await clipsOf(page)).length).toBe(3);
+    await expect(page.getByTestId('clip-menu')).toBeHidden();
+
+    await clip.click({ button: 'right' });
+    await page.getByTestId('clip-menu').getByRole('menuitem', { name: /Silenciar \/ reativar/ }).click();
+    await expect.poll(async () => (await clipOf(page, c.id)).audio.muted).toBe(true);
+  });
+});
