@@ -149,6 +149,15 @@ export function buildCommands(ctx: { openPanel: (t: PanelTab) => void; onExport:
     { id: 'captions-later', label: 'Atrasar as legendas em 0,5 s', group: 'Legendas', icon: 'captions', keywords: 'sincronizar deslocar tempo', run: () => s().shiftCaptionTimes(0.5) },
     { id: 'captions-earlier', label: 'Adiantar as legendas em 0,5 s', group: 'Legendas', icon: 'captions', keywords: 'sincronizar deslocar tempo', run: () => s().shiftCaptionTimes(-0.5) },
     { id: 'captions-fast', label: 'Selecionar legendas rápidas demais para ler', group: 'Legendas', icon: 'captions', keywords: 'velocidade leitura caracteres por segundo qualidade', run: () => s().selectFastCaptions() },
+    ...([1, 2, 3, 5, 10] as const).map((sec) => ({
+      id: 'duration-' + sec,
+      label: 'Duração de ' + sec + ' s para a seleção',
+      group: 'Edição',
+      icon: 'clock' as IconName,
+      enabled: hasSel,
+      keywords: 'tempo igualar imagens textos tamanho',
+      run: () => s().setSelectionDuration(sec),
+    })),
     { id: 'sequence', label: 'Colocar clipes selecionados em sequência', group: 'Timeline', icon: 'layers', enabled: () => s().selection.length > 1, keywords: 'encostar juntar organizar', run: () => s().sequenceSelection() },
     { id: 'split-markers', label: 'Dividir clipes nos marcadores', group: 'Timeline', icon: 'scissors', keywords: 'cortar marcador', run: () => s().splitSelectionAtMarkers() },
     ...([['video', 'vídeos'], ['image', 'imagens'], ['audio', 'áudios'], ['text', 'textos'], ['caption', 'legendas']] as const).map(([k, label]) => ({
