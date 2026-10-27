@@ -360,3 +360,33 @@ test.describe('legendas', () => {
     await expect.poll(async () => (await caps()).length).toBe(3);
   });
 });
+
+test.describe('limpeza da biblioteca', () => {
+  test('lista só as mídias fora da timeline e remove todas, mantendo as em uso', async ({ page }) => {
+    await signup(page);
+    await newProject(page, 'Limpeza');
+    const red = await uploadAndWait(page, media.red);
+    await uploadAndWait(page, media.blue);
+    await red.dblclick(); // só a vermelha entra na timeline
+    await expect(page.locator('[data-clip-id]')).toHaveCount(1);
+
+    await palette(page, 'limpar midias nao usadas');
+    const dialog = page.getByRole('dialog', { name: 'Limpar mídias não usadas' });
+    const list = dialog.getByTestId('cleanup-list');
+    await expect(list.getByRole('listitem')).toHaveCount(1);
+    await expect(list).toContainText('azul');
+    await expect(list).not.toContainText('vermelho');
+    await dialog.getByTestId('cleanup-run').click();
+    await expect(page.getByText('1 mídia removida')).toBeVisible();
+    await expect(dialog).toBeHidden();
+
+    const library = page.getByTestId('media-list');
+    await expect(library).toContainText('vermelho');
+    await expect(library).not.toContainText('azul');
+    expect((await clipsOf(page)).length).toBe(1);
+
+    // sem sobras, o diálogo avisa
+    await palette(page, 'limpar midias nao usadas');
+    await expect(page.getByTestId('cleanup-empty')).toBeVisible();
+  });
+});
