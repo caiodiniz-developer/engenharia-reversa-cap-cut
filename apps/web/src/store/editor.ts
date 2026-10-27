@@ -196,6 +196,8 @@ interface EditorState {
   registerMedia(items: MediaItem[]): void;
   importMedia(item: MediaItem): void;
   removeMediaItem(id: string): void;
+  /** Atualiza o nome de exibição de uma mídia (biblioteca e projeto). O servidor já foi avisado. */
+  setMediaName(id: string, name: string): void;
   /** `overlay` coloca o clipe numa faixa nova acima das demais (formas, adesivos, legendas gráficas). */
   addToTimeline(mediaId: string, opts?: { at?: number; trackId?: string; overlay?: boolean }): void;
 
@@ -529,6 +531,13 @@ export const useEditor = create<EditorState>((set, get) => {
       if (!get().project.media[item.id]) get().commitProject(`Importar ${item.name}`, addMedia(get().project, assetFromMedia(item)));
     },
 
+    setMediaName(id, name) {
+      const item = get().media[id];
+      if (!item) return;
+      set({ media: { ...get().media, [id]: { ...item, name } } });
+      const asset = get().project.media[id];
+      if (asset && asset.name !== name) get().run('Renomear mídia', (p) => ({ ...p, media: { ...p.media, [id]: { ...p.media[id]!, name } } }));
+    },
     removeMediaItem(id) {
       const media = { ...get().media };
       delete media[id];
