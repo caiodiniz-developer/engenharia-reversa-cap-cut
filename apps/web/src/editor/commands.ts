@@ -95,6 +95,18 @@ export function buildCommands(ctx: { openPanel: (t: PanelTab) => void; onExport:
       run: () => s().changeCaseSelection(mode),
     })),
     { id: 'find-replace', label: 'Localizar e substituir texto…', group: 'Texto', icon: 'search', keywords: 'trocar buscar substituir palavra', run: () => window.dispatchEvent(new Event('editor:open-replace')) },
+    ...(POSITION_PRESETS.map((pr) => ({
+      id: 'place-' + pr,
+      label: 'Posicionar: ' + POSITION_LABEL[pr],
+      group: 'Posição',
+      icon: 'layout' as IconName,
+      enabled: hasSel,
+      keywords: 'alinhar canto centro encostar',
+      run: () => s().placeSelection(pr),
+    }))),
+    { id: 'fill-frame', label: 'Preencher o quadro com o clipe', group: 'Posição', icon: 'maximize', enabled: hasSel, keywords: 'cobrir cover escala ajustar', run: () => s().fillFrameSelection() },
+    { id: 'rotate-right', label: 'Girar 90° para a direita', group: 'Posição', icon: 'redo', shortcut: 'Shift+R', enabled: hasSel, keywords: 'rotacionar', run: () => s().rotateSelection(90) },
+    { id: 'rotate-left', label: 'Girar 90° para a esquerda', group: 'Posição', icon: 'undo', enabled: hasSel, keywords: 'rotacionar', run: () => s().rotateSelection(-90) },
     { id: 'sequence', label: 'Colocar clipes selecionados em sequência', group: 'Timeline', icon: 'layers', enabled: () => s().selection.length > 1, keywords: 'encostar juntar organizar', run: () => s().sequenceSelection() },
     { id: 'split-markers', label: 'Dividir clipes nos marcadores', group: 'Timeline', icon: 'scissors', keywords: 'cortar marcador', run: () => s().splitSelectionAtMarkers() },
     ...([['video', 'vídeos'], ['image', 'imagens'], ['audio', 'áudios'], ['text', 'textos'], ['caption', 'legendas']] as const).map(([k, label]) => ({
