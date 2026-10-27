@@ -113,6 +113,11 @@ test.describe('exportação pelo navegador', () => {
     await dialog.getByRole('radio', { name: 'Somente áudio' }).click();
     await expect(dialog.getByLabel('Resolução')).toHaveCount(0);
     await dialog.getByLabel('Formato do áudio').selectOption('mp3');
+    // 8 s de projeto a 192 kbit/s ≈ 188 KB (192.000 bytes)
+    await expect(dialog).toContainText(/áudio MP3 · ≈ 18\d KB/);
+    await dialog.getByLabel('Formato do áudio').selectOption('wav');
+    await expect(dialog).toContainText(/áudio WAV · ≈ 1\.[45] MB/);
+    await dialog.getByLabel('Formato do áudio').selectOption('mp3');
     await dialog.getByTestId('start-export').click();
     await expect(dialog.getByTestId('export-status')).toContainText('Exportação concluída', { timeout: 120_000 });
     const [download] = await Promise.all([page.waitForEvent('download'), dialog.getByTestId('download-button').click()]);
