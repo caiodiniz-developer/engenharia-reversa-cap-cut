@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Modal, ProgressBar } from '../components/controls';
 import { Icon } from '../components/Icon';
+import { groupShortcuts, splitKeyCombos } from './shortcutGroups';
 import { formatRelative } from '../lib/format';
 import { JOB_LABELS, useJobs } from '../store/jobs';
 import { useEditor } from '../store/editor';
@@ -142,18 +143,37 @@ export function JobsList() {
 }
 
 export function ShortcutsDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [query, setQuery] = useState('');
+  useEffect(() => {
+    if (open) setQuery('');
+  }, [open]);
+  const groups = groupShortcuts(SHORTCUTS, query);
   return (
-    <Modal open={open} onClose={onClose} title="Atalhos de teclado" width={520}>
-      <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-xs">
-        {SHORTCUTS.map((s) => (
-          <div key={s.keys} className="contents">
-            <dt>
-              <kbd className="rounded border border-line bg-panel2 px-1.5 py-0.5 font-mono text-2xs">{s.keys}</kbd>
-            </dt>
-            <dd className="text-mute">{s.label}</dd>
-          </div>
+    <Modal open={open} onClose={onClose} title="Atalhos de teclado" width={560}>
+      <input className="field mb-3" placeholder="Buscar atalho (ex.: dividir, zoom, Ctrl)" aria-label="Buscar atalho" value={query} onChange={(e) => setQuery(e.target.value)} autoFocus />
+      <div className="max-h-[56vh] overflow-auto pr-1" data-testid="shortcut-list">
+        {groups.length === 0 && <p className="py-8 text-center text-xs text-mute">Nenhum atalho corresponde a “{query}”.</p>}
+        {groups.map((g) => (
+          <section key={g.category} className="mb-4" aria-label={g.category}>
+            <h3 className="mb-1.5 text-2xs font-semibold uppercase tracking-wide text-mute">{g.category}</h3>
+            <dl className="grid grid-cols-[minmax(0,auto)_1fr] items-center gap-x-5 gap-y-1.5 text-xs">
+              {g.items.map((s) => (
+                <div key={s.keys} className="contents">
+                  <dt className="flex flex-wrap items-center gap-1">
+                    {splitKeyCombos(s.keys).map((combo, i) => (
+                      <span key={combo} className="flex items-center gap-1">
+                        {i > 0 && <span className="text-mute">ou</span>}
+                        <kbd className="kbd">{combo}</kbd>
+                      </span>
+                    ))}
+                  </dt>
+                  <dd className="text-mute">{s.label}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
         ))}
-      </dl>
+      </div>
     </Modal>
   );
 }
