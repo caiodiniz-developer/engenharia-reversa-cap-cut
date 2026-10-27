@@ -232,6 +232,8 @@ interface EditorState {
   closeGaps(trackId: string): void;
   /** Encosta os clipes selecionados em sequência, sem espaços entre eles. */
   sequenceSelection(): void;
+  /** Estica o fim dos clipes selecionados até a cabeça de reprodução (imagens, textos, legendas e vídeos com mídia sobrando). */
+  extendToPlayhead(): void;
   /** Encosta os clipes visuais selecionados na borda/canto escolhido do quadro. */
   placeSelection(preset: PositionPreset): void;
   /** Escala os clipes de mídia selecionados para cobrir o quadro inteiro. */
@@ -835,6 +837,13 @@ export const useEditor = create<EditorState>((set, get) => {
           return { ...x, transform: { ...t, rotation } } as Clip;
         }), p),
       );
+    },
+    extendToPlayhead() {
+      const { project, selection, playhead } = get();
+      const targets = selection.map((id) => findClip(project, id)?.clip).filter((c): c is Clip => !!c && playhead > clipEnd(c) + 1e-6);
+      if (!targets.length) return toast.info('Posicione a cabeça de reprodução depois do fim do clipe selecionado');
+      for (const c of targets) get().trim(c.id, 'end', playhead);
+      get().sealDrag();
     },
     sequenceSelection() {
       const ids = get().selection;
