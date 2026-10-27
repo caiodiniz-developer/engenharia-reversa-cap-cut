@@ -232,6 +232,8 @@ interface EditorState {
   closeGaps(trackId: string): void;
   /** Encosta os clipes selecionados em sequência, sem espaços entre eles. */
   sequenceSelection(): void;
+  /** Liga/desliga um estado em todas as faixas de uma vez (se alguma está desligada, liga todas; senão desliga todas). */
+  toggleAllTracks(prop: 'locked' | 'hidden' | 'muted'): void;
   /** Estica o fim dos clipes selecionados até a cabeça de reprodução (imagens, textos, legendas e vídeos com mídia sobrando). */
   extendToPlayhead(): void;
   /** Encosta os clipes visuais selecionados na borda/canto escolhido do quadro. */
@@ -844,6 +846,13 @@ export const useEditor = create<EditorState>((set, get) => {
       if (!targets.length) return toast.info('Posicione a cabeça de reprodução depois do fim do clipe selecionado');
       for (const c of targets) get().trim(c.id, 'end', playhead);
       get().sealDrag();
+    },
+    toggleAllTracks(prop) {
+      const tracks = get().project.tracks.filter((t) => (prop === 'hidden' ? t.kind !== 'audio' : prop === 'muted' ? t.kind === 'video' || t.kind === 'audio' : true));
+      if (!tracks.length) return;
+      const on = tracks.some((t) => !t[prop]);
+      const label = { locked: 'Bloquear faixas', hidden: 'Ocultar faixas', muted: 'Silenciar faixas' }[prop];
+      get().run(on ? label : 'Desfazer: ' + label.toLowerCase(), (p) => tracks.reduce((acc, t) => setTrackProps(acc, t.id, { [prop]: on }), p));
     },
     sequenceSelection() {
       const ids = get().selection;
