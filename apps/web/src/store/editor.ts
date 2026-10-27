@@ -250,6 +250,10 @@ interface EditorState {
   closeGaps(trackId: string): void;
   /** Encosta os clipes selecionados em sequência, sem espaços entre eles. */
   sequenceSelection(): void;
+  /** Desloca as legendas selecionadas (ou todas, sem seleção de legendas) por `delta` segundos. */
+  shiftCaptionTimes(delta: number): void;
+  /** Seleciona as legendas rápidas demais para ler (acima de 20 caracteres por segundo). */
+  selectFastCaptions(): void;
   /** Junta as legendas selecionadas (mesma faixa) em uma só. */
   mergeSelectedCaptions(): void;
   /** Copia os marcadores como capítulos (m:ss Nome) para a área de transferência. */
@@ -981,6 +985,18 @@ export const useEditor = create<EditorState>((set, get) => {
         return r.project;
       });
       if (ok && merged) set({ selection: [merged] });
+    },
+    shiftCaptionTimes(delta) {
+      const { project, selection } = get();
+      const chosen = selection.filter((id) => findClip(project, id)?.clip.type === 'caption');
+      if (!project.tracks.some((t) => t.kind === 'caption' && t.clips.length)) return toast.info('O projeto não tem legendas');
+      get().run(delta > 0 ? 'Atrasar legendas' : 'Adiantar legendas', (p) => shiftCaptions(p, delta, chosen.length ? chosen : undefined));
+    },
+    selectFastCaptions() {
+      const ids = fastCaptionIds(get().project);
+      if (!ids.length) return toast.success('Nenhuma legenda passa de 20 caracteres por segundo');
+      set({ selection: ids });
+      toast.info(ids.length === 1 ? '1 legenda rápida demais selecionada' : ids.length + ' legendas rápidas demais selecionadas');
     },
     sequenceSelection() {
       const ids = get().selection;
