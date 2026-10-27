@@ -5,6 +5,7 @@ import type { ExportInfo } from '../api/types';
 import { Modal, ProgressBar, Segmented, Select } from '../components/controls';
 import { Icon } from '../components/Icon';
 import { EXPORT_PRESETS, getExportPreset, matchPreset } from '../lib/exportPresets';
+import { estimateAudioBytes } from '../lib/audioSize';
 import { formatBytes, formatDuration } from '../lib/format';
 import { localRecordingSupported, recordLocalDraft, RecordCancelled } from '../lib/localRecord';
 import { useEditor } from '../store/editor';
@@ -180,7 +181,7 @@ export function ExportDialog({ projectId, open, onClose }: { projectId: string; 
         </label>
       )}
       <p className="mb-3 text-2xs text-mute">
-        Saída: {kind === 'audio' ? `áudio ${audioFormat.toUpperCase()}` : kind === 'gif' ? `GIF ${width}×${height}` : `${width}×${height}`} · duração {formatDuration(duration)}
+        Saída: {kind === 'audio' ? `áudio ${audioFormat.toUpperCase()}${duration > 0 ? ` · ${audioFormat === 'm4a' ? 'até ' : '≈ '}${formatBytes(estimateAudioBytes(audioFormat, duration, project.settings.sampleRate))}` : ''}` : kind === 'gif' ? `GIF ${width}×${height}` : `${width}×${height}`} · duração {formatDuration(duration)}
       </p>
 
       {job && (
