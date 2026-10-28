@@ -30,3 +30,4 @@ export * from './usage';
 export * from './platforms';
 export * from './color';
 export * from './review';
+export * from './pacing';
