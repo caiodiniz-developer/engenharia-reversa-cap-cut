@@ -1,10 +1,12 @@
 import { useShallow } from 'zustand/react/shallow';
 import { findClip, formatTimecode, projectDuration } from '@editor/core';
 import { aspectLabel, formatDuration } from '../lib/format';
+import { useReview } from '../lib/useReview';
 import { useEditor } from '../store/editor';
 
 /** Barra de estado: formato do projeto, contagens, seleção, zoom, velocidade e trecho marcado. */
 export function StatusBar() {
+  const { score } = useReview();
   const s = useEditor(
     useShallow((st) => ({
       width: st.project.settings.width,
@@ -46,6 +48,9 @@ export function StatusBar() {
             Trecho {formatDuration(s.area.start)}–{formatDuration(s.area.end)}
           </span>
         )}
+        <button type="button" className={`rounded px-1.5 font-medium hover:bg-panel-3 ${score >= 90 ? 'text-ok' : score >= 60 ? 'text-amber-400' : 'text-danger'}`} title="Nota de qualidade da Revisão (clique para abrir)" data-testid="status-score" onClick={() => { useEditor.getState().setPanel('review'); window.dispatchEvent(new Event('editor:open-panel')); }}>
+          Nota {score}
+        </button>
         {s.rate !== 1 && <span className="text-amber-400">Preview {s.rate}×</span>}
         <span>Ímã {s.snapping ? 'ligado' : 'desligado'}</span>
         <span className="tnum">{Math.round(s.zoom)} px/s</span>
