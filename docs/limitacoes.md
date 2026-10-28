@@ -40,5 +40,14 @@ Listadas para que ninguém descubra em produção. Itens marcados com 🔧 têm 
 - A **tira de quadros** da timeline é gerada no processamento da mídia; mídias importadas antes dessa função não a têm e usam a miniatura única.
 - O tema claro/escuro e a largura/abertura dos painéis ficam no `localStorage` do navegador, não na conta.
 
+## Revisão, plataformas e listas
+- As **zonas seguras e as durações recomendadas** por plataforma (Shorts, Reels, TikTok, Stories…) são aproximações práticas e podem estar defasadas: os aplicativos mudam seus layouts e limites. Os dados ficam em `packages/core/src/platforms.ts`.
+- A **Revisão** é um conjunto de regras heurísticas, não uma garantia de aprovação em nenhuma plataforma. Ela não analisa o áudio (não sabe se há fala sem legenda) e só afirma o contraste do texto quando não há vídeo ou imagem por baixo dele.
+- O **EDL (CMX 3600)** exporta apenas clipes de mídia (sem textos, efeitos ou transições) e não foi aberto em programas de edição de terceiros neste ambiente; o formato segue a estrutura básica do padrão.
+- A **simulação de daltonismo** usa matrizes de cor publicadas (Machado et al., 2009) aplicadas no preview; é uma aproximação, não substitui teste com pessoas.
+- As **tarefas de edição** são marcadores cujo nome começa com ☐ ou ☑; se o nome for editado à mão e perder o prefixo, deixam de ser tarefas.
+- O **replay do histórico** troca o projeto na tela por estados antigos e pausa o salvamento automático até terminar; fechar a aba no meio do replay pede confirmação.
+- A **montagem no ritmo** mexe só na faixa escolhida: clipes ligados (ex.: áudio extraído) em outras faixas não acompanham.
+
 ## Escala
 - Não houve teste de carga nem de vídeos muito longos (horas). Os limites configuráveis (2 GB por arquivo, 2 h por mídia, 200 mídias por projeto, 3000 clipes por exportação) existem para proteger o servidor, não foram calibrados com medições.
