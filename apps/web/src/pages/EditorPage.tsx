@@ -7,6 +7,8 @@ import { CommandPalette } from '../editor/CommandPalette';
 import { ExportDialog } from '../editor/ExportDialog';
 import { CleanupDialog } from '../editor/CleanupDialog';
 import { ReplaceDialog } from '../editor/ReplaceDialog';
+import { ReviewPanel } from '../editor/panels/ReviewPanel';
+import { StoryboardPanel } from '../editor/panels/StoryboardPanel';
 import { StatusBar } from '../editor/StatusBar';
 import { VersionsDialog } from '../editor/VersionsDialog';
 import { AiPanel } from '../editor/panels/AiPanel';
@@ -222,6 +224,8 @@ export function EditorPage() {
                   {panel === 'transitions' && <TransitionsPanel />}
                   {panel === 'animations' && <AnimationsPanel />}
                   {panel === 'elements' && <ElementsPanel projectId={id} />}
+                  {panel === 'review' && <ReviewPanel />}
+                  {panel === 'storyboard' && <StoryboardPanel />}
                   {panel === 'ai' && <AiPanel projectId={id} />}
                 </div>
               </aside>
