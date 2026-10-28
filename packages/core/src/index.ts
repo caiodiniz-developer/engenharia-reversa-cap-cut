@@ -17,6 +17,7 @@ export * from './ops/arrange';
 export * from './ops/repeat';
 export * from './ops/montage';
 export * from './ops/fit';
+export * from './ops/reorder';
 export * from './ops/duration';
 export * from './ops/captions';
 export * from './ops/trackdup';
