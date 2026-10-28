@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { formatTimecode, parseTimecode } from '@editor/core';
+import { formatTimecode, getPlatform, parseTimecode } from '@editor/core';
 import { Icon } from '../components/Icon';
 import { PlayerEngine } from '../engine/player';
 import { getEngine, setEngine } from '../engine/registry';
 import { aspectLabel } from '../lib/format';
-import { PLAYBACK_RATES, selectDuration, useEditor, type PanelTab } from '../store/editor';
+import { colorMatrixValues, VISION_LABEL, VISION_MODES } from '../lib/vision';
+import { PLAYBACK_RATES, selectDuration, useEditor, type PanelTab, type VisionMode } from '../store/editor';
 import { toast } from '../store/toasts';
 
 function Timecode() {
@@ -93,6 +94,8 @@ export function Preview() {
   const loop = useEditor((s) => s.loop);
   const rate = useEditor((s) => s.rate);
   const guides = useEditor((s) => s.guides);
+  const platform = useEditor((s) => (s.showSafeZones && s.platformId ? getPlatform(s.platformId) : undefined));
+  const vision = useEditor((s) => s.vision);
   const st = useEditor.getState();
 
   useEffect(() => {
@@ -151,7 +154,7 @@ export function Preview() {
         </div>
 
         <div className="relative rounded-sm shadow-stage" style={{ width: fit.w, height: fit.h }}>
-          <canvas ref={canvasRef} className="block h-full w-full rounded-sm bg-black" onClick={() => st.togglePlay()} data-testid="preview-canvas" aria-label="Pré-visualização do vídeo" />
+          <canvas ref={canvasRef} className="block h-full w-full rounded-sm bg-black" style={vision === 'normal' ? undefined : { filter: `url(#vision-${vision})` }} data-vision={vision} onClick={() => st.togglePlay()} data-testid="preview-canvas" aria-label="Pré-visualização do vídeo" />
           {empty && (
             <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-2 text-center text-white/70" data-testid="preview-empty">
               <Icon name="film" size={30} />
@@ -168,6 +171,16 @@ export function Preview() {
                   <Icon name="type" size={14} /> Texto
                 </button>
               </div>
+            </div>
+          )}
+          {platform && (
+            <div className="pointer-events-none absolute inset-0" data-testid="safe-zones" aria-label={`Zonas cobertas pela interface de ${platform.label}`}>
+              <div className="absolute inset-x-0 top-0 bg-red-500/25" style={{ height: platform.safe.top * 100 + '%' }} />
+              <div className="absolute inset-x-0 bottom-0 bg-red-500/25" style={{ height: platform.safe.bottom * 100 + '%' }} />
+              <div className="absolute left-0 bg-red-500/25" style={{ top: platform.safe.top * 100 + '%', bottom: platform.safe.bottom * 100 + '%', width: platform.safe.left * 100 + '%' }} />
+              <div className="absolute right-0 bg-red-500/25" style={{ top: platform.safe.top * 100 + '%', bottom: platform.safe.bottom * 100 + '%', width: platform.safe.right * 100 + '%' }} />
+              <div className="absolute border border-dashed border-white/60" style={{ left: platform.safe.left * 100 + '%', right: platform.safe.right * 100 + '%', top: platform.safe.top * 100 + '%', bottom: platform.safe.bottom * 100 + '%' }} />
+              <span className="absolute left-1 top-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] text-white">{platform.label}</span>
             </div>
           )}
           {guides && (
@@ -209,6 +222,22 @@ export function Preview() {
           </button>
         </div>
         <div className="flex items-center justify-end gap-1.5">
+          <svg width="0" height="0" className="absolute" aria-hidden="true" focusable="false">
+            <defs>
+              {VISION_MODES.filter((m): m is Exclude<VisionMode, 'normal'> => m !== 'normal').map((m) => (
+                <filter key={m} id={`vision-${m}`} colorInterpolationFilters="linearRGB">
+                  <feColorMatrix type="matrix" values={colorMatrixValues(m)} />
+                </filter>
+              ))}
+            </defs>
+          </svg>
+          <select className="field h-7 w-auto max-w-[150px] px-1.5 text-2xs" aria-label="Simular visão" title="Simula como pessoas com daltonismo veem o vídeo (só no preview; a exportação não muda)" value={vision} onChange={(e) => useEditor.getState().setVision(e.target.value as VisionMode)}>
+            {VISION_MODES.map((m) => (
+              <option key={m} value={m}>
+                {VISION_LABEL[m]}
+              </option>
+            ))}
+          </select>
           <button type="button" className="btn-icon" aria-label={muted ? 'Ativar som' : 'Silenciar'} onClick={st.toggleMute}>
             <Icon name={muted || volume === 0 ? 'volumeOff' : 'volume'} />
           </button>
