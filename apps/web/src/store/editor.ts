@@ -167,6 +167,8 @@ interface EditorState {
   trackDensity: TrackDensity;
   /** Modo foco: esconde trilho, painel lateral e propriedades para sobrar só preview e timeline. */
   focusMode: boolean;
+  /** Reproduzindo o histórico de edições (o salvamento automático fica em pausa). */
+  replaying: boolean;
   /** Plataforma de destino escolhida na Revisão (null = nenhuma). Preferência do navegador. */
   platformId: string | null;
   /** Mostra no preview as zonas cobertas pela interface da plataforma escolhida. */
@@ -225,6 +227,8 @@ interface EditorState {
   setTrackDensity(d: TrackDensity): void;
   cycleTrackDensity(): void;
   toggleFocusMode(): void;
+  replayHistory(): void;
+  stopReplay(): void;
   setPlatform(id: string | null): void;
   toggleSafeZones(): void;
   setVision(v: VisionMode): void;
@@ -384,6 +388,7 @@ export const useEditor = create<EditorState>((set, get) => {
     workArea: null,
     trackDensity: readDensity(),
     focusMode: false,
+    replaying: false,
     platformId: readString('editor.review.platform'),
     showSafeZones: false,
     vision: 'normal',
@@ -574,6 +579,31 @@ export const useEditor = create<EditorState>((set, get) => {
     },
     setVision(v) {
       set({ vision: v });
+    },
+    replayHistory() {
+      const { history, saveState, project } = get();
+      const end = history.index;
+      if (get().replaying) return;
+      if (end < 1) return toast.info('Ainda não há edições para reproduzir');
+      set({ replaying: true, playing: false });
+      let i = 0;
+      const delay = Math.max(120, Math.min(600, 8000 / end));
+      const finish = () => {
+        get().jumpHistory(end);
+        // voltou ao mesmo estado de antes: não precisa salvar de novo
+        set({ replaying: false, saveState: get().project === project ? saveState : get().saveState });
+      };
+      const step = () => {
+        if (!get().replaying) return finish();
+        get().jumpHistory(i);
+        if (i >= end) return finish();
+        i++;
+        setTimeout(step, delay);
+      };
+      step();
+    },
+    stopReplay() {
+      set({ replaying: false });
     },
     toggleFocusMode() {
       set({ focusMode: !get().focusMode });
