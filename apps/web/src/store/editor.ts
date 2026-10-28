@@ -56,6 +56,14 @@ import {
   clampParams,
   neighborEdit,
   sequenceClips,
+  montageOnMarkers,
+  fitClipsToDuration,
+  moveInSequence,
+  reviewProject,
+  makeTodo,
+  toggleTodo,
+  getPlatform,
+  type ReviewIssue,
   setClipsDuration,
   mergeCaptions,
   shiftCaptions,
@@ -268,6 +276,10 @@ interface EditorState {
   closeGaps(trackId: string): void;
   /** Encosta os clipes selecionados em sequência, sem espaços entre eles. */
   sequenceSelection(): void;
+  /** Vai até o problema da revisão: move a cabeça, seleciona os clipes e a faixa. */
+  goToIssue(issue: ReviewIssue): void;
+  /** Aplica a correção automática oferecida pelo problema (fechar espaços, usar o formato da plataforma…). */
+  applyReviewFix(issue: ReviewIssue): void;
   /** Dá a mesma duração (s) a todos os clipes selecionados. */
   setSelectionDuration(seconds: number): void;
   /** Desloca as legendas selecionadas (ou todas, sem seleção de legendas) por `delta` segundos. */
@@ -1041,6 +1053,27 @@ export const useEditor = create<EditorState>((set, get) => {
       const ids = get().selection;
       if (!ids.length) return toast.info('Selecione os clipes que terão a nova duração');
       get().run('Definir duração', (p) => setClipsDuration(p, ids, seconds));
+    },
+    goToIssue(issue) {
+      const st = get();
+      if (issue.time !== undefined) {
+        st.setPlaying(false);
+        st.setPlayhead(issue.time);
+      }
+      const ids = (issue.clipIds ?? []).filter((id) => findClip(st.project, id));
+      if (ids.length) set({ selection: ids });
+      if (issue.trackId && st.project.tracks.some((t) => t.id === issue.trackId)) set({ selectedTrackId: issue.trackId });
+    },
+    applyReviewFix(issue) {
+      if (!issue.fix) return;
+      const kind = issue.fix.kind;
+      if (kind === 'close-gaps' && issue.trackId) get().closeGaps(issue.trackId);
+      else if (kind === 'remove-track' && issue.trackId) get().removeTrack(issue.trackId);
+      else if (kind === 'show-track' && issue.trackId) get().patchTrack(issue.trackId, { hidden: false });
+      else if (kind === 'set-platform-format') {
+        const platform = getPlatform(get().platformId ?? '');
+        if (platform) get().setSettings({ width: platform.width, height: platform.height });
+      }
     },
     sequenceSelection() {
       const ids = get().selection;
