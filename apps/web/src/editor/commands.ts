@@ -183,6 +183,8 @@ export function buildCommands(ctx: { openPanel: (t: PanelTab) => void; onExport:
     { id: 'focus', label: 'Modo foco (esconder painéis)', group: 'Aparência', icon: 'minimize', shortcut: 'F', keywords: 'tela cheia zen concentrar', run: () => s().toggleFocusMode() },
     { id: 'props-toggle', label: 'Mostrar/ocultar o painel de propriedades', group: 'Aparência', icon: 'panelRight', keywords: 'direita recolher', run: () => s().togglePropsCollapsed() },
     { id: 'safe-zones', label: 'Mostrar/ocultar zonas cobertas pela interface da plataforma', group: 'Revisão', icon: 'layout', keywords: 'área segura tiktok reels shorts', run: () => s().toggleSafeZones() },
+    { id: 'montage', label: 'Montar a faixa nos marcadores (montagem no ritmo)', group: 'Roteiro', icon: 'shuffle', keywords: 'batida beat cortar ritmo', run: () => { const st = s(); const t = st.project.tracks.find((x) => x.id === st.selectedTrackId && x.kind === 'video') ?? st.project.tracks.find((x) => x.kind === 'video'); if (t) st.montageTrack(t.id); } },
+    { id: 'review-open', label: 'Abrir a revisão do projeto', group: 'Revisão', icon: 'check', keywords: 'qualidade nota problemas acessibilidade', run: () => { s().setPanel('review'); window.dispatchEvent(new Event('editor:open-panel')); } },
     { id: 'replay', label: 'Reproduzir o histórico de edições (replay)', group: 'Revisão', icon: 'history', keywords: 'timelapse refazer passo a passo animar', run: () => s().replayHistory() },
     { id: 'replay-stop', label: 'Parar o replay do histórico', group: 'Revisão', icon: 'x', enabled: () => s().replaying, run: () => s().stopReplay() },
     ...(['protanopia', 'deuteranopia', 'tritanopia', 'achromatopsia', 'normal'] as const).map((v) => ({
