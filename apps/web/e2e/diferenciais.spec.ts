@@ -302,3 +302,25 @@ test.describe('cores do quadro', () => {
     await expect.poll(async () => ((await projectOf(page)).tracks.flatMap((t) => t.clips).find((c) => c.id === text.id) as unknown as { style: { color: string } }).style.color).toBe(first);
   });
 });
+
+test.describe('revisão à vista', () => {
+  test('selo na aba, nota na barra de estado e atalho pela paleta', async ({ page }) => {
+    await withGap(page);
+    const badge = page.getByTestId('review-badge');
+    await expect(badge).toBeVisible();
+    expect(Number(await badge.textContent())).toBeGreaterThanOrEqual(1);
+    const score = page.getByTestId('status-score');
+    await expect(score).toContainText(/Nota \d+/);
+    const before = Number((await score.textContent())!.replace(/\D/g, ''));
+    expect(before).toBeLessThan(100);
+
+    await score.click();
+    await expect(page.getByTestId('review-panel')).toBeVisible();
+    await page.locator('[data-testid="issue"][data-rule="gap"]').getByTestId('fix-close-gaps').click();
+    await expect.poll(async () => Number((await score.textContent())!.replace(/\D/g, ''))).toBeGreaterThan(before);
+
+    await page.getByTestId('tab-media').click();
+    await palette(page, 'abrir a revisao do projeto');
+    await expect(page.getByTestId('review-panel')).toBeVisible();
+  });
+});
