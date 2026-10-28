@@ -116,6 +116,13 @@ describe('roteiro, créditos e descrição', () => {
     expect(a).toMatchObject({ firstAt: 0, total: 8, uses: 2, kind: 'video' });
   });
 
+  it('buildDescription tira espaços sobrando do título e usa um nome padrão quando nada sobra', () => {
+    const { p } = project();
+    expect(buildDescription({ ...p, name: '  Meu vídeo   ' }).split(String.fromCharCode(10))[0]).toBe('Meu vídeo');
+    expect(buildDescription({ ...p, name: '   ' }).split(String.fromCharCode(10))[0]).toBe('Vídeo');
+    expect(buildDescription(p, { title: '  Outro  ' }).split(String.fromCharCode(10))[0]).toBe('Outro');
+  });
+
   it('buildDescription junta título, duração, capítulos e mídias; omite seções vazias', () => {
     const { p } = project();
     const bare = buildDescription(p, { title: 'Meu vídeo' });

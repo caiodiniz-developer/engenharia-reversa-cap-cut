@@ -114,7 +114,7 @@ export function creditsList(p: Project): Credit[] {
  * Seções sem conteúdo são omitidas.
  */
 export function buildDescription(p: Project, opts: { title?: string } = {}): string {
-  const parts: string[] = [opts.title?.trim() || p.name, `Duração: ${chapterTime(projectDuration(p))}`];
+  const parts: string[] = [(opts.title ?? p.name).trim() || p.name.trim() || 'Vídeo', `Duração: ${chapterTime(projectDuration(p))}`];
   const chapters = markersToChapters(p.markers);
   if (chapters) parts.push('', 'Capítulos', chapters);
   const credits = creditsList(p);
