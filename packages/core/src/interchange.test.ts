@@ -65,18 +65,19 @@ describe('CSV', () => {
   });
 
   it('toCsv junta linhas com CRLF', () => {
-    expect(toCsv([['a', 'b'], [1, 'c,d']])).toBe('a,b\r\n1,"c,d"');
+    expect(toCsv([['a', 'b'], [1, 'c;d']])).toBe('a;b\r\n1;"c;d"');
+    expect(toCsv([['a', 'b']], ',')).toBe('a,b');
   });
 
   it('timelineCsv: cabeçalho, uma linha por clipe em ordem de início, decimais com vírgula', () => {
     const { p } = project();
     const rows = timelineCsv(p).split('\r\n');
-    expect(rows[0]).toBe('Faixa,Tipo,Nome ou texto,Início (s),Fim (s),Duração (s),Velocidade,Volume (%)');
+    expect(rows[0]).toBe('Faixa;Tipo;Nome ou texto;Início (s);Fim (s);Duração (s);Velocidade;Volume (%)');
     expect(rows).toHaveLength(4);
     const a = rows.find((r) => r.includes('cena a.mp4'))!;
     expect(a).toBeTruthy();
-    expect(rows.some((r) => r.includes('"trilha, final.mp3"'))).toBe(true); // vírgula no nome exige aspas
-    expect(a).toMatch(/,1,100$/); // velocidade 1× e volume 100%
+    expect(rows.some((r) => r.includes('trilha, final.mp3'))).toBe(true); // a vírgula não é o separador, então o nome não precisa de aspas
+    expect(a).toMatch(/;1;100$/); // velocidade 1× e volume 100%
   });
 
   it('timelineCsv inclui texto e legenda com a quebra de linha trocada por barra', () => {

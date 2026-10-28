@@ -45,19 +45,20 @@ export function toEdl(p: Project, title = p.name): string {
 
 /* ---------- CSV ---------- */
 
-/** Escapa um campo CSV (aspas duplas dobradas; campo entre aspas se tiver vírgula, aspas ou quebra de linha). */
+/** Escapa um campo CSV (aspas duplas dobradas; campo entre aspas se tiver vírgula, ponto e vírgula, aspas ou quebra de linha). */
 export function csvField(v: string | number): string {
   const s = String(v);
   return /[",\r\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
-export function toCsv(rows: Array<Array<string | number>>): string {
-  return rows.map((r) => r.map(csvField).join(',')).join('\r\n');
+/** Junta as linhas com o separador `delimiter` (padrão ponto e vírgula, que o Excel em português espera). */
+export function toCsv(rows: Array<Array<string | number>>, delimiter = ';'): string {
+  return rows.map((r) => r.map(csvField).join(delimiter)).join('\r\n');
 }
 
 const sec = (n: number) => String(round6(n)).replace('.', ',');
 
-/** Uma linha por clipe: faixa, tipo, nome ou texto, início, fim, duração, velocidade e volume (números com vírgula decimal). */
+/** Uma linha por clipe: faixa, tipo, nome ou texto, início, fim, duração, velocidade e volume. Separador ; e vírgula decimal (padrão do Excel em português). */
 export function timelineCsv(p: Project): string {
   const rows: Array<Array<string | number>> = [['Faixa', 'Tipo', 'Nome ou texto', 'Início (s)', 'Fim (s)', 'Duração (s)', 'Velocidade', 'Volume (%)']];
   const all: Array<{ t: Track; c: Clip }> = p.tracks.flatMap((t) => t.clips.map((c) => ({ t, c })));
