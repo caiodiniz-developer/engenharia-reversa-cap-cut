@@ -244,3 +244,37 @@ test.describe('simulador de daltonismo e replay', () => {
     expect(await page.evaluate(() => (window.__editor as unknown as Loose).getState().serverRevision as number)).toBe(revision);
   });
 });
+
+test.describe('comparar versões', () => {
+  test('mostra o que mudou desde a versão salva e "nada mudou" quando está igual', async ({ page }) => {
+    await withClip(page);
+    await waitSaved(page);
+    await palette(page, 'versoes do projeto');
+    const dialog = page.getByRole('dialog', { name: 'Versões do projeto' });
+    await dialog.getByLabel('Nome da versão').fill('Antes do corte');
+    await dialog.getByTestId('save-version').click();
+    await expect(dialog.getByTestId('version-list')).toContainText('Antes do corte');
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+
+    // corta o clipe em 2 s: sobra 1 clipe novo e o original encurta
+    await seek(page, 2);
+    await page.keyboard.press('s');
+    await expect.poll(async () => (await clipsOf(page)).length).toBe(2);
+    await palette(page, 'versoes do projeto');
+    const row = dialog.getByRole('listitem').filter({ hasText: 'Antes do corte' });
+    await row.getByRole('button', { name: /Comparar revisão/ }).click();
+    const diff = row.getByTestId(/^diff-/);
+    await expect(diff).toContainText('Desde esta versão');
+    await expect(diff).toContainText('1 clipe adicionado');
+    await expect(diff).toContainText('1 clipe com duração alterada');
+
+    // salva uma versão agora e compara: nada mudou
+    await dialog.getByLabel('Nome da versão').fill('Depois do corte');
+    await dialog.getByTestId('save-version').click();
+    const after = dialog.getByRole('listitem').filter({ hasText: 'Depois do corte' });
+    await expect(after).toBeVisible();
+    await after.getByRole('button', { name: /Comparar revisão/ }).click();
+    await expect(after.getByTestId(/^diff-/)).toContainText('Nada mudou');
+  });
+});
