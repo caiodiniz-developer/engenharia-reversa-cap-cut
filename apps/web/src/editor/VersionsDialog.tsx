@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { Project } from '@editor/core';
+import { describeDiff, diffProjects, type Project } from '@editor/core';
 import { api, ApiError } from '../api/client';
 import { Modal } from '../components/controls';
 import { Icon } from '../components/Icon';
@@ -21,6 +21,9 @@ export function VersionsDialog({ projectId, open, onClose }: { projectId: string
   const [label, setLabel] = useState('');
   const [busy, setBusy] = useState(false);
   const [confirming, setConfirming] = useState<number | null>(null);
+  /** Resultado da comparação de cada versão com o estado atual (revisão → frases). */
+  const [compared, setCompared] = useState<Record<number, string[]>>({});
+  const [comparing, setComparing] = useState<number | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -34,6 +37,7 @@ export function VersionsDialog({ projectId, open, onClose }: { projectId: string
   useEffect(() => {
     if (open) {
       setConfirming(null);
+      setCompared({});
       void load();
     }
   }, [open, load]);
@@ -50,6 +54,20 @@ export function VersionsDialog({ projectId, open, onClose }: { projectId: string
       toast.error(e instanceof ApiError ? e.message : 'Não foi possível salvar a versão');
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function compare(revision: number) {
+    setComparing(revision);
+    try {
+      await saveNow();
+      const v = await api.get<{ data: Project }>(`/api/projects/${projectId}/versions/${revision}`);
+      const lines = describeDiff(diffProjects(v.data, useEditor.getState().project));
+      setCompared((c) => ({ ...c, [revision]: lines }));
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : 'Não foi possível comparar a versão');
+    } finally {
+      setComparing(null);
     }
   }
 
@@ -92,7 +110,7 @@ export function VersionsDialog({ projectId, open, onClose }: { projectId: string
       ) : (
         <ul className="max-h-72 space-y-1 overflow-auto" data-testid="version-list">
           {versions.map((v) => (
-            <li key={v.id} className="card flex items-center gap-2 px-3 py-2">
+            <li key={v.id} className="card flex flex-wrap items-center gap-2 px-3 py-2">
               <div className="min-w-0 flex-1">
                 <p className="truncate text-xs font-medium" title={v.label}>
                   {v.label}
@@ -111,9 +129,28 @@ export function VersionsDialog({ projectId, open, onClose }: { projectId: string
                   </button>
                 </>
               ) : (
-                <button type="button" className="btn !h-7 px-2 text-2xs" onClick={() => setConfirming(v.revision)} disabled={busy} aria-label={`Restaurar revisão ${v.revision}`}>
-                  Restaurar
-                </button>
+                <>
+                  <button type="button" className="btn !h-7 px-2 text-2xs" onClick={() => void compare(v.revision)} disabled={busy || comparing === v.revision} aria-label={`Comparar revisão ${v.revision} com o projeto atual`}>
+                    Comparar
+                  </button>
+                  <button type="button" className="btn !h-7 px-2 text-2xs" onClick={() => setConfirming(v.revision)} disabled={busy} aria-label={`Restaurar revisão ${v.revision}`}>
+                    Restaurar
+                  </button>
+                </>
+              )}
+              {compared[v.revision] && (
+                <div className="basis-full rounded-md bg-panel-2 px-2.5 py-1.5 text-2xs" data-testid={`diff-${v.revision}`}>
+                  <p className="mb-0.5 font-semibold text-mute">Desde esta versão:</p>
+                  {compared[v.revision]!.length === 0 ? (
+                    <p>Nada mudou: o projeto está igual a esta versão.</p>
+                  ) : (
+                    <ul className="list-disc pl-4">
+                      {compared[v.revision]!.map((l) => (
+                        <li key={l}>{l}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               )}
             </li>
           ))}
