@@ -278,3 +278,27 @@ test.describe('comparar versões', () => {
     await expect(after.getByTestId(/^diff-/)).toContainText('Nada mudou');
   });
 });
+
+test.describe('cores do quadro', () => {
+  test('lê as cores do preview e aplica a escolhida ao texto selecionado', async ({ page }) => {
+    await withClip(page, media.red);
+    await seek(page, 1);
+    await page.getByTestId('tab-text').click();
+    await page.getByRole('button', { name: 'Adicionar texto Título' }).click();
+    await expect.poll(async () => (await clipsOf(page)).filter((c) => c.type === 'text').length).toBe(1);
+    const text = (await clipsOf(page)).find((c) => c.type === 'text')!;
+
+    await page.getByTestId('read-colors').click();
+    const chips = page.getByTestId('frame-color');
+    await expect.poll(async () => chips.count(), { timeout: 15_000 }).toBeGreaterThan(0);
+    // o vídeo é vermelho: a cor mais presente é um vermelho forte
+    const first = (await chips.first().getAttribute('data-hex'))!;
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(first.slice(i, i + 2), 16));
+    expect(r!).toBeGreaterThan(180);
+    expect(g!).toBeLessThan(80);
+    expect(b!).toBeLessThan(80);
+
+    await chips.first().click();
+    await expect.poll(async () => ((await projectOf(page)).tracks.flatMap((t) => t.clips).find((c) => c.id === text.id) as unknown as { style: { color: string } }).style.color).toBe(first);
+  });
+});
