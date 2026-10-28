@@ -10,7 +10,7 @@ let saving = false;
 /** Envia o documento atual ao servidor com controle otimista de revisão. */
 export async function saveNow(opts: { overwrite?: boolean } = {}): Promise<void> {
   const st = useEditor.getState();
-  if (!st.projectId || saving) return;
+  if (!st.projectId || saving || st.replaying) return; // durante o replay o projeto mostra estados antigos: nunca salvar
   if (st.saveState === 'conflict' && !opts.overwrite) return;
   saving = true;
   st.setSaveState('saving');
@@ -59,6 +59,7 @@ export function startAutosave(): () => void {
 
   const schedule = () => {
     const st = useEditor.getState();
+    if (st.replaying) return;
     const delay = (useAuth.getState().user?.settings.autosaveSeconds ?? 3) * 1000;
     if (st.saveState === 'dirty') {
       clearTimeout(saveTimer);
