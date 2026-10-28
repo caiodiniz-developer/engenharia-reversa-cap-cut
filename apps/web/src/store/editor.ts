@@ -276,6 +276,10 @@ interface EditorState {
   closeGaps(trackId: string): void;
   /** Encosta os clipes selecionados em sequência, sem espaços entre eles. */
   sequenceSelection(): void;
+  /** Cria uma tarefa de edição (marcador ☐) na cabeça de reprodução. */
+  addTask(text: string): void;
+  /** Marca/desmarca uma tarefa (ou transforma um marcador comum em tarefa). */
+  toggleTask(markerId: string): void;
   /** Vai até o problema da revisão: move a cabeça, seleciona os clipes e a faixa. */
   goToIssue(issue: ReviewIssue): void;
   /** Aplica a correção automática oferecida pelo problema (fechar espaços, usar o formato da plataforma…). */
@@ -1074,6 +1078,16 @@ export const useEditor = create<EditorState>((set, get) => {
         const platform = getPlatform(get().platformId ?? '');
         if (platform) get().setSettings({ width: platform.width, height: platform.height });
       }
+    },
+    addTask(text) {
+      const t = text.trim();
+      if (!t) return;
+      get().run('Adicionar tarefa', (p) => addMarker(p, get().playhead, makeTodo(t), '#a855f7').project);
+    },
+    toggleTask(markerId) {
+      const m = get().project.markers.find((x) => x.id === markerId);
+      if (!m) return;
+      get().run('Marcar tarefa', (p) => updateMarker(p, markerId, { label: toggleTodo(m.label) }));
     },
     sequenceSelection() {
       const ids = get().selection;
