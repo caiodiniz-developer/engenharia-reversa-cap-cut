@@ -28,3 +28,4 @@ export * from './layout';
 export * from './chapters';
 export * from './usage';
 export * from './platforms';
+export * from './color';
