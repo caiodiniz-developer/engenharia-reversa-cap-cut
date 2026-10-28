@@ -90,6 +90,13 @@ describe('projetos', () => {
     const versions = await u.get(`/api/projects/${p.id}/versions`);
     expect(versions.body.versions.map((v: { label: string }) => v.label)).toContain('marco');
 
+    const one = await u.get(`/api/projects/${p.id}/versions/2`);
+    expect(one.status).toBe(200);
+    expect(one.body).toMatchObject({ revision: 2 });
+    expect(one.body.data.tracks).toBeDefined();
+    expect((await u.get(`/api/projects/${p.id}/versions/999`)).status).toBe(404);
+    expect((await u.get(`/api/projects/${p.id}/versions/abc`)).status).toBe(404);
+
     const restore = await u.post(`/api/projects/${p.id}/versions/2/restore`);
     expect(restore.status).toBe(200);
     expect(restore.body.data.tracks).toHaveLength(0);
