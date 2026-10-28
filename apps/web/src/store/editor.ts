@@ -276,6 +276,12 @@ interface EditorState {
   closeGaps(trackId: string): void;
   /** Encosta os clipes selecionados em sequência, sem espaços entre eles. */
   sequenceSelection(): void;
+  /** Troca o clipe de lugar com o vizinho na faixa (dir −1 = antes, 1 = depois). */
+  moveClipInSequence(id: string, dir: -1 | 1): void;
+  /** Refaz a faixa cortando nos marcadores (montagem no ritmo). */
+  montageTrack(trackId: string): void;
+  /** Encaixa os clipes selecionados numa duração-alvo mudando a velocidade. */
+  fitSelectionToDuration(seconds: number): void;
   /** Cria uma tarefa de edição (marcador ☐) na cabeça de reprodução. */
   addTask(text: string): void;
   /** Marca/desmarca uma tarefa (ou transforma um marcador comum em tarefa). */
@@ -1088,6 +1094,29 @@ export const useEditor = create<EditorState>((set, get) => {
       const m = get().project.markers.find((x) => x.id === markerId);
       if (!m) return;
       get().run('Marcar tarefa', (p) => updateMarker(p, markerId, { label: toggleTodo(m.label) }));
+    },
+    moveClipInSequence(id, dir) {
+      get().run('Reordenar clipe', (p) => moveInSequence(p, id, dir));
+    },
+    montageTrack(trackId) {
+      let shots = 0;
+      const ok = get().run('Montagem no ritmo', (p) => {
+        const r = montageOnMarkers(p, trackId);
+        shots = r.shots;
+        return r.project;
+      });
+      if (ok) toast.success(shots + (shots === 1 ? ' plano criado' : ' planos criados') + ' nos marcadores');
+    },
+    fitSelectionToDuration(seconds) {
+      const ids = get().selection;
+      if (!ids.length) return toast.info('Selecione os clipes que devem caber na duração');
+      let factor = 1;
+      const ok = get().run('Encaixar na duração', (p) => {
+        const r = fitClipsToDuration(p, ids, seconds);
+        factor = r.factor;
+        return r.project;
+      });
+      if (ok) toast.success('Velocidade ajustada em ' + String(factor).replace('.', ',') + '×');
     },
     sequenceSelection() {
       const ids = get().selection;
