@@ -126,6 +126,19 @@ Cada ✅ aponta o teste que o exercita. "E2E" = Playwright no Chrome com API, Vi
 | Legendas: juntar em uma, atrasar/adiantar 0,5 s e achar as rápidas demais (> 20 caracteres/s) | ✅ | core `ops/captions.test`, E2E `mais` |
 | Limpar mídias não usadas (lista, remove arquivos e mantém as em uso) | ✅ | core `usage.test`, E2E `mais` |
 | Duração fixa (1, 2, 3, 5 ou 10 s) para vários clipes de uma vez | ✅ | core `ops/duration.test`, E2E `mais` |
+| **Revisão do projeto**: 15 verificações com “ir até” e correção (espaços vazios, início sem imagem, clipes curtos, legendas rápidas/sobrepostas, sem legendas, mídia ampliada, volume alto, contraste, zona segura, mídias não usadas, faixas vazias/ocultas, duração e formato da plataforma) e nota 0–100 | ✅ | core `review.test`, E2E `diferenciais` |
+| Nota de acessibilidade (legendas, contraste, zona segura) separada da nota de qualidade | ✅ | core `review.test`, E2E `diferenciais` |
+| Plataformas de destino (Shorts, Reels, TikTok, Stories, feed 1:1 e 4:5, YouTube): formato, duração recomendada e zonas cobertas pela interface desenhadas no preview | 🟨 | core `platforms.test`, E2E `diferenciais` — os valores são aproximações, não regras oficiais |
+| Ritmo da edição: planos, duração média/mediana, cortes por minuto, histograma, mapa de cortes e trechos parados | ✅ | core `pacing.test`, E2E `diferenciais` |
+| Montagem no ritmo: refaz a faixa com um plano por intervalo entre marcadores | ✅ | core `ops/montage.test`, E2E `diferenciais` |
+| Encaixar clipes numa duração-alvo (muda a velocidade de 0,5× a 2×) | ✅ | core `ops/fit.test`, E2E `diferenciais` |
+| Roteiro visual: planos de uma faixa em ordem, trocar de lugar mantendo vãos e partes ligadas | ✅ | core `ops/reorder.test`, E2E `diferenciais` |
+| Tarefas de edição ancoradas no tempo (marcadores ☐/☑ na régua) | ✅ | core `todo.test`, E2E `diferenciais` |
+| Exportar EDL (CMX 3600), planilha CSV da timeline, roteiro com tempos e descrição pronta (título, capítulos, mídias) | 🟨 | core `interchange.test`, E2E `diferenciais` — o EDL não foi aberto em programas de terceiros |
+| Comparar uma versão salva com o projeto atual (o que mudou) | ✅ | core `diff.test`, API `projects.test`, E2E `diferenciais` |
+| Replay do histórico de edições (passo a passo, sem salvar nada) | ✅ | E2E `diferenciais` |
+| Simulador de daltonismo no preview (protanopia, deuteranopia, tritanopia, acromatopsia) | 🟨 | web `vision.test`, E2E `diferenciais` — aproximação por matrizes de cor, só no preview |
+| Cores do quadro: paleta dominante do preview aplicada ao texto selecionado | ✅ | web `palette.test`, E2E `diferenciais` |
 | Fechar espaços vazios de uma faixa | ✅ | core `ops/advanced.test`, E2E `novidades` |
 | Salvar o quadro atual como PNG | ✅ | E2E `novidades` (assinatura PNG verificada) |
 | Modelos de projeto (vertical curto etc.), busca, renomear, duplicar e capa dos projetos | ✅ | web `templates.test`, API `projects.test`, E2E `novidades` |
