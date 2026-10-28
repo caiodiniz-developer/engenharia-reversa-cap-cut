@@ -245,6 +245,18 @@ export function projectRoutes(ctx: AppContext): Router {
     }),
   );
 
+  // Conteúdo de uma versão (para comparar com o estado atual sem restaurar).
+  r.get(
+    '/:id/versions/:revision',
+    h(async (req, res) => {
+      const p = await ownedProject(ctx, req.params.id!, req.userId);
+      const rev = Number(req.params.revision);
+      const v = Number.isInteger(rev) ? await ctx.db.projectVersion.findUnique({ where: { projectId_revision: { projectId: p.id, revision: rev } } }) : null;
+      if (!v) throw notFound('Versão');
+      res.json(json({ revision: v.revision, label: v.label, createdAt: v.createdAt, data: migrateProject(v.data) }));
+    }),
+  );
+
   r.post(
     '/:id/versions/:revision/restore',
     h(async (req, res) => {
