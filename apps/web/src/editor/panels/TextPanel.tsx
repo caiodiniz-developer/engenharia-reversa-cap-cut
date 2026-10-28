@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { captionClipsToCues, findClip, newId, parseSrt, parseVtt, toSrt, toVtt, type CaptionClip, type TextStyle } from '@editor/core';
 import { Icon } from '../../components/Icon';
+import { FrameColors } from './FrameColors';
 import { templates, type TextTemplate } from '../../lib/idb';
 import { useEditor } from '../../store/editor';
 import { toast } from '../../store/toasts';
@@ -83,6 +84,7 @@ export function TextPanel() {
 
   return (
     <div className="h-full overflow-auto p-3">
+      <FrameColors />
       <h3 className="panel-title !px-0">Adicionar texto</h3>
       <ul className="grid grid-cols-2 gap-2">
         {PRESETS.map((p) => (
