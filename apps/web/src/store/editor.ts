@@ -99,12 +99,21 @@ import type { MediaItem, ProjectDoc } from '../api/types';
 import { TRACK_DENSITIES, type TrackDensity } from '../editor/timeline/geometry';
 import { toast } from './toasts';
 
-export type PanelTab = 'media' | 'audio' | 'text' | 'effects' | 'transitions' | 'animations' | 'elements' | 'ai';
+export type PanelTab = 'media' | 'audio' | 'text' | 'effects' | 'transitions' | 'animations' | 'elements' | 'review' | 'storyboard' | 'ai';
+/** Simulação de visão para checar o design (só no preview; a exportação não muda). */
+export type VisionMode = 'normal' | 'protanopia' | 'deuteranopia' | 'tritanopia' | 'achromatopsia';
 export type SaveState = 'saved' | 'dirty' | 'saving' | 'error' | 'conflict' | 'offline';
 
 export const MIN_ZOOM = 4;
 export const MAX_ZOOM = 600;
 const DENSITY_KEY = 'editor.timeline.density';
+function readString(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
 function readFlag(key: string): boolean {
   try {
     return localStorage.getItem(key) === '1';
@@ -150,6 +159,11 @@ interface EditorState {
   trackDensity: TrackDensity;
   /** Modo foco: esconde trilho, painel lateral e propriedades para sobrar só preview e timeline. */
   focusMode: boolean;
+  /** Plataforma de destino escolhida na Revisão (null = nenhuma). Preferência do navegador. */
+  platformId: string | null;
+  /** Mostra no preview as zonas cobertas pela interface da plataforma escolhida. */
+  showSafeZones: boolean;
+  vision: VisionMode;
   /** Propriedades recolhidas em telas largas (preferência do navegador). */
   propsCollapsed: boolean;
   zoom: number;
@@ -203,6 +217,9 @@ interface EditorState {
   setTrackDensity(d: TrackDensity): void;
   cycleTrackDensity(): void;
   toggleFocusMode(): void;
+  setPlatform(id: string | null): void;
+  toggleSafeZones(): void;
+  setVision(v: VisionMode): void;
   togglePropsCollapsed(): void;
   stepRate(dir: 1 | -1): void;
   setZoom(z: number): void;
@@ -345,6 +362,9 @@ export const useEditor = create<EditorState>((set, get) => {
     workArea: null,
     trackDensity: readDensity(),
     focusMode: false,
+    platformId: readString('editor.review.platform'),
+    showSafeZones: false,
+    vision: 'normal',
     propsCollapsed: readFlag('editor.layout.propsCollapsed'),
     zoom: 60,
     snapping: true,
@@ -516,6 +536,22 @@ export const useEditor = create<EditorState>((set, get) => {
       } catch {
         /* preferência é opcional */
       }
+    },
+    setPlatform(id) {
+      set({ platformId: id, showSafeZones: id ? get().showSafeZones : false });
+      try {
+        if (id) localStorage.setItem('editor.review.platform', id);
+        else localStorage.removeItem('editor.review.platform');
+      } catch {
+        /* preferência opcional */
+      }
+    },
+    toggleSafeZones() {
+      if (!get().platformId) return toast.info('Escolha uma plataforma na aba Revisão para ver as zonas seguras');
+      set({ showSafeZones: !get().showSafeZones });
+    },
+    setVision(v) {
+      set({ vision: v });
     },
     toggleFocusMode() {
       set({ focusMode: !get().focusMode });
