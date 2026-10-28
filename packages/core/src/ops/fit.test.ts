@@ -49,9 +49,9 @@ describe('fitClipsToDuration', () => {
 
   it('recusa quando a velocidade final passaria de 16×', () => {
     const { project, trackId } = fixtureProject();
-    const c = mediaClip('m1', 0, 4, { speed: 10 });
+    const c = mediaClip('m1', 0, 1, { speed: 10 }); // usa 10 s de mídia
     const p = addClip(project, trackId, c);
-    expect(() => fitClipsToDuration(p, [c.id], 2)).toThrow(/limite/);
+    expect(() => fitClipsToDuration(p, [c.id], 0.55)).toThrow(/limite/); // 10 × 1,82 = 18,2×
   });
 
   it('recusa fator fora do limite, faixas diferentes e clipes que não são de mídia', () => {
