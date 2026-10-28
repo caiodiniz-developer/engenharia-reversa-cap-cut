@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import {
-  accessibilityScore,
   buildDescription,
   HISTOGRAM_LABELS,
   pacingCurve,
@@ -9,8 +8,6 @@ import {
   parseTodo,
   PLATFORMS,
   RULE_TITLE,
-  reviewProject,
-  reviewScore,
   scriptText,
   stillStretches,
   timelineCsv,
@@ -21,6 +18,7 @@ import {
 import { Check, Section, Select } from '../../components/controls';
 import { Icon } from '../../components/Icon';
 import { downloadText, fileBase } from '../../lib/download';
+import { useReview } from '../../lib/useReview';
 import { formatDuration } from '../../lib/format';
 import { useEditor } from '../../store/editor';
 import { toast } from '../../store/toasts';
@@ -214,15 +212,12 @@ function Exports() {
 /** Revisão do projeto: notas, verificações com correção, plataforma de destino, ritmo, tarefas e listas para exportar. */
 export function ReviewPanel() {
   const project = useEditor((s) => s.project);
-  const media = useEditor((s) => s.media);
   const platformId = useEditor((s) => s.platformId);
   const showSafe = useEditor((s) => s.showSafeZones);
   const setPlatform = useEditor((s) => s.setPlatform);
   const toggleSafe = useEditor((s) => s.toggleSafeZones);
 
-  const issues = useMemo(() => reviewProject(project, { platformId: platformId ?? undefined, libraryIds: Object.keys(media) }), [project, media, platformId]);
-  const score = reviewScore(issues);
-  const access = accessibilityScore(issues);
+  const { issues, score, access } = useReview();
   const hasClips = project.tracks.some((t) => t.clips.length > 0);
 
   return (
