@@ -9,6 +9,8 @@ export const TOOLS: Array<{ id: PanelTab; label: string; icon: IconName; title: 
   { id: 'transitions', label: 'Transições', icon: 'shuffle', title: 'Transições entre clipes' },
   { id: 'animations', label: 'Animações', icon: 'zap', title: 'Animações prontas para o clipe' },
   { id: 'elements', label: 'Elementos', icon: 'shapes', title: 'Fundos e cores geradas' },
+  { id: 'review', label: 'Revisão', icon: 'check', title: 'Qualidade, acessibilidade, plataformas, ritmo e listas' },
+  { id: 'storyboard', label: 'Roteiro', icon: 'layout', title: 'Planos em ordem, montagem no ritmo e encaixe na duração' },
   { id: 'ai', label: 'IA', icon: 'sparkles', title: 'Ferramentas de inteligência artificial' },
 ];
 
