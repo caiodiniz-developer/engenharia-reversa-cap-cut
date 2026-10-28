@@ -36,3 +36,4 @@ export * from './review';
 export * from './pacing';
 export * from './todo';
 export * from './interchange';
+export * from './diff';
