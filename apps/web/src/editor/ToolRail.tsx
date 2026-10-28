@@ -1,4 +1,5 @@
 import { Icon, type IconName } from '../components/Icon';
+import { useReview } from '../lib/useReview';
 import type { PanelTab } from '../store/editor';
 
 export const TOOLS: Array<{ id: PanelTab; label: string; icon: IconName; title: string }> = [
@@ -16,6 +17,7 @@ export const TOOLS: Array<{ id: PanelTab; label: string; icon: IconName; title: 
 
 /** Trilho vertical de ferramentas (ícone + rótulo), como nos editores de vídeo profissionais. */
 export function ToolRail({ value, onChange }: { value: PanelTab; onChange: (t: PanelTab) => void }) {
+  const { attention } = useReview();
   return (
     <nav className="flex w-[78px] shrink-0 flex-col items-stretch gap-0.5 overflow-y-auto border-r border-line bg-panel py-2" role="tablist" aria-label="Ferramentas" aria-orientation="vertical">
       {TOOLS.map((t) => {
@@ -34,6 +36,11 @@ export function ToolRail({ value, onChange }: { value: PanelTab; onChange: (t: P
           >
             {active && <span className="absolute -left-1.5 top-2 h-[calc(100%-16px)] w-0.5 rounded-full bg-accent" />}
             <Icon name={t.icon} size={19} />
+            {t.id === 'review' && attention > 0 && (
+              <span className="absolute right-2 top-1 min-w-[15px] rounded-full bg-amber-500 px-1 text-center text-[9px] font-bold leading-[15px] text-black" data-testid="review-badge" aria-label={`${attention} ${attention === 1 ? 'ponto' : 'pontos'} de atenção na revisão`}>
+                {attention > 99 ? '99+' : attention}
+              </span>
+            )}
             <span className="leading-none">{t.label}</span>
           </button>
         );
