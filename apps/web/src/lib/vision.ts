@@ -51,3 +51,25 @@ export function simulateVision(rgb: [number, number, number], mode: VisionMode):
   const out = m.map((row) => clamp01(row[0]! * rgb[0] + row[1]! * rgb[1] + row[2]! * rgb[2]));
   return [out[0]!, out[1]!, out[2]!];
 }
+
+const toLinear = (c: number): number => {
+  const v = c / 255;
+  return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+};
+const toSrgb = (l: number): number => {
+  const v = l <= 0.0031308 ? l * 12.92 : 1.055 * l ** (1 / 2.4) - 0.055;
+  return Math.round(clamp01(v) * 255);
+};
+
+/**
+ * Simula como uma cor `#rrggbb` aparece para cada tipo de daltonismo. A matriz age em RGB linear,
+ * então a cor é convertida de sRGB para linear e de volta (igual ao filtro do preview, que usa linearRGB).
+ */
+export function simulateHex(hex: string, mode: VisionMode): string {
+  const m = /^#([0-9a-f]{6})$/i.exec(hex.trim());
+  if (!m || mode === 'normal') return hex;
+  const n = parseInt(m[1]!, 16);
+  const lin = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map(toLinear) as [number, number, number];
+  const out = simulateVision(lin, mode).map(toSrgb);
+  return '#' + out.map((v) => v.toString(16).padStart(2, '0')).join('');
+}
