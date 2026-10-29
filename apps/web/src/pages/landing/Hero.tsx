@@ -14,6 +14,8 @@ export function Hero() {
   return (
     <section className="relative overflow-hidden px-5 pb-20 pt-14 sm:pt-20" aria-labelledby="hero-title" data-testid="hero">
       <div className="landing-grid pointer-events-none absolute inset-0" aria-hidden="true" />
+      <div className="hero-orb -left-24 top-10 h-72 w-72 bg-accent" aria-hidden="true" />
+      <div className="hero-orb hero-orb-b -right-20 top-40 h-80 w-80 bg-clip-caption" aria-hidden="true" />
       <div className="relative mx-auto max-w-3xl text-center">
         <motion.p {...fade(0)} className="mx-auto mb-5 inline-flex items-center gap-2 rounded-full border border-line bg-panel/70 px-3.5 py-1.5 text-xs font-medium text-mute backdrop-blur">
           <Icon name="sparkles" size={13} className="text-accent" /> {HERO.eyebrow}
