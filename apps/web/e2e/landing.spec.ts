@@ -302,6 +302,34 @@ test.describe('landing: laboratório interativo', () => {
     expect(await shots()).toBeLessThan(many / 4);
   });
 
+  test('paleta: digita sozinha, para quando você clica e busca nos comandos reais', async ({ page }) => {
+    await page.getByTestId('lab-tab-paleta').click();
+    const input = page.getByTestId('demo-palette-input');
+    const items = page.getByTestId('demo-palette-item');
+    await expect(items.first()).toBeVisible();
+    const seen = new Set<string>();
+    for (let i = 0; i < 6; i++) {
+      seen.add(await input.inputValue());
+      await page.waitForTimeout(350);
+    }
+    expect(seen.size).toBeGreaterThanOrEqual(3); // o texto está mudando sozinho
+
+    await input.click();
+    const frozen = await input.inputValue();
+    await page.waitForTimeout(600);
+    expect(await input.inputValue()).toBe(frozen); // parou de digitar sozinho
+
+    await input.fill('dividir');
+    await expect(items.first()).toContainText('Dividir clipe');
+    await expect(page.locator('[data-testid="demo-palette-item"][data-id="split"]')).toHaveCount(1);
+    await input.fill('exportação');
+    await expect(page.locator('[data-testid="demo-palette-item"][data-id="export"]')).toHaveCount(1);
+    await input.fill('zzzz-nada');
+    await expect(page.getByTestId('demo-palette-empty')).toBeVisible();
+    await input.fill('');
+    await expect(items).toHaveCount(6); // sem texto, os mais populares
+  });
+
   test('com menos movimento o laboratório responde sem animação', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.reload();
