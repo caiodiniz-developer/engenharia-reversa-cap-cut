@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { colorMatrixValues, simulateVision, VISION_MATRIX, VISION_MODES } from './vision';
+import { colorMatrixValues, simulateHex, simulateVision, VISION_MATRIX, VISION_MODES } from './vision';
 
 describe('simulação de daltonismo', () => {
   it('cada linha das matrizes soma 1: cinzas e branco continuam iguais', () => {
@@ -36,5 +36,35 @@ describe('simulação de daltonismo', () => {
       expect(v).toHaveLength(20);
       expect(v.slice(15)).toEqual([0, 0, 0, 1, 0]);
     }
+  });
+});
+
+describe('simulateHex', () => {
+  it('modo normal e cores inválidas voltam como entraram', () => {
+    expect(simulateHex('#3b82f6', 'normal')).toBe('#3b82f6');
+    expect(simulateHex('azul', 'protanopia')).toBe('azul');
+  });
+
+  it('cinzas continuam cinzas em todos os modos (a conversão linear não desvia)', () => {
+    for (const mode of VISION_MODES) {
+      const out = simulateHex('#808080', mode);
+      const [r, g, b] = [1, 3, 5].map((i) => parseInt(out.slice(i, i + 2), 16));
+      expect(Math.abs(r! - 128), mode).toBeLessThanOrEqual(2);
+      expect(Math.abs(g! - 128), mode).toBeLessThanOrEqual(2);
+      expect(Math.abs(b! - 128), mode).toBeLessThanOrEqual(2);
+    }
+  });
+
+  it('vermelho puro perde força em protanopia e acromatopsia deixa os três canais iguais', () => {
+    const prot = simulateHex('#ff0000', 'protanopia');
+    expect(parseInt(prot.slice(1, 3), 16)).toBeLessThan(150);
+    const gray = simulateHex('#ff3300', 'achromatopsia');
+    expect(gray.slice(1, 3)).toBe(gray.slice(3, 5));
+    expect(gray.slice(3, 5)).toBe(gray.slice(5, 7));
+  });
+
+  it('vermelho e verde ficam mais parecidos em deuteranopia do que eram', () => {
+    const d = (a: string, b: string) => [1, 3, 5].reduce((s, i) => s + Math.abs(parseInt(a.slice(i, i + 2), 16) - parseInt(b.slice(i, i + 2), 16)), 0);
+    expect(d(simulateHex('#e11d48', 'deuteranopia'), simulateHex('#16a34a', 'deuteranopia'))).toBeLessThan(d('#e11d48', '#16a34a'));
   });
 });
