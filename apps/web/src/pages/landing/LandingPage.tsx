@@ -61,7 +61,7 @@ export function LandingPage() {
           </Suspense>
         </LandingSection>
         <LandingSection id="como-funciona" eyebrow="Como funciona" title="Do cadastro ao arquivo exportado em três passos">
-          <Steps />
+          <Steps container={scroller} />
         </LandingSection>
         <LandingSection id="perguntas" eyebrow="Perguntas" title="Perguntas frequentes" tone="tinted">
           <Faq />
