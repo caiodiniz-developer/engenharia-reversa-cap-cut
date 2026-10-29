@@ -1,11 +1,10 @@
-import { useEffect, useRef } from 'react';
+import { lazy, Suspense, useEffect, useRef } from 'react';
 import { BackToTop } from './BackToTop';
 import { DIFFERENTIALS, FEATURES } from './content';
 import { Faq } from './Faq';
 import { FeatureGrid } from './FeatureGrid';
 import { FinalCta, LandingFooter } from './Footer';
 import { Hero } from './Hero';
-import { LabSection } from './LabSection';
 import { LandingHeader } from './LandingHeader';
 import { Marquee } from './Marquee';
 import { PlatformStrip } from './PlatformStrip';
@@ -15,6 +14,15 @@ import { ScrollProgress } from './ScrollProgress';
 import { LandingSection } from './Section';
 import { StatsStrip } from './StatsStrip';
 import { Steps } from './Steps';
+
+// O laboratório reutiliza o núcleo do editor (revisão, comandos, simulação): carrega sob demanda para a primeira dobra aparecer logo.
+const LabSection = lazy(() => import('./LabSection').then((m) => ({ default: m.LabSection })));
+
+function LabFallback() {
+  return (
+    <div className="mx-auto h-[520px] max-w-5xl animate-pulse rounded-3xl border border-line bg-panel/50" role="status" aria-label="Carregando as demonstrações" data-testid="lab-loading" />
+  );
+}
 
 /** Página inicial para quem ainda não entrou: apresenta o editor e leva ao cadastro/login. */
 export function LandingPage() {
@@ -48,7 +56,9 @@ export function LandingPage() {
           <ReviewShowcase />
         </LandingSection>
         <LandingSection id="experimente" eyebrow="Experimente agora" title="Teste as ferramentas sem criar conta" subtitle="Estas demonstrações rodam o mesmo código do editor, direto aqui na página.">
-          <LabSection />
+          <Suspense fallback={<LabFallback />}>
+            <LabSection />
+          </Suspense>
         </LandingSection>
         <LandingSection id="como-funciona" eyebrow="Como funciona" title="Do cadastro ao arquivo exportado em três passos">
           <Steps />
