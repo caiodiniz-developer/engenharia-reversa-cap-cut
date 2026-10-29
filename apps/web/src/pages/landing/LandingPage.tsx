@@ -5,6 +5,7 @@ import { Faq } from './Faq';
 import { FeatureGrid } from './FeatureGrid';
 import { FinalCta, LandingFooter } from './Footer';
 import { Hero } from './Hero';
+import { LabSection } from './LabSection';
 import { LandingHeader } from './LandingHeader';
 import { Marquee } from './Marquee';
 import { PlatformStrip } from './PlatformStrip';
@@ -45,6 +46,9 @@ export function LandingPage() {
         <LandingSection id="diferenciais" eyebrow="Diferenciais" title="Ferramentas que ajudam a decidir, não só a cortar" subtitle="Revise o projeto, confira as plataformas e entenda o ritmo da sua edição antes de publicar." tone="tinted">
           <FeatureGrid items={DIFFERENTIALS} testId="differentials" columns={4} />
           <ReviewShowcase />
+        </LandingSection>
+        <LandingSection id="experimente" eyebrow="Experimente agora" title="Teste as ferramentas sem criar conta" subtitle="Estas demonstrações rodam o mesmo código do editor, direto aqui na página.">
+          <LabSection />
         </LandingSection>
         <LandingSection id="como-funciona" eyebrow="Como funciona" title="Do cadastro ao arquivo exportado em três passos">
           <Steps />
