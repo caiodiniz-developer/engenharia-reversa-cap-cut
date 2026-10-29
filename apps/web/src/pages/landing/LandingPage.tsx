@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { BackToTop } from './BackToTop';
 import { DIFFERENTIALS, FEATURES } from './content';
 import { Faq } from './Faq';
 import { FeatureGrid } from './FeatureGrid';
@@ -7,6 +8,8 @@ import { Hero } from './Hero';
 import { LandingHeader } from './LandingHeader';
 import { PlatformStrip } from './PlatformStrip';
 import { ReviewShowcase } from './ReviewShowcase';
+import { MobileCta } from './MobileCta';
+import { ScrollProgress } from './ScrollProgress';
 import { LandingSection } from './Section';
 import { StatsStrip } from './StatsStrip';
 import { Steps } from './Steps';
@@ -28,6 +31,7 @@ export function LandingPage() {
       <a href="#conteudo" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-lg focus:bg-accent focus:px-4 focus:py-2 focus:text-accent-ink">
         Pular para o conteúdo
       </a>
+      <ScrollProgress container={scroller} />
       <LandingHeader scroller={scroller} />
       <main id="conteudo">
         <Hero />
@@ -49,6 +53,8 @@ export function LandingPage() {
         <FinalCta />
       </main>
       <LandingFooter />
+      <BackToTop container={scroller} />
+      <MobileCta container={scroller} />
     </div>
   );
 }
