@@ -6,6 +6,7 @@ import type { IconName } from '../../components/Icon';
 export const NAV: Array<{ id: string; label: string }> = [
   { id: 'recursos', label: 'Recursos' },
   { id: 'diferenciais', label: 'Diferenciais' },
+  { id: 'experimente', label: 'Experimente' },
   { id: 'como-funciona', label: 'Como funciona' },
   { id: 'perguntas', label: 'Perguntas' },
 ];
