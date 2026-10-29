@@ -346,6 +346,26 @@ test.describe('landing: laboratório interativo', () => {
   });
 });
 
+test.describe('landing: passos que acendem com a rolagem', () => {
+  test('a linha enche e os passos acendem em ordem ao rolar a seção', async ({ page }) => {
+    await page.goto('/');
+    const steps = page.getByTestId('step');
+    await expect(steps).toHaveCount(3);
+    await expect(steps.first()).toHaveAttribute('data-active', 'false');
+    await page.evaluate(() => document.getElementById('como-funciona')!.scrollIntoView({ block: 'start' }));
+    await expect(steps.first()).toHaveAttribute('data-active', 'true', { timeout: 5_000 });
+    await page.getByTestId('landing').evaluate((el) => el.scrollBy(0, 330));
+    await expect(steps.last()).toHaveAttribute('data-active', 'true', { timeout: 5_000 });
+    await expect(steps.nth(1)).toHaveAttribute('data-active', 'true');
+  });
+
+  test('com menos movimento todos os passos já aparecem acesos', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+    for (let i = 0; i < 3; i++) await expect(page.getByTestId('step').nth(i)).toHaveAttribute('data-active', 'true');
+  });
+});
+
 test.describe('landing: animações ligadas à rolagem', () => {
   test('barra de progresso acompanha a leitura e o botão de topo volta ao início', async ({ page }) => {
     await page.goto('/');
