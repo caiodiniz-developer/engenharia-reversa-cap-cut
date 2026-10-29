@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, type ReactNode } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { Toasts } from './components/Toasts';
+import { LandingPage } from './pages/landing/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { ProjectsPage } from './pages/ProjectsPage';
 import { useAuth } from './store/auth';
@@ -14,6 +15,13 @@ function Protected({ children }: { children: ReactNode }) {
   if (status === 'loading') return <Splash />;
   if (status === 'anonymous') return <Navigate to="/login" state={{ from: location.pathname }} replace />;
   return <>{children}</>;
+}
+
+/** "/" mostra os projetos para quem entrou e a landing page para quem ainda não entrou. */
+function Home() {
+  const status = useAuth((s) => s.status);
+  if (status === 'loading') return <Splash />;
+  return status === 'authenticated' ? <ProjectsPage /> : <LandingPage />;
 }
 
 function Splash() {
@@ -35,7 +43,7 @@ export function App() {
       <Suspense fallback={<Splash />}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/" element={<Protected><ProjectsPage /></Protected>} />
+          <Route path="/" element={<Home />} />
           <Route path="/p/:id" element={<Protected><EditorPage /></Protected>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
