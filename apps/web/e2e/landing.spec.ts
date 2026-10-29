@@ -135,6 +135,30 @@ test.describe('landing page', () => {
   });
 });
 
+test.describe('landing: animações ligadas à rolagem', () => {
+  test('barra de progresso acompanha a leitura e o botão de topo volta ao início', async ({ page }) => {
+    await page.goto('/');
+    const scale = () => page.getByTestId('scroll-progress').evaluate((el) => new DOMMatrixReadOnly(getComputedStyle(el).transform).a);
+    expect(await scale()).toBeLessThan(0.05);
+    await expect(page.getByTestId('back-to-top')).toHaveCount(0);
+
+    await page.getByTestId('landing').evaluate((el) => el.scrollTo(0, el.scrollHeight));
+    await expect.poll(scale, { timeout: 5_000 }).toBeGreaterThan(0.9);
+    const back = page.getByTestId('back-to-top');
+    await expect(back).toBeVisible();
+    await back.click();
+    await expect.poll(async () => page.getByTestId('landing').evaluate((el) => el.scrollTop), { timeout: 5_000 }).toBeLessThan(5);
+    await expect(back).toHaveCount(0);
+    await expect.poll(scale, { timeout: 5_000 }).toBeLessThan(0.05);
+  });
+
+  test('a barra de cadastro do celular não existe no computador', async ({ page }) => {
+    await page.goto('/');
+    await page.getByTestId('landing').evaluate((el) => el.scrollTo(0, 1500));
+    await expect(page.getByTestId('mobile-cta')).toBeHidden();
+  });
+});
+
 test.describe('landing no celular', () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
@@ -151,6 +175,16 @@ test.describe('landing no celular', () => {
     await menu.getByRole('button', { name: 'Recursos' }).click();
     await expect(menu).toHaveCount(0);
     await expect(page.locator('#recursos')).toBeInViewport();
+  });
+
+  test('a barra de cadastro aparece depois de rolar e leva ao cadastro', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByTestId('mobile-cta')).toHaveCount(0);
+    await page.getByTestId('landing').evaluate((el) => el.scrollTo(0, 1500));
+    const bar = page.getByTestId('mobile-cta');
+    await expect(bar).toBeVisible();
+    await bar.getByRole('link', { name: 'Criar conta' }).click();
+    await expect(page).toHaveURL(/modo=cadastro/);
   });
 });
 
