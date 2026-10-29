@@ -21,7 +21,7 @@ export function PacingDemo() {
     <div data-testid="demo-pacing">
       <label className="label" htmlFor="demo-avg">
         Duração média dos planos:{' '}
-        <strong className="tnum text-ink" data-testid="demo-avg-value">
+        <strong className="tnum normal-case text-ink" data-testid="demo-avg-value">
           {comma(avg)} s
         </strong>
       </label>
