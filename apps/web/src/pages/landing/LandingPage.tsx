@@ -6,6 +6,7 @@ import { FeatureGrid } from './FeatureGrid';
 import { FinalCta, LandingFooter } from './Footer';
 import { Hero } from './Hero';
 import { LandingHeader } from './LandingHeader';
+import { Marquee } from './Marquee';
 import { PlatformStrip } from './PlatformStrip';
 import { ReviewShowcase } from './ReviewShowcase';
 import { MobileCta } from './MobileCta';
@@ -37,6 +38,7 @@ export function LandingPage() {
         <Hero />
         <StatsStrip />
         <PlatformStrip />
+        <Marquee />
         <LandingSection id="recursos" eyebrow="Recursos" title="Tudo o que um vídeo precisa, em um só lugar" subtitle="Da primeira importação ao arquivo final, sem alternar entre programas.">
           <FeatureGrid items={FEATURES} testId="features" />
         </LandingSection>
