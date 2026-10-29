@@ -1,0 +1,52 @@
+import { useEffect, useRef } from 'react';
+import { DIFFERENTIALS, FEATURES } from './content';
+import { Faq } from './Faq';
+import { FeatureGrid } from './FeatureGrid';
+import { FinalCta, LandingFooter } from './Footer';
+import { Hero } from './Hero';
+import { LandingHeader } from './LandingHeader';
+import { ReviewShowcase } from './ReviewShowcase';
+import { LandingSection } from './Section';
+import { StatsStrip } from './StatsStrip';
+import { Steps } from './Steps';
+
+/** Página inicial para quem ainda não entrou: apresenta o editor e leva ao cadastro/login. */
+export function LandingPage() {
+  const scroller = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const previous = document.title;
+    document.title = 'Editor de Vídeo — edite, revise e exporte no navegador';
+    return () => {
+      document.title = previous;
+    };
+  }, []);
+
+  return (
+    <div ref={scroller} className="h-full overflow-y-auto overflow-x-hidden bg-bg text-[15px]" data-testid="landing">
+      <a href="#conteudo" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-lg focus:bg-accent focus:px-4 focus:py-2 focus:text-accent-ink">
+        Pular para o conteúdo
+      </a>
+      <LandingHeader scroller={scroller} />
+      <main id="conteudo">
+        <Hero />
+        <StatsStrip />
+        <LandingSection id="recursos" eyebrow="Recursos" title="Tudo o que um vídeo precisa, em um só lugar" subtitle="Da primeira importação ao arquivo final, sem alternar entre programas.">
+          <FeatureGrid items={FEATURES} testId="features" />
+        </LandingSection>
+        <LandingSection id="diferenciais" eyebrow="Diferenciais" title="Ferramentas que ajudam a decidir, não só a cortar" subtitle="Revise o projeto, confira as plataformas e entenda o ritmo da sua edição antes de publicar." tone="tinted">
+          <FeatureGrid items={DIFFERENTIALS} testId="differentials" columns={4} />
+          <ReviewShowcase />
+        </LandingSection>
+        <LandingSection id="como-funciona" eyebrow="Como funciona" title="Do cadastro ao arquivo exportado em três passos">
+          <Steps />
+        </LandingSection>
+        <LandingSection id="perguntas" eyebrow="Perguntas" title="Perguntas frequentes" tone="tinted">
+          <Faq />
+        </LandingSection>
+        <FinalCta />
+      </main>
+      <LandingFooter />
+    </div>
+  );
+}
