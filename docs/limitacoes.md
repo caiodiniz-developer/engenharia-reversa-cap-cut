@@ -49,5 +49,10 @@ Listadas para que ninguém descubra em produção. Itens marcados com 🔧 têm 
 - O **replay do histórico** troca o projeto na tela por estados antigos e pausa o salvamento automático até terminar; fechar a aba no meio do replay pede confirmação.
 - A **montagem no ritmo** mexe só na faixa escolhida: clipes ligados (ex.: áudio extraído) em outras faixas não acompanham.
 
+## Landing page
+- As demonstrações do laboratório usam um projeto de exemplo montado em memória: nada é salvo nem enviado ao servidor. O limiar de "difícil de distinguir" do daltonismo (distância de cor 70) é um critério prático, não uma norma.
+- Os números da landing (efeitos, LUTs, transições, animações, verificações e plataformas) são lidos do código, mas as frases de texto (recursos e perguntas) são escritas à mão e precisam ser revisadas quando o produto mudar.
+- Com "menos movimento" ativado no sistema, as animações (palavra alternada, inclinação, faixa de efeitos, contadores, passos e esferas) ficam paradas ou já completas.
+
 ## Escala
 - Não houve teste de carga nem de vídeos muito longos (horas). Os limites configuráveis (2 GB por arquivo, 2 h por mídia, 200 mídias por projeto, 3000 clipes por exportação) existem para proteger o servidor, não foram calibrados com medições.
