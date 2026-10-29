@@ -18,9 +18,12 @@ test.describe('autenticação e projetos', () => {
     await expect(page.getByRole('heading', { name: 'Seus projetos' })).toBeVisible();
 
     await page.getByRole('button', { name: 'Sair' }).click();
-    await expect(page.getByRole('tab', { name: 'Entrar' })).toBeVisible();
-    await page.goto('/');
+    // ao sair, a raiz volta a mostrar a landing page (e não a tela de login)
+    await expect(page.getByTestId('landing')).toBeVisible();
+    await expect(page).toHaveURL(/\/$/);
+    await page.goto('/p/qualquer-projeto');
     await expect(page).toHaveURL(/\/login/);
+    await expect(page.getByRole('tab', { name: 'Entrar' })).toBeVisible();
   });
 
   test('mostra erros de login e de cadastro', async ({ page }) => {
@@ -41,7 +44,9 @@ test.describe('autenticação e projetos', () => {
   test('e-mail duplicado é recusado e login funciona com a conta criada', async ({ page, context }) => {
     const { email } = await signup(page);
     await page.getByRole('button', { name: 'Sair' }).click();
-    await page.getByRole('tab', { name: 'Criar conta' }).click();
+    // depois de sair aparece a landing: o botão "Criar conta" do cabeçalho leva ao cadastro
+    await page.getByTestId('header-signup').click();
+    await expect(page.getByRole('tab', { name: 'Criar conta' })).toHaveAttribute('aria-selected', 'true');
     await page.getByLabel('Nome').fill('Outro');
     await page.getByLabel('E-mail').fill(email);
     await page.getByLabel('Senha').fill(PASSWORD);
