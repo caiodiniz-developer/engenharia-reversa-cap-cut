@@ -19,10 +19,11 @@ export function SafeZonesDemo() {
     <div className="grid items-center gap-8 md:grid-cols-[260px_1fr]" data-testid="demo-safe">
       <div className="mx-auto w-[220px]">
         <div className="relative aspect-[9/16] overflow-hidden rounded-[28px] border-[6px] border-panel-3 shadow-pop" style={{ background: 'linear-gradient(160deg, #0ea5e9 0%, #7c3aed 55%, #f97316 100%)' }} data-testid="demo-phone">
-          <motion.div className="absolute inset-x-0 top-0 bg-red-500/35" initial={false} animate={{ height: s.top * 100 + '%' }} transition={spring} />
-          <motion.div className="absolute inset-x-0 bottom-0 bg-red-500/35" initial={false} animate={{ height: s.bottom * 100 + '%' }} transition={spring} />
-          <motion.div className="absolute left-0 bg-red-500/35" initial={false} animate={{ top: s.top * 100 + '%', bottom: s.bottom * 100 + '%', width: s.left * 100 + '%' }} transition={spring} />
-          <motion.div className="absolute right-0 bg-red-500/35" initial={false} animate={{ top: s.top * 100 + '%', bottom: s.bottom * 100 + '%', width: s.right * 100 + '%' }} transition={spring} />
+          <motion.div className="absolute inset-x-0 top-0 bg-red-600/50" initial={false} animate={{ height: s.top * 100 + '%' }} transition={spring} />
+          <motion.div className="absolute inset-x-0 bottom-0 bg-red-600/50" initial={false} animate={{ height: s.bottom * 100 + '%' }} transition={spring} />
+          <motion.div className="absolute left-0 bg-red-600/50" initial={false} animate={{ top: s.top * 100 + '%', bottom: s.bottom * 100 + '%', width: s.left * 100 + '%' }} transition={spring} />
+          <motion.div className="absolute right-0 bg-red-600/50" initial={false} animate={{ top: s.top * 100 + '%', bottom: s.bottom * 100 + '%', width: s.right * 100 + '%' }} transition={spring} />
+          <motion.div className="pointer-events-none absolute border border-dashed border-white/70" initial={false} animate={{ top: s.top * 100 + '%', bottom: s.bottom * 100 + '%', left: s.left * 100 + '%', right: s.right * 100 + '%' }} transition={spring} data-testid="demo-safe-rect" />
           <motion.span
             className={`absolute left-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-md px-2.5 py-1 text-[11px] font-bold text-white shadow ${verdict.inside ? 'bg-ok' : 'bg-danger'}`}
             initial={false}
