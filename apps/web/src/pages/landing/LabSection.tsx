@@ -2,6 +2,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useId, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { Icon, type IconName } from '../../components/Icon';
 import { PacingDemo } from './demo/PacingDemo';
+import { PaletteDemo } from './demo/PaletteDemo';
 import { ReviewDemo } from './demo/ReviewDemo';
 import { SafeZonesDemo } from './demo/SafeZonesDemo';
 import { VisionDemo } from './demo/VisionDemo';
@@ -18,6 +19,7 @@ export const LAB_TABS: LabTab[] = [
   { id: 'revisao', label: 'Revisão ao vivo', icon: 'check', hint: 'Corrija os problemas e veja a nota subir.', render: () => <ReviewDemo /> },
   { id: 'zonas', label: 'Zonas seguras', icon: 'layout', hint: 'Mova a legenda e veja o que a plataforma cobre.', render: () => <SafeZonesDemo /> },
   { id: 'ritmo', label: 'Ritmo da edição', icon: 'gauge', hint: 'Arraste a duração dos planos e veja o ritmo.', render: () => <PacingDemo /> },
+  { id: 'paleta', label: 'Paleta de comandos', icon: 'command', hint: 'Digite e veja os comandos reais do editor.', render: () => <PaletteDemo /> },
   { id: 'visao', label: 'Daltonismo', icon: 'eye', hint: 'Veja a mesma paleta com outros tipos de visão.', render: () => <VisionDemo /> },
 ];
 
