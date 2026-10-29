@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom';
 import { ApiError } from '../api/client';
 import { Icon, type IconName } from '../components/Icon';
 import { useAuth } from '../store/auth';
@@ -8,7 +8,9 @@ export function LoginPage() {
   const status = useAuth((s) => s.status);
   const login = useAuth((s) => s.login);
   const register = useAuth((s) => s.register);
-  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [params] = useSearchParams();
+  // /login?modo=cadastro (vindo da landing) já abre na aba de criar conta
+  const [mode, setMode] = useState<'login' | 'register'>(params.get('modo') === 'cadastro' ? 'register' : 'login');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
