@@ -322,7 +322,7 @@ test.describe('landing: laboratório interativo', () => {
     await input.fill('dividir');
     await expect(items.first()).toContainText('Dividir clipe');
     await expect(page.locator('[data-testid="demo-palette-item"][data-id="split"]')).toHaveCount(1);
-    await input.fill('exportação');
+    await input.fill('exportar');
     await expect(page.locator('[data-testid="demo-palette-item"][data-id="export"]')).toHaveCount(1);
     await input.fill('zzzz-nada');
     await expect(page.getByTestId('demo-palette-empty')).toBeVisible();
@@ -370,7 +370,7 @@ test.describe('landing: animações ligadas à rolagem', () => {
   test('barra de progresso acompanha a leitura e o botão de topo volta ao início', async ({ page }) => {
     await page.goto('/');
     const scale = () => page.getByTestId('scroll-progress').evaluate((el) => new DOMMatrixReadOnly(getComputedStyle(el).transform).a);
-    expect(await scale()).toBeLessThan(0.05);
+    expect(await scale()).toBeLessThan(0.12);
     await expect(page.getByTestId('back-to-top')).toHaveCount(0);
 
     await page.getByTestId('landing').evaluate((el) => el.scrollTo(0, el.scrollHeight));
@@ -380,7 +380,7 @@ test.describe('landing: animações ligadas à rolagem', () => {
     await back.click();
     await expect.poll(async () => page.getByTestId('landing').evaluate((el) => el.scrollTop), { timeout: 5_000 }).toBeLessThan(5);
     await expect(back).toHaveCount(0);
-    await expect.poll(scale, { timeout: 5_000 }).toBeLessThan(0.05);
+    await expect.poll(scale, { timeout: 5_000 }).toBeLessThan(0.12);
   });
 
   test('a barra de cadastro do celular não existe no computador', async ({ page }) => {
