@@ -16,6 +16,18 @@ test.describe('landing page', () => {
     await expect(page.getByTestId('product-mock')).toBeVisible();
   });
 
+  test('mostra as plataformas conferidas pela revisão e define a descrição da página', async ({ page }) => {
+    await page.goto('/');
+    const chips = page.getByTestId('platform-chip');
+    await expect(chips).toHaveCount(7);
+    await expect(chips.filter({ hasText: 'YouTube Shorts' })).toContainText('9:16');
+    await expect(chips.filter({ hasText: 'YouTube (horizontal)' })).toContainText('16:9');
+    await expect(chips.filter({ hasText: 'Feed quadrado' })).toContainText('1:1');
+    await expect(chips.filter({ hasText: 'Feed retrato' })).toContainText('4:5');
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /Editor de vídeo no navegador/);
+    await expect(page.locator('meta[property="og:locale"]')).toHaveAttribute('content', 'pt_BR');
+  });
+
   test('"Criar conta" abre a tela de login já na aba de cadastro; "Já tenho conta" abre em Entrar', async ({ page }) => {
     await page.goto('/');
     await page.getByTestId('hero-signup').click();
