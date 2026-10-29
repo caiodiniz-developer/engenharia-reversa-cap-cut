@@ -239,3 +239,21 @@ input[type='range']:focus-visible::-webkit-slider-thumb {
     justify-content: center;
   }
 }
+
+/* Cartão com luz que segue o cursor (--mx/--my são definidos no onPointerMove). */
+.spotlight {
+  position: relative;
+  overflow: hidden;
+}
+.spotlight::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s;
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgb(var(--accent) / 0.16), transparent 70%);
+}
+.spotlight:hover::before {
+  opacity: 1;
+}
