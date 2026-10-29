@@ -19,7 +19,7 @@ pnpm dev:api     # PostgreSQL embarcado + schema + API em http://localhost:3001
 pnpm dev:web     # editor em http://localhost:5173 (proxy para a API)
 ```
 
-Abra http://localhost:5173, crie uma conta e um projeto, importe vídeos e edite.
+Abra http://localhost:5173: a página inicial apresenta o editor; use "Criar conta" para se cadastrar, crie um projeto, importe vídeos e edite.
 
 Configuração opcional em `apps/api/.env` (veja [apps/api/.env.example](apps/api/.env.example)): chaves de IA, limites, diretórios de dados. Em máquinas com pouco espaço no disco do sistema, aponte `PGDATA_DIR`, `STORAGE_DIR` e `TEMP_DIR` para outro disco.
 
