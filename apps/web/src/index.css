@@ -257,3 +257,30 @@ input[type='range']:focus-visible::-webkit-slider-thumb {
 .spotlight:hover::before {
   opacity: 1;
 }
+
+/* Esferas de cor que flutuam devagar atrás do topo da landing. */
+.hero-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(70px);
+  opacity: 0.35;
+  pointer-events: none;
+  animation: orb-float 14s ease-in-out infinite alternate;
+}
+.hero-orb-b {
+  animation-duration: 18s;
+  animation-direction: alternate-reverse;
+}
+@keyframes orb-float {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(40px, 30px, 0) scale(1.12);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-orb {
+    animation: none;
+  }
+}
