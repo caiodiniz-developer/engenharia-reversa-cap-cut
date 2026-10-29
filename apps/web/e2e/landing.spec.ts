@@ -202,6 +202,122 @@ test.describe('landing: animações do topo e dos cartões', () => {
   });
 });
 
+test.describe('landing: laboratório interativo', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+    await page.getByTestId('lab').scrollIntoViewIfNeeded();
+  });
+
+  test('revisão ao vivo: 3 problemas reais, correção em um clique e a nota sobe até 100', async ({ page }) => {
+    const issues = page.getByTestId('demo-issue');
+    await expect(issues).toHaveCount(3);
+    const score = page.getByTestId('demo-score');
+    await expect(score).toHaveAttribute('data-value', '85');
+    await expect(score).toHaveText('85', { timeout: 5_000 });
+
+    const lefts = () => page.getByTestId('demo-clip').evaluateAll((els) => els.map((e) => (e as HTMLElement).style.left));
+    const before = await lefts();
+    await page.getByTestId('demo-fix-gap').click();
+    await expect(issues).toHaveCount(2);
+    await expect(score).toHaveAttribute('data-value', '90');
+    await expect(score).toHaveText('90', { timeout: 5_000 });
+    await expect.poll(async () => JSON.stringify(await lefts()), { timeout: 5_000 }).not.toBe(JSON.stringify(before)); // os clipes deslizaram
+
+    await page.getByTestId('demo-fix-hidden-has-clips').click();
+    await page.getByTestId('demo-fix-caption-fast').click();
+    await expect(issues).toHaveCount(0);
+    await expect(page.getByTestId('demo-clean')).toBeVisible();
+    await expect(score).toHaveText('100', { timeout: 5_000 });
+
+    await page.getByTestId('demo-reset').click();
+    await expect(issues).toHaveCount(3);
+    await expect(score).toHaveAttribute('data-value', '85');
+  });
+
+  test('abas: clique e setas trocam a demonstração e atualizam a dica', async ({ page }) => {
+    const tab = (id: string) => page.getByTestId('lab-tab-' + id);
+    await expect(tab('revisao')).toHaveAttribute('aria-selected', 'true');
+    await tab('revisao').focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(tab('zonas')).toHaveAttribute('aria-selected', 'true');
+    await expect(tab('zonas')).toBeFocused();
+    await expect(page.getByTestId('demo-safe')).toBeVisible();
+    await expect(page.getByTestId('demo-review')).toHaveCount(0);
+    await page.keyboard.press('End');
+    await expect(tab('visao')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByTestId('lab-hint')).toContainText('mesma paleta');
+    await page.keyboard.press('ArrowRight'); // dá a volta
+    await expect(tab('revisao')).toHaveAttribute('aria-selected', 'true');
+    await tab('ritmo').click();
+    await expect(page.getByTestId('demo-pacing')).toBeVisible();
+  });
+
+  test('zonas seguras: a legenda começa coberta, a sugestão a põe na área livre e o veredito muda', async ({ page }) => {
+    await page.getByTestId('lab-tab-zonas').click();
+    const caption = page.getByTestId('demo-caption');
+    await expect(caption).toHaveAttribute('data-inside', 'false');
+    await expect(page.getByTestId('demo-verdict')).toContainText('Coberta pela interface');
+    await page.getByTestId('demo-suggest').click();
+    await expect(caption).toHaveAttribute('data-inside', 'true');
+    await expect(page.getByTestId('demo-verdict')).toContainText('Dentro da zona segura');
+    // arrastar o controle para a base volta a cobrir
+    await page.getByTestId('demo-y').fill('0.47');
+    await expect(caption).toHaveAttribute('data-inside', 'false');
+    // trocar de plataforma mantém um veredito coerente com a nova zona
+    await page.getByRole('tab', { name: 'Stories' }).click();
+    await expect(page.getByTestId('demo-phone')).toContainText('Stories');
+  });
+
+  test('daltonismo: as cores mudam e Erro × Sucesso fica difícil de distinguir em deuteranopia', async ({ page }) => {
+    await page.getByTestId('lab-tab-visao').click();
+    const swatches = page.getByTestId('demo-swatch');
+    await expect(swatches).toHaveCount(6); // espera a transição entre abas terminar
+    const shown = () => swatches.evaluateAll((els) => els.map((e) => e.getAttribute('data-shown')));
+    const normal = await shown();
+    expect(normal[0]).toBe('#e11d48');
+    await expect(page.getByTestId('demo-vision-verdict')).toContainText('Escolha um tipo de visão');
+
+    await page.getByRole('tab', { name: /Deuteranopia/ }).click();
+    const deut = await shown();
+    expect(deut).not.toEqual(normal);
+    expect(deut[5]).toBeTruthy();
+    await expect(page.getByTestId('demo-confused').filter({ hasText: 'Erro × Sucesso' })).toHaveCount(1);
+
+    await page.getByRole('tab', { name: /Acromatopsia/ }).click();
+    for (const hex of await shown()) expect(hex!.slice(1, 3) === hex!.slice(3, 5) && hex!.slice(3, 5) === hex!.slice(5, 7)).toBe(true);
+    await page.getByRole('tab', { name: /normal/ }).click();
+    expect(await shown()).toEqual(normal);
+  });
+
+  test('ritmo: o rótulo vai de Frenético a Contemplativo e os planos diminuem', async ({ page }) => {
+    await page.getByTestId('lab-tab-ritmo').click();
+    const label = page.getByTestId('demo-pacing-label');
+    const shots = async () => Number(await page.getByTestId('demo-shots').textContent());
+    await page.getByTestId('demo-avg').fill('0.9');
+    await expect(label).toHaveText('Frenético');
+    const many = await shots();
+    await page.getByTestId('demo-avg').fill('9');
+    await expect(label).toHaveText('Contemplativo');
+    await expect(page.getByTestId('demo-avg-value')).toHaveText('9 s');
+    expect(await shots()).toBeLessThan(many / 4);
+  });
+
+  test('com menos movimento o laboratório responde sem animação', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.reload();
+    await page.getByTestId('lab').scrollIntoViewIfNeeded();
+    await page.getByTestId('demo-fix-gap').click();
+    await expect(page.getByTestId('demo-issue')).toHaveCount(2);
+    await expect(page.getByTestId('demo-score')).toHaveText('90', { timeout: 2_000 });
+  });
+
+  test('o item Experimente do menu leva ao laboratório', async ({ page }) => {
+    await page.getByTestId('landing').evaluate((el) => el.scrollTo(0, 0));
+    await page.getByTestId('landing-header').getByRole('button', { name: 'Experimente' }).click();
+    await expect.poll(() => page.locator('#experimente').evaluate((el) => el.getBoundingClientRect().top), { timeout: 5_000 }).toBeLessThan(160);
+  });
+});
+
 test.describe('landing: animações ligadas à rolagem', () => {
   test('barra de progresso acompanha a leitura e o botão de topo volta ao início', async ({ page }) => {
     await page.goto('/');
