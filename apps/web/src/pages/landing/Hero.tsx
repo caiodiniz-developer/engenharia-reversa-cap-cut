@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Icon } from '../../components/Icon';
 import { HERO } from './content';
 import { ProductMock } from './ProductMock';
+import { RotatingWord } from './RotatingWord';
 import { scrollToSection } from './scroll';
 
 /** Primeira dobra: promessa, chamadas para cadastro/login e a ilustração do editor. */
@@ -19,7 +20,10 @@ export function Hero() {
         <motion.h1 {...fade(0.05)} id="hero-title" className="text-balance text-4xl font-bold leading-[1.08] tracking-tight sm:text-6xl">
           Edite, revise e exporte seus vídeos <span className="gradient-text">sem instalar nada.</span>
         </motion.h1>
-        <motion.p {...fade(0.12)} className="mx-auto mt-6 max-w-2xl text-balance text-base leading-relaxed text-mute sm:text-lg">
+        <motion.p {...fade(0.09)} className="mt-5 text-lg font-medium sm:text-xl">
+          Faça <RotatingWord /> sem sair do navegador.
+        </motion.p>
+        <motion.p {...fade(0.12)} className="mx-auto mt-4 max-w-2xl text-balance text-base leading-relaxed text-mute sm:text-lg">
           {HERO.subtitle}
         </motion.p>
         <motion.div {...fade(0.2)} className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
