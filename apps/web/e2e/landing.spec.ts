@@ -89,9 +89,22 @@ test.describe('landing page', () => {
     const stats = page.getByTestId('stats');
     await expect(stats).toContainText('efeitos de imagem');
     await expect(stats).toContainText('verificações na revisão');
-    const values = await stats.locator('dd').allTextContents();
-    expect(values).toHaveLength(6);
-    for (const v of values) expect(Number(v)).toBeGreaterThan(0);
+    const dds = stats.locator('dd');
+    await expect(dds).toHaveCount(6);
+    // os valores finais (lidos do código do editor) estão no atributo; o número visível sobe até eles ao aparecer
+    const finals = await dds.evaluateAll((els) => els.map((e) => e.getAttribute('data-value')));
+    for (const v of finals) expect(Number(v)).toBeGreaterThan(0);
+    await stats.scrollIntoViewIfNeeded();
+    for (let i = 0; i < 6; i++) await expect(dds.nth(i)).toHaveText(finals[i]!, { timeout: 5_000 });
+  });
+
+  test('os números começam em zero e só sobem quando a faixa aparece', async ({ page }) => {
+    await page.goto('/');
+    const first = page.getByTestId('stats').locator('dd').first();
+    // no topo da página a faixa ainda não foi vista
+    await expect(first).toHaveText('0');
+    await page.getByTestId('stats').scrollIntoViewIfNeeded();
+    await expect(first).not.toHaveText('0', { timeout: 5_000 });
   });
 
   test('tema claro/escuro vale na landing e é lembrado', async ({ page }) => {
