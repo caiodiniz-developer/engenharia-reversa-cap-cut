@@ -4,6 +4,7 @@ import { Icon } from '../../components/Icon';
 import { HERO } from './content';
 import { ProductMock } from './ProductMock';
 import { RotatingWord } from './RotatingWord';
+import { Tilt } from './Tilt';
 import { scrollToSection } from './scroll';
 
 /** Primeira dobra: promessa, chamadas para cadastro/login e a ilustração do editor. */
@@ -43,7 +44,9 @@ export function Hero() {
       </div>
 
       <motion.div {...(reduce ? {} : { initial: { opacity: 0, y: 40 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.8, delay: 0.35, ease: 'easeOut' as const } })} className="relative mt-14">
-        <ProductMock />
+        <Tilt>
+          <ProductMock />
+        </Tilt>
       </motion.div>
     </section>
   );
