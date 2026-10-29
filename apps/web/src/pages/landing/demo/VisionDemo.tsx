@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { simulateHex, VISION_LABEL, VISION_MODES } from '../../../lib/vision';
 import type { VisionMode } from '../../../store/editor';
-import { confusedPairs, SWATCHES } from './visionDemo';
+import { confusedPairs, SWATCHES } from './visionModel';
 
 /** Como as mesmas cores aparecem para quem tem daltonismo; avisa quais pares deixam de se distinguir. */
 export function VisionDemo() {

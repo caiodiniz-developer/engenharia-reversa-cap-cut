@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEMO_TOTAL, pacingDemoState, shotLengths } from './pacingDemo';
+import { DEMO_TOTAL, pacingDemoState, shotLengths } from './pacingModel';
 
 describe('demonstração do ritmo', () => {
   it('as durações somam o total e nenhuma é menor que 0,3 s, para qualquer média', () => {

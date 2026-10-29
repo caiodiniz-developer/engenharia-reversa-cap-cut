@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import { RULE_TITLE, projectDuration } from '@editor/core';
 import { Icon } from '../../../components/Icon';
 import { useCountUp } from '../anim';
-import { buildReviewDemo, demoAction, reviewDemoState } from './reviewDemo';
+import { buildReviewDemo, demoAction, reviewDemoState } from './reviewModel';
 
 const TRACK_COLOR = { video: 'bg-clip-video', caption: 'bg-clip-caption', text: 'bg-clip-text', audio: 'bg-clip-audio' } as const;
 

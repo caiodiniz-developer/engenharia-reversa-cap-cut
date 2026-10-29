@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildReviewDemo, demoAction, reviewDemoState } from './reviewDemo';
+import { buildReviewDemo, demoAction, reviewDemoState } from './reviewModel';
 
 describe('demonstração da Revisão', () => {
   it('o projeto de exemplo tem exatamente os três problemas planejados', () => {

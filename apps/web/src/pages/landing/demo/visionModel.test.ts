@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { colorDistance, confusedPairs, CONFUSION_THRESHOLD, SWATCHES } from './visionDemo';
+import { colorDistance, confusedPairs, CONFUSION_THRESHOLD, SWATCHES } from './visionModel';
 
 describe('demonstração de daltonismo', () => {
   it('colorDistance: zero para cores iguais e máximo entre preto e branco', () => {

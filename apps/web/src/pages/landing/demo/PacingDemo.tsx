@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { formatDuration } from '../../../lib/format';
-import { DEMO_TOTAL, pacingDemoState, shotLengths } from './pacingDemo';
+import { DEMO_TOTAL, pacingDemoState, shotLengths } from './pacingModel';
 
 const SEG = ['bg-clip-video', 'bg-sky-500'];
 const comma = (n: number) => String(n).replace('.', ',');

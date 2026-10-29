@@ -1,7 +1,7 @@
 import { motion, useReducedMotion } from 'framer-motion';
 import { useState } from 'react';
 import { getPlatform } from '@editor/core';
-import { captionVerdict, suggestedCaptionY } from './safeDemo';
+import { captionVerdict, suggestedCaptionY } from './safeModel';
 
 const CHOICES = ['shorts', 'reels', 'tiktok', 'stories'] as const;
 

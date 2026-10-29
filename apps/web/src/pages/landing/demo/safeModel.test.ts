@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { PLATFORMS } from '@editor/core';
-import { captionVerdict, suggestedCaptionY } from './safeDemo';
+import { captionVerdict, suggestedCaptionY } from './safeModel';
 
 describe('demonstração das zonas seguras', () => {
   it('a posição sugerida fica dentro da zona segura em todas as plataformas', () => {
