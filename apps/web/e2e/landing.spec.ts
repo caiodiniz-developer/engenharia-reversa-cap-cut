@@ -135,6 +135,73 @@ test.describe('landing page', () => {
   });
 });
 
+test.describe('landing: animações do topo e dos cartões', () => {
+  test('a palavra da chamada alterna sozinha', async ({ page }) => {
+    await page.goto('/');
+    const word = page.getByTestId('rotating-word');
+    await expect(word).toHaveText('legendas');
+    await expect(word).not.toHaveText('legendas', { timeout: 6_000 });
+    const seen = new Set<string>();
+    for (let i = 0; i < 4; i++) {
+      seen.add((await word.textContent())!.trim());
+      await page.waitForTimeout(2400);
+    }
+    expect(seen.size).toBeGreaterThanOrEqual(3);
+  });
+
+  test('com menos movimento a palavra fica parada', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+    const word = page.getByTestId('rotating-word');
+    await expect(word).toHaveText('legendas');
+    await page.waitForTimeout(3000);
+    await expect(word).toHaveText('legendas');
+  });
+
+  test('a faixa de efeitos lista nomes reais, duplicados só para a animação (invisíveis a leitores de tela)', async ({ page }) => {
+    await page.goto('/');
+    const lists = page.getByTestId('marquee').locator('ul');
+    await expect(lists).toHaveCount(2);
+    await expect(lists.nth(1)).toHaveAttribute('aria-hidden', 'true');
+    await expect(lists.first().getByRole('listitem').filter({ hasText: 'Brilho' })).toHaveCount(1);
+    await expect(lists.first().getByRole('listitem').filter({ hasText: 'Dissolver' })).toHaveCount(1);
+    const run = await page.getByTestId('marquee').locator('.marquee-track').evaluate((el) => getComputedStyle(el).animationName);
+    expect(run).toBe('marquee-run');
+  });
+
+  test('o cartão de recurso acompanha o cursor com a luz', async ({ page }) => {
+    await page.goto('/');
+    const card = page.getByTestId('features').getByTestId('feature-card').first();
+    await card.scrollIntoViewIfNeeded();
+    const box = (await card.boundingBox())!;
+    await page.mouse.move(box.x + 40, box.y + 30);
+    await page.mouse.move(box.x + 120, box.y + 70);
+    // o cartão sobe alguns pixels ao receber o mouse, então a posição é aproximada
+    const pos = (v: string) => card.evaluate((el, name) => parseFloat((el as HTMLElement).style.getPropertyValue(name)), v);
+    await expect.poll(async () => Math.abs((await pos('--mx')) - 120), { timeout: 3_000 }).toBeLessThan(8);
+    expect(Math.abs((await pos('--my')) - 70)).toBeLessThan(8);
+  });
+
+  test('a ilustração do hero inclina com o mouse e volta ao centro', async ({ page }) => {
+    await page.goto('/');
+    const mock = page.getByTestId('product-mock');
+    await mock.scrollIntoViewIfNeeded();
+    const box = (await mock.boundingBox())!;
+    const tilt = page.getByTestId('tilt');
+    const matrix = () => tilt.evaluate((el) => getComputedStyle(el).transform);
+    await page.mouse.move(box.x + box.width * 0.9, box.y + box.height * 0.1);
+    await expect.poll(matrix, { timeout: 3_000 }).not.toBe('none');
+    await page.mouse.move(2, 2);
+    // ao sair, a inclinação volta a zero: sem transformação ou matriz identidade nos eixos X e Y
+    await expect
+      .poll(async () => {
+        const m = await matrix();
+        return m === 'none' || /^matrix3d\(1, 0, 0, 0, 0, 1, /.test(m);
+      }, { timeout: 4_000 })
+      .toBe(true);
+  });
+});
+
 test.describe('landing: animações ligadas à rolagem', () => {
   test('barra de progresso acompanha a leitura e o botão de topo volta ao início', async ({ page }) => {
     await page.goto('/');
