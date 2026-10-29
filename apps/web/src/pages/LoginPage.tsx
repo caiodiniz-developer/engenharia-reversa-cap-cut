@@ -69,6 +69,9 @@ export function LoginPage() {
 
       <section className="flex items-center justify-center p-6">
         <div className="w-full max-w-sm">
+          <Link to="/" className="mb-6 inline-flex items-center gap-1.5 text-xs font-medium text-mute hover:text-ink" data-testid="back-home">
+            <Icon name="chevronRight" size={13} style={{ transform: 'rotate(180deg)' }} /> Voltar ao início
+          </Link>
           <div className="mb-8 flex items-center gap-3 lg:hidden">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent text-accent-ink">
               <Icon name="play" size={18} />
