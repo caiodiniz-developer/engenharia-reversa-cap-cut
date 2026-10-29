@@ -139,7 +139,8 @@ Cada ✅ aponta o teste que o exercita. "E2E" = Playwright no Chrome com API, Vi
 | Replay do histórico de edições (passo a passo, sem salvar nada) | ✅ | E2E `diferenciais` |
 | Simulador de daltonismo no preview (protanopia, deuteranopia, tritanopia, acromatopsia) | 🟨 | web `vision.test`, E2E `diferenciais` — aproximação por matrizes de cor, só no preview |
 | Cores do quadro: paleta dominante do preview aplicada ao texto selecionado | ✅ | web `palette.test`, E2E `diferenciais` |
-| Landing page na raiz para visitantes (hero, recursos, diferenciais, números reais, plataformas, passos, perguntas, tema e menu no celular); quem já entrou vê os projetos | ✅ | E2E `landing`, web `content.test` |
+| Landing page na raiz para visitantes (hero com palavra que alterna e inclinação 3D, números que sobem, faixa de efeitos, recursos, diferenciais, passos que acendem na rolagem, perguntas, tema, progresso de leitura e menu/barra de cadastro no celular); quem já entrou vê os projetos | ✅ | E2E `landing`, web `content.test`, `anim.test`, `Steps.test` |
+| Laboratório na landing (sem conta): revisão ao vivo com correções reais, zonas seguras, ritmo, paleta de comandos e simulação de daltonismo — rodando o mesmo código do editor | ✅ | web `reviewModel.test`, `safeModel.test`, `pacingModel.test`, `visionModel.test`, `paletteModel.test`, E2E `landing` |
 | Fechar espaços vazios de uma faixa | ✅ | core `ops/advanced.test`, E2E `novidades` |
 | Salvar o quadro atual como PNG | ✅ | E2E `novidades` (assinatura PNG verificada) |
 | Modelos de projeto (vertical curto etc.), busca, renomear, duplicar e capa dos projetos | ✅ | web `templates.test`, API `projects.test`, E2E `novidades` |
