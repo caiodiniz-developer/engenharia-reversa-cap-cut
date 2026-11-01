@@ -41,3 +41,24 @@ export function markersAtClipStarts(p: Project, ids?: string[]): { project: Proj
   }
   return { project: { ...p, markers: sortMarkers(markers) }, added };
 }
+
+/** Marca o começo de cada vão (trecho sem nenhum clipe em nenhuma faixa) maior que ${minGap} s, entre 0 e o fim do projeto. */
+export function markersAtGaps(p: Project, minGap = 0.1): { project: Project; added: number } {
+  const spans = allClips(p)
+    .map(({ clip }) => [clip.start, clipEnd(clip)] as [number, number])
+    .sort((a, b) => a[0] - b[0]);
+  const gaps: Array<[number, number]> = [];
+  let cursor = 0;
+  for (const [a, b] of spans) {
+    if (a - cursor >= minGap) gaps.push([cursor, a]);
+    cursor = Math.max(cursor, b);
+  }
+  let markers = p.markers;
+  let added = 0;
+  for (const [a, b] of gaps) {
+    if (hasMarkerAt(markers, a)) continue;
+    markers = [...markers, { id: newId('mk'), time: round6(a), label: 'Vão de ' + round6(b - a) + ' s', color: '#e5484d' }];
+    added++;
+  }
+  return { project: { ...p, markers: sortMarkers(markers) }, added };
+}
