@@ -114,3 +114,18 @@ describe('distributeClips', () => {
     expect(ops.distributeClips(apertado.p, apertado.ids)).toEqual(apertado.p); // sem folga: nada se mexe
   });
 });
+
+describe('spaceClips', () => {
+  it('aplica o vão entre clipes, a partir do primeiro', () => {
+    const { p, ids } = build([0, 1], [5, 6], [9, 10]);
+    const out = ops.spaceClips(p, ids, 0.5);
+    expect([ids[0]!, ids[1]!, ids[2]!].map((id) => startOf(out, id))).toEqual([0, 1.5, 3]);
+  });
+
+  it('vão zero encosta os clipes e vão negativo é recusado', () => {
+    const { p, ids } = build([1, 2], [6, 8]);
+    const out = ops.spaceClips(p, ids, 0);
+    expect(startOf(out, ids[1]!)).toBe(2);
+    expect(() => ops.spaceClips(p, ids, -1)).toThrow();
+  });
+});
