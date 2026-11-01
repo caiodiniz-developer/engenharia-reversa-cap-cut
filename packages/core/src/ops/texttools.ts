@@ -133,3 +133,26 @@ export function addLowerThird(p: Project, name: string, role: string, start: num
   }
   return { project: next, ids: clips.map((c) => c.id) };
 }
+
+/** Cria uma contagem regressiva ("3", "2", "1") com ${each} s por número, a partir de ${start}. */
+export function addCountdown(p: Project, from: number, start: number, each = 1): { project: Project; ids: string[] } {
+  if (!Number.isInteger(from) || from < 2 || from > 10) throw new TimelineError('A contagem vai de 2 a 10', 'OUT_OF_RANGE');
+  if (!(start >= 0) || !(each >= 0.3)) throw new TimelineError('Início inválido ou número rápido demais (mínimo 0,3 s)', 'OUT_OF_RANGE');
+  const f = freeTrack(p, 'text', start, start + from * each);
+  let next = f.project;
+  const ids: string[] = [];
+  for (let i = 0; i < from; i++) {
+    const clip = TextClipSchema.parse({
+      id: newId('clp'),
+      type: 'text',
+      text: String(from - i),
+      start: round6(start + i * each),
+      duration: round6(each),
+      style: { fontSize: 320, bold: true, shadowBlur: 18 },
+      animationIn: { type: 'pop', duration: round6(Math.min(0.3, each / 2)) },
+    });
+    next = addClip(next, f.trackId, clip);
+    ids.push(clip.id);
+  }
+  return { project: next, ids };
+}
