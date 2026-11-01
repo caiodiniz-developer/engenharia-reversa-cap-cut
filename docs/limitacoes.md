@@ -67,5 +67,10 @@ Listadas para que ninguém descubra em produção. Itens marcados com 🔧 têm 
 - **Remover o trecho marcado** recusa quando uma faixa bloqueada tem clipe no trecho, e clipes ligados ficam juntos apenas dentro do que foi dividido.
 - Os **marcadores nos vãos** consideram todas as faixas: um vão coberto por outra faixa não conta.
 
+## Animações novas
+- O **confete** e o brilho/paralaxe dependem de JavaScript/CSS do navegador; com "menos movimento" ativado ficam desligados (o confete nem é criado). O botão magnético só reage a **mouse**, não a toque.
+- A lista **"ferramentas"** da segunda faixa da landing é escrita à mão em `content.ts` (diferente da primeira faixa, lida do núcleo); um teste só confere nomes únicos e quantidade mínima, não que cada nome tenha comando na paleta.
+- A animação de entrada dos benefícios da tela de login roda uma vez a cada visita; capturas de tela tiradas no primeiro instante mostram a lista ainda invisível.
+
 ## Escala
 - Não houve teste de carga nem de vídeos muito longos (horas). Os limites configuráveis (2 GB por arquivo, 2 h por mídia, 200 mídias por projeto, 3000 clipes por exportação) existem para proteger o servidor, não foram calibrados com medições.
