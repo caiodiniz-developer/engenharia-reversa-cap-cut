@@ -40,14 +40,18 @@ export function LoginPage() {
   return (
     <main className="grid h-full overflow-auto lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
       <aside className="stage-bg relative hidden flex-col justify-between overflow-hidden border-r border-line p-10 lg:flex" aria-hidden="true">
-        <div className="flex items-center gap-3">
+        <div className="hero-orb -left-20 top-40 h-72 w-72 bg-accent" />
+        <div className="hero-orb hero-orb-b -bottom-16 right-0 h-72 w-72 bg-clip-caption" />
+        <div className="relative flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent text-accent-ink">
             <Icon name="play" size={18} />
           </span>
           <span className="text-lg font-semibold">Editor de Vídeo</span>
         </div>
-        <div>
-          <h2 className="max-w-md text-3xl font-semibold leading-tight tracking-tight">Edite, legende e exporte vídeos direto no navegador.</h2>
+        <div className="relative">
+          <h2 className="max-w-md text-3xl font-semibold leading-tight tracking-tight">
+            Edite, legende e exporte vídeos <span className="gradient-text">direto no navegador.</span>
+          </h2>
           <ul className="mt-6 grid max-w-md gap-3 text-sm text-mute">
             {[
               ['film', 'Timeline multifaixa com efeitos, transições e animações'],
