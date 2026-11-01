@@ -169,3 +169,27 @@ export function shakeClips(p: Project, ids: string[], amount = 0.01, seed = 1, r
   if (!n) throw new TimelineError('Selecione clipes de vídeo, imagem ou texto', 'KIND_MISMATCH');
   return next;
 }
+
+/** Entra e sai com transparência: opacidade vai de 0 ao valor atual em ${fadeIn} s e do valor atual a 0 nos últimos ${fadeOut} s. */
+export function fadeOpacity(p: Project, ids: string[], fadeIn: number, fadeOut: number): Project {
+  if (!(fadeIn >= 0) || !(fadeOut >= 0) || fadeIn + fadeOut <= 0) throw new TimelineError('Informe ao menos um fade maior que zero', 'OUT_OF_RANGE');
+  let next = p;
+  let n = 0;
+  for (const id of new Set(ids)) {
+    const clip = requireClip(next, id).clip;
+    if (!hasTransform(clip)) continue;
+    if (fadeIn + fadeOut > clip.duration + 1e-6) throw new TimelineError('Os fades somados passam da duração do clipe', 'OUT_OF_RANGE');
+    const o = clip.transform.opacity;
+    let k: Keyframe[] = [];
+    k = upsertKeyframe(k, 0, fadeIn > 0 ? 0 : o, 'ease');
+    if (fadeIn > 0) k = upsertKeyframe(k, fadeIn, o, 'linear');
+    if (fadeOut > 0) {
+      k = upsertKeyframe(k, round6(clip.duration - fadeOut), o, 'ease');
+      k = upsertKeyframe(k, clip.duration, 0, 'linear');
+    }
+    next = withKeyframes(next, id, { opacity: k });
+    n++;
+  }
+  if (!n) throw new TimelineError('Selecione clipes de vídeo, imagem ou texto', 'KIND_MISMATCH');
+  return next;
+}
