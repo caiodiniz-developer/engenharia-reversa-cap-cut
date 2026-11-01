@@ -205,3 +205,25 @@ export function scriptToCaptions(p: Project, script: string, start: number, end:
   for (const c of clips) next = addClip(next, f.trackId, c);
   return { project: next, ids: clips.map((c) => c.id) };
 }
+
+export type Corner = 'tl' | 'tr' | 'bl' | 'br';
+
+/** Marca d’água de texto num canto do quadro, discreta (55% de opacidade), por todo o projeto ou pelo trecho informado. */
+export function addWatermark(p: Project, text: string, corner: Corner, range?: { start: number; duration: number }): { project: Project; clipId: string } {
+  if (!text.trim()) throw new TimelineError('Escreva o texto da marca d’água', 'INVALID');
+  const start = range?.start ?? 0;
+  const duration = range?.duration ?? projectDuration(p) - start;
+  if (!(start >= 0) || !(duration > 0)) throw new TimelineError('O projeto está vazio: não há por onde estender a marca d’água', 'OUT_OF_RANGE');
+  const left = corner === 'tl' || corner === 'bl';
+  const clip = TextClipSchema.parse({
+    id: newId('clp'),
+    type: 'text',
+    text: text.trim(),
+    start: round6(start),
+    duration: round6(duration),
+    style: { fontSize: 36, bold: false, align: left ? 'left' : 'right', shadowBlur: 6 },
+    transform: { x: left ? -0.36 : 0.36, y: corner === 'tl' || corner === 'tr' ? -0.43 : 0.43, opacity: 0.55 },
+  });
+  const f = freeTrack(p, 'text', clip.start, clipEnd(clip));
+  return { project: addClip(f.project, f.trackId, clip), clipId: clip.id };
+}
