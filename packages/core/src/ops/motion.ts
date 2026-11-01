@@ -35,3 +35,9 @@ export function setOpacity(p: Project, ids: string[], opacity: number): Project 
   if (!(opacity >= 0 && opacity <= 1)) throw new TimelineError('A opacidade vai de 0% a 100%', 'OUT_OF_RANGE');
   return mapTransform(p, ids, (t) => ({ ...t, opacity: round6(opacity) }));
 }
+
+/** Soma um deslocamento (fração da largura/altura do quadro) à posição dos clipes escolhidos. */
+export function nudgeClips(p: Project, ids: string[], dx: number, dy: number): Project {
+  if (!Number.isFinite(dx) || !Number.isFinite(dy)) throw new TimelineError('Deslocamento inválido', 'INVALID');
+  return mapTransform(p, ids, (t) => ({ ...t, x: round6(t.x + dx), y: round6(t.y + dy) }));
+}
