@@ -54,5 +54,18 @@ Listadas para que ninguém descubra em produção. Itens marcados com 🔧 têm 
 - Os números da landing (efeitos, LUTs, transições, animações, verificações e plataformas) são lidos do código, mas as frases de texto (recursos e perguntas) são escritas à mão e precisam ser revisadas quando o produto mudar.
 - Com "menos movimento" ativado no sistema, as animações (palavra alternada, inclinação, faixa de efeitos, contadores, passos e esferas) ficam paradas ou já completas.
 
+## Ferramentas em lote da paleta
+- Os comandos usam **valores predefinidos** (±3 dB, 10%, 15°, 5 s, 1/2/5 s…); valores livres só existem nas propriedades do clipe.
+- O **ducking** é por tempo, não por conteúdo: ele não detecta fala. "Voz" são os outros clipes com som em **outras faixas**; música e voz na mesma faixa não funcionam. Substitui os keyframes de volume que a música já tinha, e o nível do arquivo exportado não foi medido (🟨 na matriz).
+- **Embaralhar** usa uma semente nova a cada clique; a mesma semente só se repete no núcleo (testes), não há campo para escolher a semente.
+- **Juntar pedaços contínuos** só une clipes idênticos em tudo (mídia, trecho contínuo, velocidade, efeitos, áudio, transformação); ignora clipes ligados, congelados, invertidos, com keyframes ou com transição.
+- **Roteiro em legendas** distribui o tempo pelo tamanho do texto, não pela fala real; as palavras de cada legenda também são proporcionais (o destaque da palavra falada fica aproximado). Não faz sincronização com áudio.
+- **Substituir mídia** troca por um arquivo que já está na biblioteca do projeto, do mesmo tipo e com duração suficiente para o trecho de cada clipe; não troca por um arquivo do disco direto.
+- **Cortar para uma proporção** corta sempre no centro; não há escolha do ponto de foco. **Preencher o quadro** precisa das dimensões da mídia.
+- A **marca d’água** é um texto (não imagem/logo) e usa o nome do projeto como texto inicial; edite o texto nas propriedades.
+- **Mostrar todas as faixas** desliga o mudo e o oculto de todas, inclusive os que você tinha ligado antes do solo (o estado anterior não é guardado).
+- **Remover o trecho marcado** recusa quando uma faixa bloqueada tem clipe no trecho, e clipes ligados ficam juntos apenas dentro do que foi dividido.
+- Os **marcadores nos vãos** consideram todas as faixas: um vão coberto por outra faixa não conta.
+
 ## Escala
 - Não houve teste de carga nem de vídeos muito longos (horas). Os limites configuráveis (2 GB por arquivo, 2 h por mídia, 200 mídias por projeto, 3000 clipes por exportação) existem para proteger o servidor, não foram calibrados com medições.
