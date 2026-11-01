@@ -34,3 +34,12 @@ describe('setTextStyle', () => {
     expect(() => ops.setTextStyle(p, [], { color: '#fff' })).toThrow(/Selecione/);
   });
 });
+
+describe('placeText', () => {
+  it('topo é negativo, base é positivo e meio é zero', () => {
+    const { p, ids } = withTexts(['A', 0, 1]);
+    expect(textOf(ops.placeText(p, ids, 'top'), ids[0]!).transform).toMatchObject({ x: 0, y: -0.38 });
+    expect(textOf(ops.placeText(p, ids, 'bottom'), ids[0]!).transform.y).toBe(0.38);
+    expect(textOf(ops.placeText(ops.placeText(p, ids, 'bottom'), ids, 'middle'), ids[0]!).transform.y).toBe(0);
+  });
+});
