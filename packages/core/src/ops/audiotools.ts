@@ -56,3 +56,9 @@ export function setPan(p: Project, ids: string[], pan: number): Project {
   if (!(pan >= -1 && pan <= 1)) throw new TimelineError('O balanço vai de -1 (esquerda) a 1 (direita)', 'OUT_OF_RANGE');
   return mapMediaClips(p, ids, (c) => withAudio(c, { pan: round6(pan) }));
 }
+
+/** Ajusta as bandas do equalizador (dB, -24 a 24); as bandas não informadas continuam como estavam. */
+export function setEq(p: Project, ids: string[], bands: Partial<AudioProps['eq']>): Project {
+  for (const v of Object.values(bands)) if (v !== undefined && !(v >= -24 && v <= 24)) throw new TimelineError('O equalizador vai de -24 a 24 dB', 'OUT_OF_RANGE');
+  return mapMediaClips(p, ids, (c) => withAudio(c, { eq: { ...c.audio.eq, ...bands } }));
+}
