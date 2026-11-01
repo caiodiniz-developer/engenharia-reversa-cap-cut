@@ -102,3 +102,18 @@ export function distributeClips(p: Project, ids: string[]): Project {
   assertTracksValid(next, [track.id]);
   return next;
 }
+
+/** Coloca os clipes escolhidos em sequência com um vão fixo (segundos) entre eles, a partir do início do primeiro. */
+export function spaceClips(p: Project, ids: string[], gap: number): Project {
+  if (!(gap >= 0) || !Number.isFinite(gap)) throw new TimelineError('O vão precisa ser zero ou maior', 'OUT_OF_RANGE');
+  const { track, clips } = sameTrack(p, ids, 2, 'espaçar');
+  const starts = new Map<string, number>();
+  let cursor = clips[0]!.start;
+  for (const c of clips) {
+    starts.set(c.id, round6(cursor));
+    cursor += c.duration + gap;
+  }
+  const next = withTrackClips(p, track.id, (cs) => cs.map((c) => (starts.has(c.id) ? ({ ...c, start: starts.get(c.id)! } as Clip) : c)));
+  assertTracksValid(next, [track.id]);
+  return next;
+}
