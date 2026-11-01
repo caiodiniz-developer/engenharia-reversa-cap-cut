@@ -156,3 +156,27 @@ export function addCountdown(p: Project, from: number, start: number, each = 1):
   }
   return { project: next, ids };
 }
+
+/** Divide um roteiro em falas: cada linha e cada frase vira uma fala, e as longas (mais de ${maxChars} caracteres) são quebradas entre palavras. */
+export function splitScript(script: string, maxChars = 42): string[] {
+  const out: string[] = [];
+  for (const line of script.replace(/\r\n?/g, '\n').split('\n')) {
+    for (const sentence of line.split(/(?<=[.!?…])\s+/)) {
+      const text = sentence.trim().replace(/\s+/g, ' ');
+      if (!text) continue;
+      if (text.length <= maxChars) {
+        out.push(text);
+        continue;
+      }
+      let cur = '';
+      for (const w of text.split(' ')) {
+        if (cur && cur.length + 1 + w.length > maxChars) {
+          out.push(cur);
+          cur = w;
+        } else cur = cur ? cur + ' ' + w : w;
+      }
+      if (cur) out.push(cur);
+    }
+  }
+  return out;
+}
