@@ -165,3 +165,29 @@ describe('punchIn', () => {
     expect(() => ops.punchIn(p, 'nao-existe', 0)).toThrow();
   });
 });
+
+describe('shakeClips', () => {
+  it('fica dentro da intensidade, começa e termina na posição original', () => {
+    const { p, id } = one(3);
+    const out = ops.shakeClips(p, [id], 0.02, 5, 10);
+    const k = clipOf(out, id).keyframes;
+    expect(k.x![0]).toMatchObject({ time: 0, value: 0 });
+    expect(k.x![k.x!.length - 1]).toMatchObject({ time: 3, value: 0 });
+    expect(k.x!.length).toBe(31);
+    expect(k.x!.every((f) => Math.abs(f.value) <= 0.02 + 1e-9)).toBe(true);
+    expect(k.x!.some((f) => f.value !== 0)).toBe(true);
+  });
+
+  it('a mesma semente repete e outra semente difere', () => {
+    const { p, id } = one(3);
+    expect(ops.shakeClips(p, [id], 0.02, 5)).toEqual(ops.shakeClips(p, [id], 0.02, 5));
+    expect(clipOf(ops.shakeClips(p, [id], 0.02, 6), id).keyframes.x).not.toEqual(clipOf(ops.shakeClips(p, [id], 0.02, 5), id).keyframes.x);
+  });
+
+  it('recusa intensidade/frequência inválidas', () => {
+    const { p, id } = one(3);
+    expect(() => ops.shakeClips(p, [id], 0)).toThrow();
+    expect(() => ops.shakeClips(p, [id], 0.5)).toThrow();
+    expect(() => ops.shakeClips(p, [id], 0.01, 1, 100)).toThrow();
+  });
+});
