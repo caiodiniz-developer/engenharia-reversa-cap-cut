@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Icon } from '../../components/Icon';
 import { HERO } from './content';
 import { ProductMock } from './ProductMock';
+import { Magnetic } from './Magnetic';
 import { RotatingWord } from './RotatingWord';
 import { SplitText } from './SplitText';
 import { Tilt } from './Tilt';
@@ -31,12 +32,16 @@ export function Hero() {
           {HERO.subtitle}
         </motion.p>
         <motion.div {...fade(0.2)} className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Link to="/login?modo=cadastro" className="btn btn-primary !h-12 px-7 text-[15px] shadow-lg" data-testid="hero-signup">
-            {HERO.primary} <Icon name="chevronRight" size={16} />
-          </Link>
-          <Link to="/login" className="btn !h-12 px-7 text-[15px]" data-testid="hero-login">
-            {HERO.secondary}
-          </Link>
+          <Magnetic>
+            <Link to="/login?modo=cadastro" className="btn btn-primary btn-shine !h-12 px-7 text-[15px] shadow-lg" data-testid="hero-signup">
+              {HERO.primary} <Icon name="chevronRight" size={16} />
+            </Link>
+          </Magnetic>
+          <Magnetic>
+            <Link to="/login" className="btn !h-12 px-7 text-[15px]" data-testid="hero-login">
+              {HERO.secondary}
+            </Link>
+          </Magnetic>
         </motion.div>
         <motion.p {...fade(0.26)} className="mt-4 text-xs text-mute">
           {HERO.note}
