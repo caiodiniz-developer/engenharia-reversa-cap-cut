@@ -178,3 +178,28 @@ describe('scriptToCaptions', () => {
     expect(() => ops.scriptToCaptions(project, 'a. b. c. d.', 0, 0.5)).toThrow(/0,3 s/);
   });
 });
+
+describe('addWatermark', () => {
+  function filled() {
+    const { project, trackId } = fixtureProject();
+    return addClip(project, trackId, mediaClip('m1', 0, 8));
+  }
+
+  it('cobre o projeto inteiro no canto escolhido', () => {
+    const r = ops.addWatermark(filled(), '@canal', 'br');
+    const c = textOf(r.project, r.clipId);
+    expect(c).toMatchObject({ start: 0, duration: 8, text: '@canal' });
+    expect(c.transform).toMatchObject({ x: 0.36, y: 0.43, opacity: 0.55 });
+    expect(c.style.align).toBe('right');
+    const tl = textOf(ops.addWatermark(filled(), 'x', 'tl').project, ops.addWatermark(filled(), 'x', 'tl').clipId);
+    expect(tl.transform.x).toBeLessThan(0);
+    expect(tl.transform.y).toBeLessThan(0);
+  });
+
+  it('aceita trecho; projeto vazio e texto vazio falham', () => {
+    const r = ops.addWatermark(filled(), 'x', 'bl', { start: 2, duration: 3 });
+    expect(textOf(r.project, r.clipId)).toMatchObject({ start: 2, duration: 3 });
+    expect(() => ops.addWatermark(fixtureProject().project, 'x', 'tl')).toThrow(/vazio/);
+    expect(() => ops.addWatermark(filled(), ' ', 'tl')).toThrow();
+  });
+});
