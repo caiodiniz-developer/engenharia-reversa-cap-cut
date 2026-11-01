@@ -118,7 +118,7 @@ describe('soloTrack / showAllTracks', () => {
 describe('autoNameTracks', () => {
   it('numera por tipo seguindo a ordem das faixas', () => {
     let p = fixtureProject().project;
-    p = addTrack(addTrack(addTrack(p, 'audio').project, 'text').project, 'caption').project;
+    p = addTrack(addTrack(addTrack(addTrack(p, 'audio').project, 'text').project, 'caption').project, 'video').project;
     const out = ops.autoNameTracks(p);
     const names = out.tracks.map((t) => [t.kind, t.name]);
     expect(names).toContainEqual(['video', 'Vídeo 1']);
