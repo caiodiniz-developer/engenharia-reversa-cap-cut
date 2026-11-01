@@ -77,3 +77,20 @@ describe('centerClips', () => {
     expect(tr(out, id)).toMatchObject({ x: 0, y: 0, scale: 2, rotation: 30 });
   });
 });
+
+describe('fillFrame', () => {
+  it('mídia 1920×1080 em quadro vertical 1080×1920: cover amplia, contain mantém', () => {
+    const { p, id } = one();
+    const vertical: Project = { ...p, settings: { ...p.settings, width: 1080, height: 1920 } };
+    const cover = ops.fillFrame(vertical, [id], 'cover');
+    expect(tr(cover, id).scale).toBeCloseTo((1920 / 1080) / (1080 / 1920), 5); // ≈ 3,16
+    expect(tr(ops.fillFrame(cover, [id], 'contain'), id).scale).toBe(1);
+  });
+
+  it('mesmo formato do quadro: cover = 1; sem dimensões da mídia falha', () => {
+    const { p, id } = one();
+    expect(tr(ops.fillFrame(p, [id], 'cover'), id).scale).toBe(1);
+    const sem: Project = { ...p, media: { ...p.media, m1: { ...p.media.m1!, width: 0, height: 0 } } };
+    expect(() => ops.fillFrame(sem, [id], 'cover')).toThrow(/tamanho/);
+  });
+});
