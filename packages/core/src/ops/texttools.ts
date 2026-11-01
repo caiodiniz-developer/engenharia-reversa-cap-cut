@@ -38,3 +38,9 @@ export function setTextStyle(p: Project, ids: string[], patch: Partial<TextStyle
   if (!TextStyleSchema.partial().safeParse(patch).success) throw new TimelineError('Valor inválido no estilo do texto', 'INVALID');
   return mapTexts(p, ids, (c) => ({ ...c, style: { ...c.style, ...patch } }) as TextLike);
 }
+
+/** Coloca os textos escolhidos centralizados no topo, no meio ou na base do quadro. */
+export function placeText(p: Project, ids: string[], where: 'top' | 'middle' | 'bottom'): Project {
+  const y = where === 'top' ? -0.38 : where === 'bottom' ? 0.38 : 0;
+  return mapTexts(p, ids, (c) => ({ ...c, transform: { ...c.transform, x: 0, y } }) as TextLike);
+}
