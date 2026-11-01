@@ -116,3 +116,23 @@ describe('addLowerThird', () => {
     expect(() => ops.addLowerThird(project, '', 'x', 0, 2)).toThrow();
   });
 });
+
+describe('addCountdown', () => {
+  it('3, 2, 1 em sequência na mesma faixa', () => {
+    const { project } = fixtureProject();
+    const r = ops.addCountdown(project, 3, 2);
+    expect(r.ids.map((id) => textOf(r.project, id).text)).toEqual(['3', '2', '1']);
+    expect(r.ids.map((id) => textOf(r.project, id).start)).toEqual([2, 3, 4]);
+    expect(r.project.tracks.filter((t) => t.kind === 'text')).toHaveLength(1);
+  });
+
+  it('com 1,5 s por número dura 4,5 s e valores fora do intervalo falham', () => {
+    const { project } = fixtureProject();
+    const r = ops.addCountdown(project, 3, 0, 1.5);
+    const last = textOf(r.project, r.ids[2]!);
+    expect(last.start + last.duration).toBe(4.5);
+    expect(() => ops.addCountdown(project, 1, 0)).toThrow();
+    expect(() => ops.addCountdown(project, 11, 0)).toThrow();
+    expect(() => ops.addCountdown(project, 3, 0, 0.1)).toThrow();
+  });
+});
