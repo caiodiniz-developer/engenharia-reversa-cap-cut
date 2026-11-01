@@ -1,8 +1,9 @@
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { RULE_TITLE, projectDuration } from '@editor/core';
 import { Icon } from '../../../components/Icon';
 import { useCountUp } from '../anim';
+import { Confetti } from '../Confetti';
 import { buildReviewDemo, demoAction, reviewDemoState } from './reviewModel';
 
 const TRACK_COLOR = { video: 'bg-clip-video', caption: 'bg-clip-caption', text: 'bg-clip-text', audio: 'bg-clip-audio' } as const;
@@ -15,9 +16,15 @@ export function ReviewDemo() {
   const shown = useCountUp(score, true, 700);
   const total = Math.max(15, projectDuration(project) + 1);
   const tone = score >= 90 ? 'text-ok' : score >= 70 ? 'text-amber-400' : 'text-danger';
+  const perfect = score === 100 && issues.length === 0;
+  const [fire, setFire] = useState(0);
+  useEffect(() => {
+    if (perfect) setFire((n) => n + 1);
+  }, [perfect]);
 
   return (
-    <div className="grid gap-6 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]" data-testid="demo-review">
+    <div className="relative grid gap-6 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]" data-testid="demo-review">
+      <Confetti fire={fire} origin={{ x: 0.12, y: 0.82 }} />
       <div>
         <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-mute">Timeline do projeto de exemplo</p>
         <div className="space-y-2 rounded-2xl border border-line bg-bg p-4">
