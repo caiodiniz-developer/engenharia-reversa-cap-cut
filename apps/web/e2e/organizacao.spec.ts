@@ -75,7 +75,7 @@ test.describe('novas ferramentas de edição pela paleta', () => {
     await expect.poll(() => page.evaluate(() => window.__editor.getState().selection)).toEqual([title!.id]);
   });
 
-  test('marcadores a cada segundo respeitam a duração e repetir não duplica', async ({ page }) => {
+  test('marcar a cada 5 s não cabe num projeto de 4 s: avisa, sem marcadores, e o aviso traz a barra de tempo', async ({ page }) => {
     await withClip(page);
     await page.getByTestId('palette-button').click();
     await page.getByRole('combobox', { name: 'Buscar comandos' }).fill('marcar a cada');
@@ -85,6 +85,9 @@ test.describe('novas ferramentas de edição pela paleta', () => {
     // projeto de 4 s: nenhum marcador cabe a cada 5 s
     await runCommand(page, 'marcar a cada 5', /Marcar a cada 5 s/);
     await expect(page.getByText(/Nenhum marcador novo/)).toBeVisible();
+    // o aviso traz a barrinha de tempo e some sozinho (3,5 s)
+    await expect(page.getByTestId('toast-timer')).toBeVisible();
+    await expect(page.getByText(/Nenhum marcador novo/)).toBeHidden({ timeout: 8_000 });
     expect((await projectOf(page)).markers).toHaveLength(0);
   });
 });
