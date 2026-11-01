@@ -118,3 +118,31 @@ describe('cropToAspect', () => {
     expect(() => ops.cropToAspect(p, [id], 50)).toThrow();
   });
 });
+
+describe('kenBurns', () => {
+  it('aproxima: escala sai de 1 e chega a 1,2 no fim', () => {
+    const { p, id } = one(4);
+    const out = ops.kenBurns(p, [id], { zoom: 1.2 });
+    const k = clipOf(out, id).keyframes.scale!;
+    expect(evaluateKeyframes(k, 0, 1)).toBe(1);
+    expect(evaluateKeyframes(k, 4, 1)).toBe(1.2);
+    expect(evaluateKeyframes(k, 2, 1)).toBeGreaterThan(1);
+    expect(evaluateKeyframes(k, 2, 1)).toBeLessThan(1.2);
+    expect(clipOf(out, id).keyframes.x).toBeUndefined();
+  });
+
+  it('afastar inverte e o deslize cria keyframes de x', () => {
+    const { p, id } = one(4);
+    const out = ops.kenBurns(p, [id], { zoom: 1.5, direction: 'out', pan: 0.1 });
+    const k = clipOf(out, id).keyframes;
+    expect(evaluateKeyframes(k.scale, 0, 1)).toBe(1.5);
+    expect(evaluateKeyframes(k.scale, 4, 1)).toBe(1);
+    expect(evaluateKeyframes(k.x, 4, 0)).toBe(0.1);
+  });
+
+  it('zoom menor ou igual a 1 e acima de 3 falham', () => {
+    const { p, id } = one();
+    expect(() => ops.kenBurns(p, [id], { zoom: 1 })).toThrow();
+    expect(() => ops.kenBurns(p, [id], { zoom: 4 })).toThrow();
+  });
+});
