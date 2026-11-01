@@ -100,3 +100,14 @@ describe('setEq', () => {
     expect(() => ops.setEq(p, ids, { mid: 30 })).toThrow(/24 dB/);
   });
 });
+
+describe('setAudioFlags', () => {
+  it('liga um sem alterar o outro', () => {
+    const { p, ids } = build([0, 1]);
+    const a = ops.setAudioFlags(p, ids, { normalize: true });
+    expect(audioOf(a, ids[0]!)).toMatchObject({ normalize: true, denoise: false });
+    const b = ops.setAudioFlags(a, ids, { denoise: true });
+    expect(audioOf(b, ids[0]!)).toMatchObject({ normalize: true, denoise: true });
+    expect(audioOf(ops.setAudioFlags(b, ids, { normalize: false }), ids[0]!)).toMatchObject({ normalize: false, denoise: true });
+  });
+});
