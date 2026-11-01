@@ -47,3 +47,13 @@ export function scaleClipsBy(p: Project, ids: string[], factor: number): Project
   if (!(factor > 0) || !Number.isFinite(factor)) throw new TimelineError('O fator de escala precisa ser positivo', 'OUT_OF_RANGE');
   return mapTransform(p, ids, (t) => ({ ...t, scale: round6(clamp(t.scale * factor, 0.01, 20)) }));
 }
+
+/** Soma graus à rotação dos clipes escolhidos; o resultado fica no intervalo (-180, 180]. */
+export function rotateClipsBy(p: Project, ids: string[], degrees: number): Project {
+  if (!Number.isFinite(degrees)) throw new TimelineError('Ângulo inválido', 'INVALID');
+  return mapTransform(p, ids, (t) => {
+    let r = (((t.rotation + degrees) % 360) + 360) % 360;
+    if (r > 180) r -= 360;
+    return { ...t, rotation: round6(r) };
+  });
+}
