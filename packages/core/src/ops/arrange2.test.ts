@@ -251,3 +251,21 @@ describe('cutRange', () => {
     expect(() => ops.cutRange(locked, 1, 2)).toThrow(/bloqueada/);
   });
 });
+
+describe('loopToFill', () => {
+  it('3 s repetidos até 10 s: três cópias, a última encurtada para 1 s', () => {
+    const { p, ids } = build([0, 3]);
+    const r = ops.loopToFill(p, ids[0]!, 10);
+    expect(r.newIds).toHaveLength(3);
+    expect(endOf(r.project, r.newIds[2]!)).toBe(10);
+    expect(findClip(r.project, r.newIds[2]!)!.clip.duration).toBe(1);
+    expect(endOf(r.project, r.newIds[1]!)).toBe(9);
+  });
+
+  it('quando cabe um número exato de cópias não corta; instante antes do fim falha', () => {
+    const { p, ids } = build([0, 2]);
+    const r = ops.loopToFill(p, ids[0]!, 6);
+    expect(r.newIds.map((id) => endOf(r.project, id))).toEqual([4, 6]);
+    expect(() => ops.loopToFill(p, ids[0]!, 2)).toThrow();
+  });
+});
