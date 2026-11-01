@@ -28,3 +28,10 @@ export function setVolume(p: Project, ids: string[], volume: number): Project {
   if (!(volume >= 0 && volume <= 4)) throw new TimelineError('O volume vai de 0% a 400%', 'OUT_OF_RANGE');
   return mapMediaClips(p, ids, (c) => withAudio(c, { volume: round6(volume) }));
 }
+
+/** Soma ganho em dB ao volume de cada clipe (+6 dB dobra, -6 dB divide por dois), limitado a 0–400%. */
+export function adjustVolumeDb(p: Project, ids: string[], db: number): Project {
+  if (!Number.isFinite(db)) throw new TimelineError('Informe o ganho em dB', 'INVALID');
+  const gain = Math.pow(10, db / 20);
+  return mapMediaClips(p, ids, (c) => withAudio(c, { volume: round6(Math.min(4, Math.max(0, c.audio.volume * gain))) }));
+}
