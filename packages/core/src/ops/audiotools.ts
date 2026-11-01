@@ -50,3 +50,9 @@ export function setFades(p: Project, ids: string[], fadeIn: number, fadeOut: num
     return withAudio(c, { fadeIn: round6(fadeIn * k), fadeOut: round6(fadeOut * k) });
   });
 }
+
+/** Define o balanço: -1 = só esquerdo, 0 = centro, 1 = só direito. */
+export function setPan(p: Project, ids: string[], pan: number): Project {
+  if (!(pan >= -1 && pan <= 1)) throw new TimelineError('O balanço vai de -1 (esquerda) a 1 (direita)', 'OUT_OF_RANGE');
+  return mapMediaClips(p, ids, (c) => withAudio(c, { pan: round6(pan) }));
+}
