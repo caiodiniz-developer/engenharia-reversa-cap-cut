@@ -190,3 +190,38 @@ export function frameCommands(): Command[] {
     ...[0.5, 1].map((f) => cmd('fade-opacity-' + f, 'Aparecer e sumir com transparência (' + pt(f) + ' s)', G, 'eye', onSelection('Fade de imagem', (p, ids) => core.fadeOpacity(p, ids, f, f)), { ...en, keywords: 'fade dissolver entrada saída' })),
   ];
 }
+
+export function textCommands(): Command[] {
+  const G = 'Texto';
+  const textSel = () => sel().some((id) => { const t = findClip(s().project, id)?.clip.type; return t === 'text' || t === 'caption'; });
+  const en = { enabled: textSel };
+  /** Insere um clipe criado por uma operação na cabeça de reprodução e o seleciona. */
+  const insert = (label: string, make: (p: Project, at: number) => { project: Project; id: string }) => () => {
+    let id = '';
+    const ok = s().run(label, (p) => {
+      const r = make(p, s().playhead);
+      id = r.id;
+      return r.project;
+    });
+    if (ok) s().select([id]);
+  };
+  return [
+    ...([['branco', '#ffffff'], ['amarelo', '#ffd60a'], ['preto', '#000000']] as const).map(([name, color]) => cmd('text-color-' + name, 'Cor do texto selecionado: ' + name, G, 'type', onSelection('Cor do texto', (p, ids) => core.setTextStyle(p, ids, { color })), { ...en, keywords: 'letra fonte' })),
+    ...[48, 72, 110].map((size) => cmd('text-size-' + size, 'Tamanho do texto selecionado: ' + size, G, 'type', onSelection('Tamanho do texto', (p, ids) => core.setTextStyle(p, ids, { fontSize: size })), { ...en, keywords: 'letra fonte grande pequeno' })),
+    cmd('text-outline', 'Contorno preto no texto selecionado', G, 'type', onSelection('Contorno do texto', (p, ids) => core.setTextStyle(p, ids, { strokeColor: '#000000', strokeWidth: 6 })), { ...en, keywords: 'borda legibilidade' }),
+    cmd('text-no-outline', 'Remover o contorno do texto selecionado', G, 'type', onSelection('Remover contorno', (p, ids) => core.setTextStyle(p, ids, { strokeWidth: 0 })), en),
+    ...([['top', 'no topo'], ['middle', 'no meio'], ['bottom', 'na base']] as const).map(([where, label]) => cmd('text-place-' + where, 'Posicionar o texto selecionado ' + label + ' do quadro', G, 'layout', onSelection('Posicionar texto', (p, ids) => core.placeText(p, ids, where)), { ...en, keywords: 'alinhar lugar' })),
+    cmd('text-number', 'Numerar os textos selecionados ("Cena 1", "Cena 2"…)', G, 'list', onSelection('Numerar textos', (p, ids) => core.numberTexts(p, ids, 'Cena {n}')), { ...en, keywords: 'sequência contador capítulos' }),
+    cmd('text-clean', 'Limpar espaços repetidos nos textos', G, 'wand', () => applyCounted('Limpar textos', (p) => core.cleanText(p, hasSel() ? sel() : undefined), (r) => r.changed, 'Os textos já estão limpos', (n) => n + (n === 1 ? ' texto arrumado' : ' textos arrumados')), { keywords: 'espaços em branco formatar arrumar' }),
+    cmd('add-title', 'Adicionar título na cabeça de reprodução', G, 'type', insert('Adicionar título', (p, at) => { const r = core.addTitleCard(p, 'Título', at, 3); return { project: r.project, id: r.clipId }; }), { keywords: 'cartela abertura texto grande' }),
+    cmd('add-lower-third', 'Adicionar terço inferior (nome e função)', G, 'type', insert('Adicionar terço inferior', (p, at) => { const r = core.addLowerThird(p, 'Nome', 'Função', at, 4); return { project: r.project, id: r.ids[0]! }; }), { keywords: 'identificação apresentador lower third' }),
+    ...[3, 5].map((n) => cmd('add-countdown-' + n, 'Adicionar contagem regressiva de ' + n + ' s', G, 'clock', insert('Adicionar contagem regressiva', (p, at) => { const r = core.addCountdown(p, n, at); return { project: r.project, id: r.ids[0]! }; }), { keywords: 'contador números 3 2 1' })),
+    ...([['tl', 'no canto superior esquerdo'], ['tr', 'no canto superior direito'], ['bl', 'no canto inferior esquerdo'], ['br', 'no canto inferior direito']] as const).map(([corner, label]) =>
+      cmd('watermark-' + corner, 'Adicionar marca d’água ' + label, G, 'diamond', () => {
+        let id = '';
+        if (s().run('Adicionar marca d’água', (p) => { const r = core.addWatermark(p, p.name || 'Meu vídeo', corner); id = r.clipId; return r.project; })) s().select([id]);
+      }, { keywords: 'logo assinatura canal marca' }),
+    ),
+    cmd('script-captions', 'Criar legendas a partir de um roteiro…', G, 'captions', () => window.dispatchEvent(new Event('editor:open-script')), { keywords: 'texto colar falas distribuir tempo' }),
+  ];
+}
