@@ -96,3 +96,35 @@ export function cropToAspect(p: Project, ids: string[], aspect: number): Project
     return { ...t, crop: { l: round6(crop.l), r: round6(crop.r), t: round6(crop.t), b: round6(crop.b) } };
   });
 }
+
+export interface KenBurnsOptions {
+  /** Quanto a escala cresce (1,15 = 15%). Padrão 1,15. */
+  zoom?: number;
+  /** 'in' aproxima, 'out' afasta. Padrão 'in'. */
+  direction?: 'in' | 'out';
+  /** Desliza para um lado durante o movimento (fração do quadro). Padrão 0. */
+  pan?: number;
+}
+
+/** Efeito Ken Burns: anima escala (e posição horizontal, se houver pan) do primeiro ao último instante do clipe. */
+export function kenBurns(p: Project, ids: string[], opts: KenBurnsOptions = {}): Project {
+  const zoom = opts.zoom ?? 1.15;
+  const pan = opts.pan ?? 0;
+  if (!(zoom > 1 && zoom <= 3)) throw new TimelineError('O zoom vai de 1,01 a 3', 'OUT_OF_RANGE');
+  let next = p;
+  let n = 0;
+  for (const id of new Set(ids)) {
+    const clip = requireClip(next, id).clip;
+    if (!hasTransform(clip)) continue;
+    const s0 = clip.transform.scale;
+    const [from, to] = opts.direction === 'out' ? [s0 * zoom, s0] : [s0, s0 * zoom];
+    const curves: Partial<Record<AnimatableProp, Keyframe[]>> = {
+      scale: upsertKeyframe(upsertKeyframe([], 0, round6(clamp(from, 0.01, 20)), 'ease'), clip.duration, round6(clamp(to, 0.01, 20)), 'linear'),
+    };
+    if (pan) curves.x = upsertKeyframe(upsertKeyframe([], 0, clip.transform.x, 'ease'), clip.duration, round6(clip.transform.x + pan), 'linear');
+    next = withKeyframes(next, id, curves);
+    n++;
+  }
+  if (!n) throw new TimelineError('Selecione clipes de vídeo, imagem ou texto', 'KIND_MISMATCH');
+  return next;
+}
