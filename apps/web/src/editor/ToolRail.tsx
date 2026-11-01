@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import { Icon, type IconName } from '../components/Icon';
 import { useReview } from '../lib/useReview';
 import type { PanelTab } from '../store/editor';
@@ -15,6 +16,9 @@ export const TOOLS: Array<{ id: PanelTab; label: string; icon: IconName; title: 
   { id: 'ai', label: 'IA', icon: 'sparkles', title: 'Ferramentas de inteligência artificial' },
 ];
 
+/** Depois destes ids o trilho mostra um filete: mídia e texto, estilo da imagem, análise e planejamento. */
+const GROUP_END = new Set<PanelTab>(['text', 'elements', 'storyboard']);
+
 /** Trilho vertical de ferramentas (ícone + rótulo), como nos editores de vídeo profissionais. */
 export function ToolRail({ value, onChange }: { value: PanelTab; onChange: (t: PanelTab) => void }) {
   const { attention } = useReview();
@@ -23,8 +27,8 @@ export function ToolRail({ value, onChange }: { value: PanelTab; onChange: (t: P
       {TOOLS.map((t) => {
         const active = value === t.id;
         return (
+          <Fragment key={t.id}>
           <button
-            key={t.id}
             type="button"
             role="tab"
             aria-selected={active}
@@ -43,6 +47,8 @@ export function ToolRail({ value, onChange }: { value: PanelTab; onChange: (t: P
             )}
             <span className="leading-none">{t.label}</span>
           </button>
+          {GROUP_END.has(t.id) && <span className="mx-4 my-1 h-px shrink-0 bg-line" aria-hidden="true" />}
+          </Fragment>
         );
       })}
     </nav>
