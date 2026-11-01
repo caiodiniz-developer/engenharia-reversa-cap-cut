@@ -268,3 +268,18 @@ export function loopToFill(p: Project, clipId: string, untilTime: number): { pro
   const project = clipEnd(last) - untilTime > 1e-6 ? trimClip(r.project, lastId, 'end', round6(untilTime)) : r.project;
   return { project, newIds: r.newIds };
 }
+
+/** Troca os instantes de início de dois clipes (podem estar em faixas diferentes). Falha se algum ficar sobreposto. */
+export function swapClips(p: Project, aId: string, bId: string): Project {
+  if (aId === bId) throw new TimelineError('Escolha dois clipes diferentes', 'OUT_OF_RANGE');
+  const a = requireClip(p, aId);
+  const b = requireClip(p, bId);
+  assertUnlocked(a.track);
+  assertUnlocked(b.track);
+  const sa = a.clip.start;
+  const sb = b.clip.start;
+  let next = withTrackClips(p, a.track.id, (cs) => cs.map((c) => (c.id === aId ? ({ ...c, start: sb } as Clip) : c)));
+  next = withTrackClips(next, b.track.id, (cs) => cs.map((c) => (c.id === bId ? ({ ...c, start: sa } as Clip) : c)));
+  assertTracksValid(next, [a.track.id, b.track.id]);
+  return next;
+}
