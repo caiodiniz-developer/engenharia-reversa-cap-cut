@@ -13,3 +13,15 @@ function one(duration = 4, start = 0) {
 }
 const clipOf = (p: Project, id: string) => findClip(p, id)!.clip as MediaClip;
 const tr = (p: Project, id: string) => clipOf(p, id).transform;
+
+describe('setOpacity', () => {
+  it('vale para mídia e texto e recusa fora de 0–1', () => {
+    const { p, id, trackId } = one();
+    const text = TextClipSchema.parse({ id: 'tx1', type: 'text', text: 'oi', start: 5, duration: 1 });
+    const p2 = addClip(p, trackId, text);
+    const out = ops.setOpacity(p2, [id, 'tx1'], 0.4);
+    expect(tr(out, id).opacity).toBe(0.4);
+    expect(findClip(out, 'tx1')!.clip).toMatchObject({ transform: { opacity: 0.4 } });
+    expect(() => ops.setOpacity(p2, [id], 1.5)).toThrow();
+  });
+});
