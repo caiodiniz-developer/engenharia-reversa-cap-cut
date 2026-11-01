@@ -596,3 +596,15 @@ test.describe('landing: animações das seções', () => {
     await expect(page.getByTestId('confetti')).toHaveAttribute('data-fired', '0');
   });
 });
+
+test.describe('tela de entrada animada', () => {
+  test('os benefícios aparecem em sequência e terminam visíveis; com menos movimento já aparecem', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 860 });
+    await page.goto('/login');
+    const item = page.getByText('Prévia e exportação com o mesmo resultado');
+    await expect.poll(() => item.evaluate((el) => getComputedStyle(el).opacity), { timeout: 4_000 }).toBe('1');
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.reload();
+    expect(await page.getByText('Timeline multifaixa com efeitos, transições e animações').evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
+  });
+});
