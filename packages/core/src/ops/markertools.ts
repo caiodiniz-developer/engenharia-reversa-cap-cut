@@ -75,3 +75,17 @@ export function shiftMarkers(p: Project, delta: number, ids?: string[]): Project
   const only = ids ? new Set(ids) : null;
   return { ...p, markers: sortMarkers(p.markers.map((m) => (!only || only.has(m.id) ? { ...m, time: round6(Math.max(0, m.time + delta)) } : m))) };
 }
+
+/** Solo: silencia todas as outras faixas e esconde as outras de imagem; a faixa escolhida fica ligada. */
+export function soloTrack(p: Project, trackId: string): Project {
+  requireTrack(p, trackId);
+  return {
+    ...p,
+    tracks: p.tracks.map((t) => (t.id === trackId ? { ...t, muted: false, hidden: false } : { ...t, muted: true, hidden: t.kind === 'audio' ? t.hidden : true })),
+  };
+}
+
+/** Desfaz o solo: nenhuma faixa fica silenciada nem escondida. */
+export function showAllTracks(p: Project): Project {
+  return { ...p, tracks: p.tracks.map((t) => ({ ...t, muted: false, hidden: false })) };
+}
