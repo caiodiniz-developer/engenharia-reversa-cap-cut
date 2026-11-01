@@ -43,3 +43,19 @@ describe('placeText', () => {
     expect(textOf(ops.placeText(ops.placeText(p, ids, 'bottom'), ids, 'middle'), ids[0]!).transform.y).toBe(0);
   });
 });
+
+describe('numberTexts', () => {
+  it('numera pela ordem do tempo, não pela ordem da seleção', () => {
+    const { p, ids } = withTexts(['x', 4, 1], ['y', 0, 1], ['z', 2, 1]);
+    const out = ops.numberTexts(p, ids, 'Cena {n}');
+    expect([ids[1]!, ids[2]!, ids[0]!].map((id) => textOf(out, id).text)).toEqual(['Cena 1', 'Cena 2', 'Cena 3']);
+  });
+
+  it('aceita número inicial e repete {n}; sem {n} falha', () => {
+    const { p, ids } = withTexts(['x', 0, 1], ['y', 2, 1]);
+    const out = ops.numberTexts(p, ids, '{n}/{n}', 10);
+    expect(textOf(out, ids[0]!).text).toBe('10/10');
+    expect(textOf(out, ids[1]!).text).toBe('11/11');
+    expect(() => ops.numberTexts(p, ids, 'Cena')).toThrow(/\{n\}/);
+  });
+});
