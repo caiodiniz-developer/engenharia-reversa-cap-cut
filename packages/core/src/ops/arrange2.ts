@@ -138,3 +138,19 @@ export function splitEvery(p: Project, clipId: string, seconds: number): { proje
   }
   return { project: next, ids };
 }
+
+/** Divide o clipe em ${parts} partes de mesma duração (2 a 100). Devolve os ids na ordem. */
+export function splitIntoParts(p: Project, clipId: string, parts: number): { project: Project; ids: string[] } {
+  if (!Number.isInteger(parts) || parts < 2 || parts > 100) throw new TimelineError('Escolha de 2 a 100 partes', 'OUT_OF_RANGE');
+  const { clip } = requireClip(p, clipId);
+  let next = p;
+  let current = clipId;
+  const ids = [clipId];
+  for (let k = 1; k < parts; k++) {
+    const r = splitClips(next, [current], round6(clip.start + (clip.duration * k) / parts));
+    next = r.project;
+    current = r.rightIds[current]!;
+    ids.push(current);
+  }
+  return { project: next, ids };
+}
