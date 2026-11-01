@@ -104,3 +104,32 @@ export function addTitleCard(p: Project, text: string, start: number, duration: 
   const f = freeTrack(p, 'text', clip.start, clipEnd(clip));
   return { project: addClip(f.project, f.trackId, clip), clipId: clip.id };
 }
+
+/** Cria um "terço inferior": nome em destaque e função logo abaixo, agrupados para mover e cortar juntos. */
+export function addLowerThird(p: Project, name: string, role: string, start: number, duration: number): { project: Project; ids: string[] } {
+  if (!name.trim()) throw new TimelineError('Escreva o nome', 'INVALID');
+  if (!(start >= 0) || !(duration > 0)) throw new TimelineError('Início e duração inválidos', 'OUT_OF_RANGE');
+  const groupId = newId('grp');
+  const fx = round6(Math.min(0.35, duration / 4));
+  const make = (text: string, y: number, size: number, bold: boolean, color: string) =>
+    TextClipSchema.parse({
+      id: newId('clp'),
+      type: 'text',
+      text,
+      start: round6(start),
+      duration: round6(duration),
+      groupId,
+      style: { fontSize: size, bold, color, align: 'left', shadowBlur: 10, shadowColor: '#000000' },
+      transform: { x: -0.18, y },
+      animationIn: { type: 'slide-up', duration: fx },
+      animationOut: { type: 'fade', duration: fx },
+    });
+  const clips = [make(name.trim(), 0.3, 56, true, '#ffffff')];
+  if (role.trim()) clips.push(make(role.trim(), 0.375, 34, false, '#d8d8d8'));
+  let next = p;
+  for (const clip of clips) {
+    const f = freeTrack(next, 'text', clip.start, clipEnd(clip));
+    next = addClip(f.project, f.trackId, clip);
+  }
+  return { project: next, ids: clips.map((c) => c.id) };
+}
