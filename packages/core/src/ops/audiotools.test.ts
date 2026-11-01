@@ -35,3 +35,18 @@ describe('setVolume', () => {
     expect(() => ops.setVolume(p, [], 1)).toThrow(/Selecione/);
   });
 });
+
+describe('adjustVolumeDb', () => {
+  it('+6 dB aproximadamente dobra e -6 dB aproximadamente divide por dois', () => {
+    const { p, ids } = build([0, 1]);
+    expect(audioOf(ops.adjustVolumeDb(p, ids, 6), ids[0]!).volume).toBeCloseTo(1.995262, 5);
+    expect(audioOf(ops.adjustVolumeDb(p, ids, -6), ids[0]!).volume).toBeCloseTo(0.501187, 5);
+  });
+
+  it('nunca passa de 400% nem fica negativo; 0 dB não muda', () => {
+    const { p, ids } = build([0, 1]);
+    expect(audioOf(ops.adjustVolumeDb(p, ids, 60), ids[0]!).volume).toBe(4);
+    expect(audioOf(ops.adjustVolumeDb(p, ids, 0), ids[0]!).volume).toBe(1);
+    expect(() => ops.adjustVolumeDb(p, ids, Number.NaN)).toThrow();
+  });
+});
