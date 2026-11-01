@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { makeParticles, stepParticles } from './confetti';
+import { makeParticles, stepParticles } from './confettiModel';
 
 const origin = { x: 100, y: 200 };
 

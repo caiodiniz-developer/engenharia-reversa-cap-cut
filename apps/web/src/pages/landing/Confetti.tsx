@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useReducedMotion } from 'framer-motion';
-import { makeParticles, stepParticles } from './confetti';
+import { makeParticles, stepParticles } from './confettiModel';
 
 /** Canvas sobre o elemento pai. Cada vez que ${fire} muda para um número maior que zero, solta confete e para quando todas as partículas somem. */
 export function Confetti({ fire, origin = { x: 0.2, y: 0.8 } }: { fire: number; origin?: { x: number; y: number } }) {
