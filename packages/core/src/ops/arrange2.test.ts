@@ -183,3 +183,26 @@ describe('joinContiguous', () => {
     expect(ops.joinContiguous(jump.p, jump.trackId).merged).toBe(0);
   });
 });
+
+describe('snapToFrameGrid', () => {
+  it('arredonda início e fim ao quadro (30 fps) e conta quantos mudaram', () => {
+    const { project, trackId } = fixtureProject();
+    const a = mediaClip('m1', 0.01, 1.004); // fim 1,014 -> quadro 30 (1,0)
+    const b = mediaClip('m1', 2, 1); // já na grade
+    const p = addClip(addClip(project, trackId, a), trackId, b);
+    const r = ops.snapToFrameGrid(p);
+    expect(r.changed).toBe(1);
+    expect(findClip(r.project, a.id)!.clip).toMatchObject({ start: 0, duration: 1 });
+    expect(findClip(r.project, b.id)!.clip).toMatchObject({ start: 2, duration: 1 });
+  });
+
+  it('clipes contíguos continuam contíguos e a duração mínima é um quadro', () => {
+    const { project, trackId } = fixtureProject();
+    const a = mediaClip('m1', 0.003, 1.001);
+    const b = mediaClip('m1', 1.004, 0.004);
+    const r = ops.snapToFrameGrid(addClip(addClip(project, trackId, a), trackId, b));
+    const [x, y] = [findClip(r.project, a.id)!.clip, findClip(r.project, b.id)!.clip];
+    expect(x.start + x.duration).toBeCloseTo(y.start, 6);
+    expect(y.duration).toBeGreaterThanOrEqual(1 / 30 - 1e-6);
+  });
+});
