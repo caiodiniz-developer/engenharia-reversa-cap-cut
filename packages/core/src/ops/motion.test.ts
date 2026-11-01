@@ -57,3 +57,14 @@ describe('rotateClipsBy', () => {
     expect(tr(ops.rotateClipsBy(p, [id], -90), id).rotation).toBe(-90);
   });
 });
+
+describe('flipClips', () => {
+  it('alterna cada eixo de forma independente', () => {
+    const { p, id } = one();
+    const h = ops.flipClips(p, [id], 'h');
+    expect(tr(h, id)).toMatchObject({ flipH: true, flipV: false });
+    const hv = ops.flipClips(h, [id], 'v');
+    expect(tr(hv, id)).toMatchObject({ flipH: true, flipV: true });
+    expect(tr(ops.flipClips(hv, [id], 'h'), id)).toMatchObject({ flipH: false, flipV: true });
+  });
+});
