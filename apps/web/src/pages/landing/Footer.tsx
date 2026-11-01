@@ -14,7 +14,7 @@ export function FinalCta() {
         </h2>
         <p className="relative mx-auto mt-4 max-w-xl text-balance text-base text-mute">Crie sua conta em menos de um minuto e comece com um modelo de projeto ou do zero.</p>
         <div className="relative mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Link to="/login?modo=cadastro" className="btn btn-primary !h-12 px-7 text-[15px]" data-testid="cta-signup">
+          <Link to="/login?modo=cadastro" className="btn btn-primary btn-shine !h-12 px-7 text-[15px]" data-testid="cta-signup">
             Criar conta <Icon name="chevronRight" size={16} />
           </Link>
           <Link to="/login" className="btn !h-12 px-7 text-[15px]" data-testid="cta-login">
