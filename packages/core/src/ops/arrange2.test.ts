@@ -206,3 +206,21 @@ describe('snapToFrameGrid', () => {
     expect(y.duration).toBeGreaterThanOrEqual(1 / 30 - 1e-6);
   });
 });
+
+describe('insertGap', () => {
+  it('divide o clipe que atravessa o ponto e empurra o que vem depois', () => {
+    const { p, ids } = build([0, 4], [6, 9]);
+    const out = ops.insertGap(addMarker(p, 7).project, 2, 3);
+    const clips = [...out.tracks[0]!.clips].sort((a, b) => a.start - b.start);
+    expect(clips.map((c) => [c.start, c.duration])).toEqual([[0, 2], [5, 2], [9, 3]]);
+    expect(out.markers[0]!.time).toBe(10);
+    expect(startOf(out, ids[0]!)).toBe(0);
+  });
+
+  it('clipes antes do ponto não mudam e valores inválidos falham', () => {
+    const { p, ids } = build([0, 1]);
+    expect(startOf(ops.insertGap(p, 5, 2), ids[0]!)).toBe(0);
+    expect(() => ops.insertGap(p, 1, 0)).toThrow();
+    expect(() => ops.insertGap(p, -1, 1)).toThrow();
+  });
+});
