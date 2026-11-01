@@ -3,6 +3,7 @@ import type { IconName } from '../components/Icon';
 import { saveNow } from '../store/persist';
 import { useEditor, type PanelTab } from '../store/editor';
 import { useTheme } from '../store/theme';
+import { buildExtraCommands } from './extraCommands';
 import { TOOLS } from './ToolRail';
 
 export interface Command {
@@ -206,5 +207,5 @@ export function buildCommands(ctx: { openPanel: (t: PanelTab) => void; onExport:
     { id: 'help', label: 'Mostrar atalhos de teclado', group: 'Ajuda', icon: 'keyboard', shortcut: '?', run: ctx.onHelp },
     ...TOOLS.map((t) => ({ id: `open-${t.id}`, label: `Abrir painel: ${t.label}`, group: 'Painéis', icon: t.icon, keywords: t.title, run: () => ctx.openPanel(t.id) })),
   ];
-  return cmds;
+  return [...cmds, ...buildExtraCommands()];
 }
