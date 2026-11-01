@@ -50,3 +50,27 @@ export function shuffleSequence(p: Project, trackId: string, seed: number): Proj
   }
   return next;
 }
+
+export type AlignMode = 'start' | 'end' | 'center';
+
+/** Alinha os clipes escolhidos (podem estar em faixas diferentes) ao início do primeiro, ao fim do último ou ao centro do conjunto. */
+export function alignClips(p: Project, ids: string[], mode: AlignMode): Project {
+  const found = [...new Set(ids)].map((id) => requireClip(p, id));
+  if (found.length < 2) throw new TimelineError('Selecione pelo menos dois clipes para alinhar', 'OUT_OF_RANGE');
+  for (const f of found) assertUnlocked(f.track);
+  const lo = Math.min(...found.map((f) => f.clip.start));
+  const hi = Math.max(...found.map((f) => clipEnd(f.clip)));
+  const target = new Map<string, number>();
+  for (const f of found) {
+    const c = f.clip;
+    target.set(c.id, round6(Math.max(0, mode === 'start' ? lo : mode === 'end' ? hi - c.duration : (lo + hi) / 2 - c.duration / 2)));
+  }
+  let next = p;
+  const touched = new Set<string>();
+  for (const f of found) {
+    touched.add(f.track.id);
+    next = withTrackClips(next, f.track.id, (cs) => cs.map((c) => (target.has(c.id) ? ({ ...c, start: target.get(c.id)! } as Clip) : c)));
+  }
+  assertTracksValid(next, touched);
+  return next;
+}
