@@ -227,7 +227,7 @@ export function textCommands(): Command[] {
 export function markerCommands(): Command[] {
   const G = 'Marcadores e faixas';
   return [
-    ...[5, 10, 30].map((n) => cmd('markers-every-' + n, 'Marcar a cada ' + n + ' s', G, 'flag', () => applyCounted('Marcadores periódicos', (p) => core.markersEvery(p, n), (r) => r.added, 'Já existem marcadores em todas essas posições', (k) => k + (k === 1 ? ' marcador criado' : ' marcadores criados')), { keywords: 'marcador periódico intervalo' })),
+    ...[5, 10, 30].map((n) => cmd('markers-every-' + n, 'Marcar a cada ' + n + ' s', G, 'flag', () => applyCounted('Marcadores periódicos', (p) => core.markersEvery(p, n), (r) => r.added, 'Nenhum marcador novo: já existem nessas posições ou o projeto é mais curto que o intervalo', (k) => k + (k === 1 ? ' marcador criado' : ' marcadores criados')), { keywords: 'marcador periódico intervalo' })),
     cmd('markers-clip-starts', 'Marcar o início de cada clipe', G, 'flag', () => applyCounted('Marcar inícios', (p) => core.markersAtClipStarts(p, hasSel() ? sel() : undefined), (r) => r.added, 'Já existem marcadores nos inícios dos clipes', (k) => k + (k === 1 ? ' marcador criado' : ' marcadores criados')), { keywords: 'marcador cortes capítulos' }),
     cmd('markers-gaps', 'Marcar os vãos vazios da timeline', G, 'alert', () => applyCounted('Marcar vãos', (p) => core.markersAtGaps(p), (r) => r.added, 'A timeline não tem vãos', (k) => k + (k === 1 ? ' vão marcado' : ' vãos marcados')), { keywords: 'buracos espaços vazios pretos' }),
     cmd('markers-clear', 'Apagar todos os marcadores', G, 'trash', () => {

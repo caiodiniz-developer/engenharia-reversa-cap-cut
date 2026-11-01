@@ -114,7 +114,7 @@ describe('comandos extras da paleta', () => {
     expect(s().project.markers.map((m) => m.time)).toEqual([5, 10, 15]);
     byId('markers-every-5').run(); // repetir não duplica
     expect(s().project.markers).toHaveLength(3);
-    expect(toastTexts().some((m) => m.includes('todas essas posições'))).toBe(true);
+    expect(toastTexts().some((m) => m.includes('Nenhum marcador novo'))).toBe(true);
   });
 
   it('remover o trecho marcado fecha o vazio e limpa a marcação', () => {
