@@ -111,3 +111,52 @@ describe('setAudioFlags', () => {
     expect(audioOf(ops.setAudioFlags(b, ids, { normalize: false }), ids[0]!)).toMatchObject({ normalize: false, denoise: true });
   });
 });
+
+describe('duckUnder', () => {
+  function scene() {
+    const { project, trackId } = fixtureProject();
+    const v = addTrack(project, 'audio');
+    const music = mediaClip('m1', 0, 20);
+    const voice1 = mediaClip('m1', 5, 3); // [5,8]
+    const voice2 = mediaClip('m1', 8.4, 2); // [8.4,10.4], perto o bastante para fundir
+    const voice3 = mediaClip('m1', 15, 1); // [15,16]
+    let p = addClip(v.project, trackId, music);
+    p = addClip(p, v.track.id, voice1);
+    p = addClip(p, v.track.id, voice2);
+    p = addClip(p, v.track.id, voice3);
+    return { p, music, voices: [voice1.id, voice2.id, voice3.id] };
+  }
+  const vol = (p: Project, id: string, t: number) => {
+    const c = findClip(p, id)!.clip as MediaClip;
+    return evaluateKeyframes(c.keyframes.volume, t, c.audio.volume);
+  };
+
+  it('abaixa durante a voz e volta ao normal depois', () => {
+    const { p, music, voices } = scene();
+    const r = ops.duckUnder(p, [music.id], voices, { amount: 0.2, ramp: 0.5 });
+    expect(r.ducked).toBe(1);
+    expect(vol(r.project, music.id, 2)).toBe(1);
+    expect(vol(r.project, music.id, 6)).toBeCloseTo(0.2, 6);
+    expect(vol(r.project, music.id, 9)).toBeCloseTo(0.2, 6); // fundiu 5–8 com 8,4–10,4
+    expect(vol(r.project, music.id, 12)).toBe(1);
+    expect(vol(r.project, music.id, 15.5)).toBeCloseTo(0.2, 6);
+    expect(vol(r.project, music.id, 19)).toBe(1);
+  });
+
+  it('desce em rampa, não de uma vez', () => {
+    const { p, music, voices } = scene();
+    const r = ops.duckUnder(p, [music.id], voices, { amount: 0, ramp: 1 });
+    const mid = vol(r.project, music.id, 4.5); // meio da rampa 4–5
+    expect(mid).toBeGreaterThan(0.2);
+    expect(mid).toBeLessThan(0.8);
+  });
+
+  it('recusa parâmetros inválidos e ignora música que não cruza com a voz', () => {
+    const { p, music, voices } = scene();
+    expect(() => ops.duckUnder(p, [music.id], voices, { amount: 2 })).toThrow();
+    expect(() => ops.duckUnder(p, [music.id], voices, { ramp: 0 })).toThrow();
+    expect(() => ops.duckUnder(p, [music.id], [])).toThrow(/voz/);
+    const far = ops.duckUnder(p, [music.id], [voices[2]!].slice(0, 0).concat([voices[2]!]), { amount: 0.5 });
+    expect(far.ducked).toBe(1);
+  });
+});
