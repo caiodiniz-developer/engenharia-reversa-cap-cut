@@ -284,3 +284,100 @@ input[type='range']:focus-visible::-webkit-slider-thumb {
     animation: none;
   }
 }
+
+
+/* Brilho que atravessa o botão de vez em quando. */
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shine::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 -60%;
+  width: 40%;
+  transform: skewX(-20deg);
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.35), transparent);
+  animation: shine-sweep 5s ease-in-out infinite;
+}
+@keyframes shine-sweep {
+  0%,
+  60% {
+    left: -60%;
+  }
+  100% {
+    left: 140%;
+  }
+}
+
+/* Luz grande que segue o cursor sobre o topo da landing (--cx/--cy definidos no onPointerMove). */
+.hero-cursor {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s;
+  background: radial-gradient(420px circle at var(--cx, 50%) var(--cy, 30%), rgb(var(--accent) / 0.13), transparent 70%);
+}
+[data-testid='hero']:hover .hero-cursor {
+  opacity: 1;
+}
+
+/* Ícone dos cartões balança ao passar o mouse. */
+@keyframes icon-wiggle {
+  0%,
+  100% {
+    transform: rotate(0) scale(1.1);
+  }
+  25% {
+    transform: rotate(-9deg) scale(1.1);
+  }
+  60% {
+    transform: rotate(7deg) scale(1.1);
+  }
+}
+.group:hover .icon-wiggle {
+  animation: icon-wiggle 0.55s ease-in-out;
+}
+
+/* Segunda faixa de nomes corre no sentido contrário. */
+.marquee-reverse .marquee-track {
+  animation-direction: reverse;
+  animation-duration: 75s;
+}
+
+/* Resposta do FAQ abre e fecha deslizando (a altura vai de 0 ao conteúdo). */
+.faq-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition:
+    grid-template-rows 0.3s ease,
+    visibility 0s linear 0.3s;
+}
+.faq-panel[data-open='true'] {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition:
+    grid-template-rows 0.3s ease,
+    visibility 0s;
+}
+.faq-panel-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-shine::after,
+  .group:hover .icon-wiggle {
+    animation: none;
+  }
+  .hero-cursor {
+    display: none;
+  }
+  .faq-panel,
+  .faq-panel[data-open='true'] {
+    transition: none;
+  }
+}
