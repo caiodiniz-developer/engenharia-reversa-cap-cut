@@ -191,7 +191,8 @@ describe('addWatermark', () => {
     expect(c).toMatchObject({ start: 0, duration: 8, text: '@canal' });
     expect(c.transform).toMatchObject({ x: 0.36, y: 0.43, opacity: 0.55 });
     expect(c.style.align).toBe('right');
-    const tl = textOf(ops.addWatermark(filled(), 'x', 'tl').project, ops.addWatermark(filled(), 'x', 'tl').clipId);
+    const w = ops.addWatermark(filled(), 'x', 'tl');
+    const tl = textOf(w.project, w.clipId);
     expect(tl.transform.x).toBeLessThan(0);
     expect(tl.transform.y).toBeLessThan(0);
   });
