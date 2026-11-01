@@ -127,12 +127,10 @@ export function audioCommands(): Command[] {
   const eq = (label: string, bands: Partial<core.AudioProps['eq']>) => cmd('eq-' + label, 'Equalizador da seleção: ' + label, G, 'sliders', onSelection('Equalizador: ' + label, (p, ids) => core.setEq(p, ids, bands)), { ...en, keywords: 'graves médios agudos som' });
   return [
     ...[0, 50, 100, 150, 200].map((v) => cmd('vol-' + v, 'Volume da seleção: ' + v + '%', G, 'volume', onSelection('Volume ' + v + '%', (p, ids) => core.setVolume(p, ids, v / 100)), { ...en, keywords: 'som nível' })),
-    cmd('vol-up', 'Aumentar o volume da seleção em 3 dB', G, 'volume', onSelection('Aumentar volume', (p, ids) => core.adjustVolumeDb(p, ids, 3)), { ...en, keywords: 'som mais alto decibel' }),
-    cmd('vol-down', 'Diminuir o volume da seleção em 3 dB', G, 'volume', onSelection('Diminuir volume', (p, ids) => core.adjustVolumeDb(p, ids, -3)), { ...en, keywords: 'som mais baixo decibel' }),
+    cmd('vol-db-up', 'Aumentar o volume da seleção em 3 dB', G, 'volume', onSelection('Aumentar volume', (p, ids) => core.adjustVolumeDb(p, ids, 3)), { ...en, keywords: 'som mais alto decibel' }),
+    cmd('vol-db-down', 'Diminuir o volume da seleção em 3 dB', G, 'volume', onSelection('Diminuir volume', (p, ids) => core.adjustVolumeDb(p, ids, -3)), { ...en, keywords: 'som mais baixo decibel' }),
     cmd('mute-sel', 'Silenciar o som da seleção', G, 'volumeOff', onSelection('Silenciar', (p, ids) => core.setMuted(p, ids, true)), en),
     cmd('unmute-sel', 'Reativar o som da seleção', G, 'volume', onSelection('Reativar som', (p, ids) => core.setMuted(p, ids, false)), en),
-    ...[0.5, 1, 2].map((f) => cmd('fade-' + f, 'Fade de áudio de ' + pt(f) + ' s (entrada e saída)', G, 'wave', onSelection('Fade de áudio', (p, ids) => core.setFades(p, ids, f, f)), { ...en, keywords: 'aparecer sumir suave' })),
-    cmd('fade-off', 'Remover os fades de áudio da seleção', G, 'wave', onSelection('Remover fades', (p, ids) => core.setFades(p, ids, 0, 0)), en),
     ...([['esquerda', -1], ['centro', 0], ['direita', 1]] as const).map(([name, v]) => cmd('pan-' + name, 'Balanço da seleção: ' + name, G, 'sliders', onSelection('Balanço ' + name, (p, ids) => core.setPan(p, ids, v)), { ...en, keywords: 'estéreo lado caixa' })),
     eq('realçar graves', { bass: 6 }),
     eq('realçar voz', { bass: -2, mid: 4 }),
