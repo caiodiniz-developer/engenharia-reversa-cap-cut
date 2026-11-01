@@ -146,3 +146,22 @@ describe('kenBurns', () => {
     expect(() => ops.kenBurns(p, [id], { zoom: 4 })).toThrow();
   });
 });
+
+describe('punchIn', () => {
+  it('sobe até o pico e volta ao valor original', () => {
+    const { p, id } = one(5);
+    const out = ops.punchIn(p, id, 1, 1.5, 1);
+    const k = clipOf(out, id).keyframes.scale!;
+    expect(evaluateKeyframes(k, 0.5, 1)).toBe(1);
+    expect(evaluateKeyframes(k, 1.35, 1)).toBeCloseTo(1.5, 6);
+    expect(evaluateKeyframes(k, 2, 1)).toBe(1);
+    expect(evaluateKeyframes(k, 4, 1)).toBe(1);
+  });
+
+  it('recusa zoom que não cabe no clipe, fator menor que 1 e tipo errado', () => {
+    const { p, id } = one(2);
+    expect(() => ops.punchIn(p, id, 1.8, 1.2, 1)).toThrow(/caber/);
+    expect(() => ops.punchIn(p, id, 0, 0.9)).toThrow();
+    expect(() => ops.punchIn(p, 'nao-existe', 0)).toThrow();
+  });
+});
