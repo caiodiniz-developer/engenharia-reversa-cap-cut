@@ -40,3 +40,13 @@ export function adjustVolumeDb(p: Project, ids: string[], db: number): Project {
 export function setMuted(p: Project, ids: string[], muted: boolean): Project {
   return mapMediaClips(p, ids, (c) => withAudio(c, { muted }));
 }
+
+/** Define fade de entrada e de saída (segundos). Se somarem mais que o clipe, os dois encolhem na mesma proporção. */
+export function setFades(p: Project, ids: string[], fadeIn: number, fadeOut: number): Project {
+  if (!(fadeIn >= 0) || !(fadeOut >= 0)) throw new TimelineError('Os fades não podem ser negativos', 'OUT_OF_RANGE');
+  return mapMediaClips(p, ids, (c) => {
+    const total = fadeIn + fadeOut;
+    const k = total > c.duration ? c.duration / total : 1;
+    return withAudio(c, { fadeIn: round6(fadeIn * k), fadeOut: round6(fadeOut * k) });
+  });
+}
