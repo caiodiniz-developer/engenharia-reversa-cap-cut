@@ -50,3 +50,14 @@ describe('adjustVolumeDb', () => {
     expect(() => ops.adjustVolumeDb(p, ids, Number.NaN)).toThrow();
   });
 });
+
+describe('setMuted', () => {
+  it('silencia e reativa', () => {
+    const { p, ids } = build([0, 1], [1, 2]);
+    const mute = ops.setMuted(p, ids, true);
+    expect(ids.every((id) => audioOf(mute, id).muted)).toBe(true);
+    const back = ops.setMuted(mute, [ids[1]!], false);
+    expect(audioOf(back, ids[0]!).muted).toBe(true);
+    expect(audioOf(back, ids[1]!).muted).toBe(false);
+  });
+});
