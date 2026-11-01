@@ -1,10 +1,12 @@
 import { useState, type FormEvent } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom';
 import { ApiError } from '../api/client';
 import { Icon, type IconName } from '../components/Icon';
 import { useAuth } from '../store/auth';
 
 export function LoginPage() {
+  const reduce = useReducedMotion();
   const status = useAuth((s) => s.status);
   const login = useAuth((s) => s.login);
   const register = useAuth((s) => s.register);
@@ -58,13 +60,13 @@ export function LoginPage() {
               ['captions', 'Legendas automáticas e estilos de texto'],
               ['sparkles', 'Prévia e exportação com o mesmo resultado'],
               ['cloud', 'Salvamento automático e recuperação offline'],
-            ].map(([icon, text]) => (
-              <li key={text} className="flex items-center gap-3">
+            ].map(([icon, text], i) => (
+              <motion.li key={text} className="flex items-center gap-3" {...(reduce ? {} : { initial: { opacity: 0, x: -16 }, animate: { opacity: 1, x: 0 }, transition: { duration: 0.45, delay: 0.25 + i * 0.1, ease: 'easeOut' as const } })}>
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-panel-3 text-accent">
                   <Icon name={icon as IconName} size={15} />
                 </span>
                 {text}
-              </li>
+              </motion.li>
             ))}
           </ul>
         </div>
