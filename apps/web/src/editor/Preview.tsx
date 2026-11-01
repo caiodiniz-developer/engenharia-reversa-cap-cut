@@ -32,7 +32,7 @@ function Timecode() {
   };
 
   return (
-    <div className="tnum font-mono text-[15px] leading-none" aria-label="Posição atual" data-testid="timecode">
+    <div className="tnum whitespace-nowrap font-mono text-[14px] leading-none" aria-label="Posição atual" data-testid="timecode">
       {editing ? (
         <input
           autoFocus
