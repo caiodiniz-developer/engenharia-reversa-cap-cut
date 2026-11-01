@@ -97,3 +97,22 @@ describe('addTitleCard', () => {
     expect(() => ops.addTitleCard(project, 'x', 0, 0)).toThrow();
   });
 });
+
+describe('addLowerThird', () => {
+  it('cria nome e função agrupados, com o nome acima da função', () => {
+    const { project } = fixtureProject();
+    const r = ops.addLowerThird(project, 'Ana Souza', 'Diretora', 1, 4);
+    const [n, f] = r.ids.map((id) => textOf(r.project, id));
+    expect(n!.groupId).toBeDefined();
+    expect(n!.groupId).toBe(f!.groupId);
+    expect(n!.transform.y).toBeLessThan(f!.transform.y);
+    expect(n!.style.fontSize).toBeGreaterThan(f!.style.fontSize);
+    expect(r.project.tracks.filter((t) => t.kind === 'text')).toHaveLength(2); // simultâneos: faixas diferentes
+  });
+
+  it('sem função cria só o nome; nome vazio falha', () => {
+    const { project } = fixtureProject();
+    expect(ops.addLowerThird(project, 'Ana', '  ', 0, 2).ids).toHaveLength(1);
+    expect(() => ops.addLowerThird(project, '', 'x', 0, 2)).toThrow();
+  });
+});
