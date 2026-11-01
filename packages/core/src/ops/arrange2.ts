@@ -256,3 +256,15 @@ export function cutRange(p: Project, start: number, end: number): Project {
   assertTracksValid(next, touched);
   return { ...next, markers: next.markers.filter((m) => m.time < start - EPS || m.time >= end - EPS).map((m) => (m.time >= end - EPS ? { ...m, time: round6(m.time - len) } : m)) };
 }
+
+/** Repete o clipe em sequência até cobrir exatamente até ${untilTime}; a última cópia é encurtada para parar ali. */
+export function loopToFill(p: Project, clipId: string, untilTime: number): { project: Project; newIds: string[] } {
+  const { clip } = requireClip(p, clipId);
+  const missing = untilTime - clipEnd(clip);
+  if (!(missing > 0.01)) throw new TimelineError('O instante precisa ficar depois do fim do clipe', 'OUT_OF_RANGE');
+  const r = repeatClip(p, clipId, Math.ceil(missing / clip.duration - 1e-9));
+  const lastId = r.newIds[r.newIds.length - 1]!;
+  const last = findClip(r.project, lastId)!.clip;
+  const project = clipEnd(last) - untilTime > 1e-6 ? trimClip(r.project, lastId, 'end', round6(untilTime)) : r.project;
+  return { project, newIds: r.newIds };
+}
