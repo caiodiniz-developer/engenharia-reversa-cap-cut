@@ -114,3 +114,17 @@ describe('soloTrack / showAllTracks', () => {
     expect(() => ops.soloTrack(p, 'nao-existe')).toThrow();
   });
 });
+
+describe('autoNameTracks', () => {
+  it('numera por tipo seguindo a ordem das faixas', () => {
+    let p = fixtureProject().project;
+    p = addTrack(addTrack(addTrack(p, 'audio').project, 'text').project, 'caption').project;
+    const out = ops.autoNameTracks(p);
+    const names = out.tracks.map((t) => [t.kind, t.name]);
+    expect(names).toContainEqual(['video', 'Vídeo 1']);
+    expect(names).toContainEqual(['video', 'Vídeo 2']);
+    expect(names).toContainEqual(['audio', 'Áudio 1']);
+    expect(names).toContainEqual(['text', 'Texto 1']);
+    expect(names).toContainEqual(['caption', 'Legendas 1']);
+  });
+});
