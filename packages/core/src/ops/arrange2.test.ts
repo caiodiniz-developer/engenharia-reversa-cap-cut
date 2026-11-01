@@ -160,3 +160,26 @@ describe('splitIntoParts', () => {
     expect(() => ops.splitIntoParts(p, ids[0]!, 100)).toThrow(); // 0,02 s < 1 quadro a 30 fps
   });
 });
+
+describe('joinContiguous', () => {
+  it('desfaz divisões: três pedaços contínuos viram um clipe só', () => {
+    const { p, ids, trackId } = build([0, 6]);
+    const a = ops.splitIntoParts(p, ids[0]!, 3).project;
+    expect(a.tracks[0]!.clips).toHaveLength(3);
+    const r = ops.joinContiguous(a, trackId);
+    expect(r.merged).toBe(2);
+    expect(r.project.tracks[0]!.clips).toHaveLength(1);
+    expect(r.project.tracks[0]!.clips[0]).toMatchObject({ start: 0, duration: 6, sourceIn: 0 });
+  });
+
+  it('não une quando o volume é diferente, quando há vão ou quando a origem não é contínua', () => {
+    const { p, ids, trackId } = build([0, 4]);
+    const parts = ops.splitIntoParts(p, ids[0]!, 2);
+    const louder = updateClip(parts.project, parts.ids[1]!, (c) => ({ ...c, audio: { ...(c as MediaClip).audio, volume: 0.5 } }) as MediaClip);
+    expect(ops.joinContiguous(louder, trackId).merged).toBe(0);
+    const gap = build([0, 2], [3, 5]);
+    expect(ops.joinContiguous(gap.p, gap.trackId).merged).toBe(0);
+    const jump = build([0, 2], [2, 4]); // mesma mídia, mas a origem recomeça do zero
+    expect(ops.joinContiguous(jump.p, jump.trackId).merged).toBe(0);
+  });
+});
