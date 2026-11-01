@@ -40,3 +40,7 @@ export * from './diff';
 export * from './ops/arrange2';
 export * from './ops/audiotools';
 export * from './ops/motion';
+export * from './ops/texttools';
+export * from './ops/markertools';
+export * from './ops/mediatools';
+export * from './stats';
