@@ -77,3 +77,12 @@ describe('setFades', () => {
     expect(() => ops.setFades(p, ids, -1, 0)).toThrow();
   });
 });
+
+describe('setPan', () => {
+  it('aceita de -1 a 1 e recusa o resto', () => {
+    const { p, ids } = build([0, 1]);
+    expect(audioOf(ops.setPan(p, ids, -1), ids[0]!).pan).toBe(-1);
+    expect(audioOf(ops.setPan(p, ids, 0.25), ids[0]!).pan).toBe(0.25);
+    expect(() => ops.setPan(p, ids, 1.1)).toThrow(/balanço/);
+  });
+});
