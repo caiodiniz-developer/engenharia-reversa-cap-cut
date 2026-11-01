@@ -85,3 +85,22 @@ export function cleanText(p: Project, ids?: string[]): { project: Project; chang
   }
   return { project: next, changed };
 }
+
+/** Insere uma cartela de título grande e centralizada numa faixa de texto livre (cria se preciso). */
+export function addTitleCard(p: Project, text: string, start: number, duration: number): { project: Project; clipId: string } {
+  if (!text.trim()) throw new TimelineError('Escreva o texto do título', 'INVALID');
+  if (!(start >= 0) || !(duration > 0)) throw new TimelineError('Início e duração inválidos', 'OUT_OF_RANGE');
+  const fx = round6(Math.min(0.4, duration / 3));
+  const clip = TextClipSchema.parse({
+    id: newId('clp'),
+    type: 'text',
+    text: text.trim(),
+    start: round6(start),
+    duration: round6(duration),
+    style: { fontSize: 110, bold: true, shadowBlur: 14, shadowColor: '#000000', strokeWidth: 0 },
+    animationIn: { type: 'pop', duration: fx },
+    animationOut: { type: 'fade', duration: fx },
+  });
+  const f = freeTrack(p, 'text', clip.start, clipEnd(clip));
+  return { project: addClip(f.project, f.trackId, clip), clipId: clip.id };
+}
