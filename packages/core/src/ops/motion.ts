@@ -41,3 +41,9 @@ export function nudgeClips(p: Project, ids: string[], dx: number, dy: number): P
   if (!Number.isFinite(dx) || !Number.isFinite(dy)) throw new TimelineError('Deslocamento inválido', 'INVALID');
   return mapTransform(p, ids, (t) => ({ ...t, x: round6(t.x + dx), y: round6(t.y + dy) }));
 }
+
+/** Multiplica a escala dos clipes escolhidos (limitada a 0,01–20). */
+export function scaleClipsBy(p: Project, ids: string[], factor: number): Project {
+  if (!(factor > 0) || !Number.isFinite(factor)) throw new TimelineError('O fator de escala precisa ser positivo', 'OUT_OF_RANGE');
+  return mapTransform(p, ids, (t) => ({ ...t, scale: round6(clamp(t.scale * factor, 0.01, 20)) }));
+}
