@@ -119,3 +119,39 @@ export function arrangeCommands(): Command[] {
     }), { enabled: () => sel().length === 2, keywords: 'inverter posição permutar' }),
   ];
 }
+
+export function audioCommands(): Command[] {
+  const G = 'Áudio';
+  const mediaSel = () => sel().some((id) => findClip(s().project, id)?.clip.type === 'media');
+  const en = { enabled: mediaSel };
+  const eq = (label: string, bands: Partial<core.AudioProps['eq']>) => cmd('eq-' + label, 'Equalizador da seleção: ' + label, G, 'sliders', onSelection('Equalizador: ' + label, (p, ids) => core.setEq(p, ids, bands)), { ...en, keywords: 'graves médios agudos som' });
+  return [
+    ...[0, 50, 100, 150, 200].map((v) => cmd('vol-' + v, 'Volume da seleção: ' + v + '%', G, 'volume', onSelection('Volume ' + v + '%', (p, ids) => core.setVolume(p, ids, v / 100)), { ...en, keywords: 'som nível' })),
+    cmd('vol-up', 'Aumentar o volume da seleção em 3 dB', G, 'volume', onSelection('Aumentar volume', (p, ids) => core.adjustVolumeDb(p, ids, 3)), { ...en, keywords: 'som mais alto decibel' }),
+    cmd('vol-down', 'Diminuir o volume da seleção em 3 dB', G, 'volume', onSelection('Diminuir volume', (p, ids) => core.adjustVolumeDb(p, ids, -3)), { ...en, keywords: 'som mais baixo decibel' }),
+    cmd('mute-sel', 'Silenciar o som da seleção', G, 'volumeOff', onSelection('Silenciar', (p, ids) => core.setMuted(p, ids, true)), en),
+    cmd('unmute-sel', 'Reativar o som da seleção', G, 'volume', onSelection('Reativar som', (p, ids) => core.setMuted(p, ids, false)), en),
+    ...[0.5, 1, 2].map((f) => cmd('fade-' + f, 'Fade de áudio de ' + pt(f) + ' s (entrada e saída)', G, 'wave', onSelection('Fade de áudio', (p, ids) => core.setFades(p, ids, f, f)), { ...en, keywords: 'aparecer sumir suave' })),
+    cmd('fade-off', 'Remover os fades de áudio da seleção', G, 'wave', onSelection('Remover fades', (p, ids) => core.setFades(p, ids, 0, 0)), en),
+    ...([['esquerda', -1], ['centro', 0], ['direita', 1]] as const).map(([name, v]) => cmd('pan-' + name, 'Balanço da seleção: ' + name, G, 'sliders', onSelection('Balanço ' + name, (p, ids) => core.setPan(p, ids, v)), { ...en, keywords: 'estéreo lado caixa' })),
+    eq('realçar graves', { bass: 6 }),
+    eq('realçar voz', { bass: -2, mid: 4 }),
+    eq('realçar agudos', { treble: 6 }),
+    eq('zerar', { bass: 0, mid: 0, treble: 0 }),
+    cmd('normalize-on', 'Normalizar o volume da seleção', G, 'gauge', onSelection('Normalizar volume', (p, ids) => core.setAudioFlags(p, ids, { normalize: true })), { ...en, keywords: 'nivelar loudness' }),
+    cmd('normalize-off', 'Desligar a normalização da seleção', G, 'gauge', onSelection('Desligar normalização', (p, ids) => core.setAudioFlags(p, ids, { normalize: false })), en),
+    cmd('denoise-on', 'Reduzir o ruído da seleção', G, 'mic', onSelection('Reduzir ruído', (p, ids) => core.setAudioFlags(p, ids, { denoise: true })), { ...en, keywords: 'chiado limpar' }),
+    cmd('denoise-off', 'Desligar a redução de ruído da seleção', G, 'mic', onSelection('Desligar redução de ruído', (p, ids) => core.setAudioFlags(p, ids, { denoise: false })), en),
+    cmd('duck', 'Abaixar a música selecionada quando outros clipes falam', G, 'wave', () => {
+      const st = s();
+      const music = st.selection;
+      const musicTracks = new Set(music.map((id) => findClip(st.project, id)?.track.id));
+      const voices = core
+        .allClips(st.project)
+        .filter(({ clip, track }) => clip.type === 'media' && !music.includes(clip.id) && !musicTracks.has(track.id) && !track.muted && !clip.audio.muted && st.project.media[clip.mediaId]?.hasAudio)
+        .map(({ clip }) => clip.id);
+      if (!voices.length) return void toast.info('Não há outros clipes com som para a música abaixar junto');
+      applyCounted('Abaixar música', (p) => core.duckUnder(p, music, voices), (r) => r.ducked, 'Nenhum clipe selecionado toca ao mesmo tempo que os outros', (n) => 'Volume rebaixado em ' + n + (n === 1 ? ' clipe' : ' clipes'));
+    }, { ...en, keywords: 'ducking voz narração fundo rebaixar automático' }),
+  ];
+}
