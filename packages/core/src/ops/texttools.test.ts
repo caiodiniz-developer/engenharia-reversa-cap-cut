@@ -136,3 +136,22 @@ describe('addCountdown', () => {
     expect(() => ops.addCountdown(project, 3, 0, 0.1)).toThrow();
   });
 });
+
+describe('splitScript', () => {
+  it('quebra por linha e por frase', () => {
+    expect(ops.splitScript('Olá, mundo. Tudo bem? Sim!\nLinha dois')).toEqual(['Olá, mundo.', 'Tudo bem?', 'Sim!', 'Linha dois']);
+  });
+
+  it('frases longas são quebradas entre palavras sem perder nada', () => {
+    const long = Array(20).fill('palavra').join(' ');
+    const parts = ops.splitScript(long, 42);
+    expect(parts.length).toBeGreaterThan(2);
+    expect(parts.every((x) => x.length <= 42)).toBe(true);
+    expect(parts.join(' ')).toBe(long);
+  });
+
+  it('ignora linhas vazias e espaços repetidos', () => {
+    expect(ops.splitScript('\n\n  a   b  \n\n')).toEqual(['a b']);
+    expect(ops.splitScript('   ')).toEqual([]);
+  });
+});
