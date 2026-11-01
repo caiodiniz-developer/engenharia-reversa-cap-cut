@@ -86,3 +86,17 @@ describe('setPan', () => {
     expect(() => ops.setPan(p, ids, 1.1)).toThrow(/balanço/);
   });
 });
+
+describe('setEq', () => {
+  it('muda só as bandas informadas', () => {
+    const { p, ids } = build([0, 1]);
+    const a = ops.setEq(p, ids, { bass: 6 });
+    const b = ops.setEq(a, ids, { treble: -3 });
+    expect(audioOf(b, ids[0]!).eq).toEqual({ bass: 6, mid: 0, treble: -3 });
+  });
+
+  it('recusa valores acima de 24 dB', () => {
+    const { p, ids } = build([0, 1]);
+    expect(() => ops.setEq(p, ids, { mid: 30 })).toThrow(/24 dB/);
+  });
+});
