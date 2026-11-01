@@ -49,3 +49,19 @@ describe('markersAtClipStarts', () => {
     expect(ops.markersAtClipStarts(a.project).added).toBe(1);
   });
 });
+
+describe('markersAtGaps', () => {
+  it('marca o começo de cada vão com a duração no nome', () => {
+    const { p } = build([1, 3], [3, 4], [6, 8]);
+    const r = ops.markersAtGaps(p);
+    expect(r.project.markers.map((m) => [m.time, m.label])).toEqual([[0, 'Vão de 1 s'], [4, 'Vão de 2 s']]);
+  });
+
+  it('um vão coberto por clipe de outra faixa não conta', () => {
+    const { p } = build([0, 2], [5, 6]);
+    const t2 = addTrack(p, 'video');
+    const covered = addClip(t2.project, t2.track.id, mediaClip('m2', 2, 3)); // cobre 2–5
+    expect(ops.markersAtGaps(covered).added).toBe(0);
+    expect(ops.markersAtGaps(p).added).toBe(1);
+  });
+});
