@@ -29,3 +29,9 @@ export function withKeyframes(p: Project, id: string, curves: Partial<Record<Ani
 }
 
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
+
+/** Define a opacidade (0 a 1) dos clipes escolhidos. */
+export function setOpacity(p: Project, ids: string[], opacity: number): Project {
+  if (!(opacity >= 0 && opacity <= 1)) throw new TimelineError('A opacidade vai de 0% a 100%', 'OUT_OF_RANGE');
+  return mapTransform(p, ids, (t) => ({ ...t, opacity: round6(opacity) }));
+}
