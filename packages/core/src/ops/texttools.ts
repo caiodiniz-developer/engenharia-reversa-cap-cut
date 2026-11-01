@@ -180,3 +180,28 @@ export function splitScript(script: string, maxChars = 42): string[] {
   }
   return out;
 }
+
+/**
+ * Transforma um roteiro em legendas contíguas entre ${start} e ${end}, dando a cada fala um tempo proporcional ao tamanho.
+ * Exige pelo menos 0,3 s por fala.
+ */
+export function scriptToCaptions(p: Project, script: string, start: number, end: number): { project: Project; ids: string[] } {
+  const parts = splitScript(script);
+  if (!parts.length) throw new TimelineError('Escreva o roteiro', 'INVALID');
+  if (!(start >= 0) || !(end > start)) throw new TimelineError('O intervalo precisa ter fim depois do início', 'OUT_OF_RANGE');
+  if ((end - start) / parts.length < 0.3) throw new TimelineError('Texto longo demais para esse intervalo (menos de 0,3 s por fala)', 'OUT_OF_RANGE');
+  const weights = parts.map((t) => t.length + 8);
+  const total = weights.reduce((a, b) => a + b, 0);
+  let acc = 0;
+  const cues = parts.map((text, i) => {
+    const a = round6(start + ((end - start) * acc) / total);
+    acc += weights[i]!;
+    const b = i === parts.length - 1 ? round6(end) : round6(start + ((end - start) * acc) / total);
+    return { start: a, end: b, text };
+  });
+  const clips = cuesToCaptionClips(cues);
+  const f = freeTrack(p, 'caption', start, end);
+  let next = f.project;
+  for (const c of clips) next = addClip(next, f.trackId, c);
+  return { project: next, ids: clips.map((c) => c.id) };
+}
