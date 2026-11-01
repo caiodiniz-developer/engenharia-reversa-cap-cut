@@ -163,6 +163,25 @@ Operações puras em `packages/core/src/ops` (testadas) ligadas a comandos da pa
 | Remover o trecho marcado de todas as faixas e fechar o vazio | ✅ | core `ops/arrange2.test`, web `extraCommands.test` |
 | Repetir o clipe até o fim do trecho marcado e trocar dois clipes de lugar | ✅ | core `ops/arrange2.test` |
 
+### Áudio em lote
+
+| Recurso | Estado | Verificação |
+|---|---|---|
+| Volume em % e em dB (+6 dB ≈ dobra), silenciar/reativar | ✅ | core `ops/audiotools.test`, E2E `organizacao` |
+| Fades (entrada/saída) limitados à duração, balanço e equalizador por bandas | ✅ | core `ops/audiotools.test` (a exportação desses ajustes é a já verificada em render `render4`) |
+| Normalizar e reduzir ruído em lote | 🟨 | só liga/desliga as opções; valem as limitações de normalização e ruído acima |
+| **Ducking**: abaixar a música enquanto outros clipes falam, por keyframes de volume com rampas | 🟨 | core `ops/audiotools.test` (curva avaliada), web `extraCommands.test`; o preview e a exportação aplicam keyframes de volume, mas o nível do arquivo ducked não foi medido |
+
+### Quadro e movimento
+
+| Recurso | Estado | Verificação |
+|---|---|---|
+| Opacidade, deslocar, ampliar/reduzir, girar, espelhar e centralizar a seleção | ✅ | core `ops/motion.test`, web `extraCommands.test` |
+| Preencher o quadro (cover) ou encaixar inteiro, e cortar para 1:1, 9:16, 16:9 ou 4:5 | ✅ | core `ops/motion.test` (contas conferidas com a proporção da mídia) |
+| Ken Burns (zoom lento, com deslizamento opcional) | ✅ | core `ops/motion.test`, E2E `organizacao` (keyframes de escala 1 → 1,15); vira keyframes comuns de escala/posição |
+| Zoom de ênfase e fade de opacidade (entra/sai) | ✅ | core `ops/motion.test` |
+| Tremor de câmera (determinístico por semente; começa e termina na posição original) | ✅ | core `ops/motion.test` |
+
 ## Plataforma
 
 | Recurso | Estado | Verificação |
