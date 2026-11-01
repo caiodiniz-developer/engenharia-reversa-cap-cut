@@ -4,6 +4,8 @@ export interface Toast {
   id: number;
   kind: 'info' | 'error' | 'success';
   message: string;
+  /** Milissegundos até sumir sozinho (0 = fica até ser dispensado). */
+  ttl: number;
 }
 
 interface ToastState {
@@ -18,7 +20,7 @@ export const useToasts = create<ToastState>((set, get) => ({
   toasts: [],
   push(kind, message, ttl = kind === 'error' ? 6000 : 3500) {
     const id = nextId++;
-    set({ toasts: [...get().toasts.slice(-4), { id, kind, message }] });
+    set({ toasts: [...get().toasts.slice(-4), { id, kind, message, ttl }] });
     if (ttl > 0) setTimeout(() => get().dismiss(id), ttl);
   },
   dismiss(id) {
