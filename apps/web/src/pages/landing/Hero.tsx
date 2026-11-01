@@ -30,10 +30,10 @@ export function Hero({ scroller }: { scroller?: RefObject<HTMLElement | null> })
     >
       <div className="landing-grid pointer-events-none absolute inset-0" aria-hidden="true" />
       <div className="hero-cursor" aria-hidden="true" />
-      <motion.div className="pointer-events-none absolute inset-0" style={{ y: orbA }} aria-hidden="true">
+      <motion.div className="pointer-events-none absolute inset-0" style={{ y: orbA }} aria-hidden="true" data-testid="orb-a">
         <div className="hero-orb -left-24 top-10 h-72 w-72 bg-accent" />
       </motion.div>
-      <motion.div className="pointer-events-none absolute inset-0" style={{ y: orbB }} aria-hidden="true">
+      <motion.div className="pointer-events-none absolute inset-0" style={{ y: orbB }} aria-hidden="true" data-testid="orb-b">
         <div className="hero-orb hero-orb-b -right-20 top-40 h-80 w-80 bg-clip-caption" />
       </motion.div>
       <div className="relative mx-auto max-w-3xl text-center">
