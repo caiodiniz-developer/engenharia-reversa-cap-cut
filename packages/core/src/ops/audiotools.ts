@@ -22,3 +22,9 @@ export function mapMediaClips(p: Project, ids: string[], fn: (c: MediaClip) => M
 }
 
 const withAudio = (c: MediaClip, patch: Partial<AudioProps>): MediaClip => ({ ...c, audio: { ...c.audio, ...patch } });
+
+/** Define o volume (0 a 4, onde 1 = 100%) de todos os clipes escolhidos. */
+export function setVolume(p: Project, ids: string[], volume: number): Project {
+  if (!(volume >= 0 && volume <= 4)) throw new TimelineError('O volume vai de 0% a 400%', 'OUT_OF_RANGE');
+  return mapMediaClips(p, ids, (c) => withAudio(c, { volume: round6(volume) }));
+}
