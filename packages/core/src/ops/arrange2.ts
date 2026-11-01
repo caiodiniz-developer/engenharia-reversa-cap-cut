@@ -117,3 +117,24 @@ export function spaceClips(p: Project, ids: string[], gap: number): Project {
   assertTracksValid(next, [track.id]);
   return next;
 }
+
+/** Divide o clipe em pedaços de ${seconds} segundos (o último pode ser menor). Devolve os ids na ordem. No máximo 200 pedaços. */
+export function splitEvery(p: Project, clipId: string, seconds: number): { project: Project; ids: string[] } {
+  if (!(seconds > 0) || !Number.isFinite(seconds)) throw new TimelineError('O intervalo precisa ser maior que zero', 'OUT_OF_RANGE');
+  const { clip } = requireClip(p, clipId);
+  const min = minClipDuration(p);
+  if (clip.duration / seconds > 200) throw new TimelineError('Isso criaria pedaços demais (máximo 200)', 'OUT_OF_RANGE');
+  const end = clipEnd(clip);
+  let next = p;
+  let current = clipId;
+  const ids = [clipId];
+  for (let k = 1; ; k++) {
+    const t = round6(clip.start + k * seconds);
+    if (t > end - min + EPS) break;
+    const r = splitClips(next, [current], t);
+    next = r.project;
+    current = r.rightIds[current]!;
+    ids.push(current);
+  }
+  return { project: next, ids };
+}
