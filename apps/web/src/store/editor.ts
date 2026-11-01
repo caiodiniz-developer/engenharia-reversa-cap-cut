@@ -71,6 +71,7 @@ import {
   repeatClip,
   changeTextCase,
   replaceInText,
+  replaceMedia as coreReplaceMedia,
   duplicateTrack,
   positionFor,
   coverScale,
@@ -329,6 +330,8 @@ interface EditorState {
   changeCaseSelection(mode: TextCase): void;
   /** Localiza e substitui em todos os textos/legendas (ou só na seleção). Devolve quantas trocas fez. */
   replaceAllText(find: string, replacement: string, opts?: { matchCase?: boolean; onlySelection?: boolean }): number;
+  /** Troca uma mídia do projeto por outra da biblioteca em todos os clipes que a usam. Devolve quantos clipes mudaram (0 se falhou; o motivo vai num aviso). */
+  replaceMediaWith(fromId: string, toId: string): number;
   /** Repete o clipe selecionado N vezes logo depois dele. */
   repeatSelection(times: number): void;
   copySelectionAttributes(): void;
@@ -938,6 +941,17 @@ export const useEditor = create<EditorState>((set, get) => {
       get().run('Localizar e substituir', (p) => {
         const r = replaceInText(p, find, replacement, { matchCase: opts?.matchCase, ids });
         count = r.count;
+        return r.project;
+      });
+      return count;
+    },
+    replaceMediaWith(fromId, toId) {
+      const item = get().media[toId];
+      let count = 0;
+      get().run('Substituir mídia', (p0) => {
+        const p = p0.media[toId] || !item ? p0 : addMedia(p0, assetFromMedia(item));
+        const r = coreReplaceMedia(p, fromId, toId);
+        count = r.replaced;
         return r.project;
       });
       return count;
