@@ -4,6 +4,7 @@ import { Icon } from '../../components/Icon';
 import { HERO } from './content';
 import { ProductMock } from './ProductMock';
 import { RotatingWord } from './RotatingWord';
+import { SplitText } from './SplitText';
 import { Tilt } from './Tilt';
 import { scrollToSection } from './scroll';
 
@@ -20,9 +21,9 @@ export function Hero() {
         <motion.p {...fade(0)} className="mx-auto mb-5 inline-flex items-center gap-2 rounded-full border border-line bg-panel/70 px-3.5 py-1.5 text-xs font-medium text-mute backdrop-blur">
           <Icon name="sparkles" size={13} className="text-accent" /> {HERO.eyebrow}
         </motion.p>
-        <motion.h1 {...fade(0.05)} id="hero-title" className="text-balance text-4xl font-bold leading-[1.08] tracking-tight sm:text-6xl">
-          Edite, revise e exporte seus vídeos <span className="gradient-text">sem instalar nada.</span>
-        </motion.h1>
+        <h1 id="hero-title" className="text-balance text-4xl font-bold leading-[1.08] tracking-tight sm:text-6xl" data-testid="hero-title">
+          <SplitText text="Edite, revise e exporte seus vídeos" delay={0.05} /> <SplitText text="sem instalar nada." delay={0.42} wordClassName="gradient-text" />
+        </h1>
         <motion.p {...fade(0.09)} className="mt-5 text-lg font-medium sm:text-xl">
           Faça <RotatingWord /> sem sair do navegador.
         </motion.p>
