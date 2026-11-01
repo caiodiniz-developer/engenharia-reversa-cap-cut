@@ -32,3 +32,9 @@ function freeTrack(p: Project, kind: TrackKind, start: number, end: number): { p
   const r = addTrack(p, kind);
   return { project: r.project, trackId: r.track.id };
 }
+
+/** Aplica parte do estilo (cor, fonte, tamanho, contorno, sombra...) a todos os textos/legendas escolhidos. */
+export function setTextStyle(p: Project, ids: string[], patch: Partial<TextStyle>): Project {
+  if (!TextStyleSchema.partial().safeParse(patch).success) throw new TimelineError('Valor inválido no estilo do texto', 'INVALID');
+  return mapTexts(p, ids, (c) => ({ ...c, style: { ...c.style, ...patch } }) as TextLike);
+}
