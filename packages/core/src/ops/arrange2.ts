@@ -228,3 +228,31 @@ export function insertGap(p: Project, time: number, seconds: number): Project {
   assertTracksValid(next, touched);
   return { ...next, markers: next.markers.map((m) => (m.time >= time - EPS ? { ...m, time: round6(m.time + seconds) } : m)) };
 }
+
+/**
+ * Remove o trecho [start, end] de todas as faixas desbloqueadas e fecha o vazio: clipes que atravessam as bordas são
+ * divididos, os que ficam inteiros dentro do trecho são apagados e tudo o que vem depois (clipes e marcadores) volta ${end - start} s.
+ * Falha se uma faixa bloqueada tiver clipe no trecho.
+ */
+export function cutRange(p: Project, start: number, end: number): Project {
+  if (!(end > start) || start < 0) throw new TimelineError('O trecho precisa ter fim depois do início', 'OUT_OF_RANGE');
+  const min = minClipDuration(p);
+  const len = round6(end - start);
+  const blocked = p.tracks.some((t) => t.locked && t.clips.some((c) => c.start < end - EPS && clipEnd(c) > start + EPS));
+  if (blocked) throw new TimelineError('Há uma faixa bloqueada com clipes nesse trecho', 'LOCKED');
+  let next = p;
+  for (const at of [start, end]) {
+    const ids = next.tracks.flatMap((t) => (t.locked ? [] : t.clips.filter((c) => at > c.start + min - EPS && at < clipEnd(c) - min + EPS).map((c) => c.id)));
+    if (ids.length) next = splitClips(next, ids, round6(at)).project;
+  }
+  const inside = next.tracks.flatMap((t) => (t.locked ? [] : t.clips.filter((c) => c.start >= start - EPS && clipEnd(c) <= end + EPS).map((c) => c.id)));
+  if (inside.length) next = deleteClips(next, inside, { ripple: false });
+  const touched = new Set<string>();
+  for (const t of next.tracks) {
+    if (t.locked || !t.clips.some((c) => c.start >= end - EPS)) continue;
+    touched.add(t.id);
+    next = withTrackClips(next, t.id, (cs) => cs.map((c) => (c.start >= end - EPS ? ({ ...c, start: round6(c.start - len) } as Clip) : c)));
+  }
+  assertTracksValid(next, touched);
+  return { ...next, markers: next.markers.filter((m) => m.time < start - EPS || m.time >= end - EPS).map((m) => (m.time >= end - EPS ? { ...m, time: round6(m.time - len) } : m)) };
+}
