@@ -33,3 +33,19 @@ describe('markersEvery', () => {
     expect(() => ops.markersEvery(fixtureProject().project, 1)).toThrow(/vazio/);
   });
 });
+
+describe('markersAtClipStarts', () => {
+  it('um marcador por início, com o nome da mídia', () => {
+    const { p } = build([0, 2], [3, 5]);
+    const r = ops.markersAtClipStarts(p);
+    expect(r.added).toBe(2);
+    expect(r.project.markers.map((m) => [m.time, m.label])).toEqual([[0, 'm1.mp4'], [3, 'm1.mp4']]);
+  });
+
+  it('respeita a seleção e não duplica', () => {
+    const { p, ids } = build([0, 2], [3, 5]);
+    const a = ops.markersAtClipStarts(p, [ids[1]!]);
+    expect(a.project.markers.map((m) => m.time)).toEqual([3]);
+    expect(ops.markersAtClipStarts(a.project).added).toBe(1);
+  });
+});
