@@ -439,3 +439,84 @@ test.describe('landing e sessão', () => {
     await expect(page.getByTestId('landing')).toBeVisible();
   });
 });
+
+
+test.describe('landing: novas animações do topo', () => {
+  test('o título é formado por palavras que sobem e termina legível e inteiro', async ({ page }) => {
+    await page.goto('/');
+    const h1 = page.getByTestId('hero-title');
+    await expect(h1).toHaveText('Edite, revise e exporte seus vídeos sem instalar nada.');
+    const words = h1.locator('span.inline-block > span.inline-block');
+    await expect(words).toHaveCount(9);
+    await expect.poll(() => words.evaluateAll((els) => els.every((e) => getComputedStyle(e).opacity === '1')), { timeout: 5_000 }).toBe(true);
+  });
+
+  test('o botão de cadastro é puxado para o cursor e volta ao se afastar', async ({ page }) => {
+    await page.goto('/');
+    const btn = page.getByTestId('hero-signup');
+    await expect(btn).toBeVisible();
+    const box = (await btn.boundingBox())!;
+    const wrap = page.getByTestId('magnetic').first();
+    const matrix = () => wrap.evaluate((el) => getComputedStyle(el).transform);
+    await page.mouse.move(box.x + box.width / 2 + 90, box.y + box.height / 2 + 30);
+    await page.mouse.move(box.x + box.width / 2 + 70, box.y + box.height / 2 + 24);
+    await expect.poll(async () => (await matrix()) !== 'none' && (await matrix()) !== 'matrix(1, 0, 0, 1, 0, 0)', { timeout: 3_000 }).toBe(true);
+    await page.mouse.move(2, 2);
+    await expect
+      .poll(async () => {
+        const m = await matrix();
+        return m === 'none' || m === 'matrix(1, 0, 0, 1, 0, 0)';
+      }, { timeout: 4_000 })
+      .toBe(true);
+  });
+
+  test('com menos movimento o botão não se mexe', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+    const btn = page.getByTestId('hero-signup');
+    const box = (await btn.boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2 + 60, box.y + box.height / 2 + 20);
+    await page.waitForTimeout(400);
+    const m = await page.getByTestId('magnetic').first().evaluate((el) => getComputedStyle(el).transform);
+    expect(m === 'none' || m === 'matrix(1, 0, 0, 1, 0, 0)').toBe(true);
+  });
+
+  test('o botão principal tem brilho que varre (e some com menos movimento)', async ({ page }) => {
+    await page.goto('/');
+    const name = () => page.getByTestId('hero-signup').evaluate((el) => getComputedStyle(el, '::after').animationName);
+    expect(await name()).toBe('shine-sweep');
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await expect.poll(name).toBe('none');
+  });
+
+  test('a luz do topo segue o cursor', async ({ page }) => {
+    await page.goto('/');
+    const hero = page.getByTestId('hero');
+    const box = (await hero.boundingBox())!;
+    await page.mouse.move(box.x + 300, box.y + 200);
+    await page.mouse.move(box.x + 320, box.y + 210);
+    await expect.poll(() => hero.evaluate((el) => (el as HTMLElement).style.getPropertyValue('--cx'))).not.toBe('');
+    await expect.poll(() => hero.locator('.hero-cursor').evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
+  });
+
+  test('as esferas do topo andam em sentidos opostos ao rolar', async ({ page }) => {
+    await page.goto('/');
+    const ty = (id: string) =>
+      page.getByTestId(id).evaluate((el) => {
+        const t = getComputedStyle(el).transform;
+        return t === 'none' ? 0 : new DOMMatrixReadOnly(t).m42;
+      });
+    expect(await ty('orb-a')).toBe(0);
+    await page.getByTestId('landing').evaluate((el) => el.scrollTo(0, 500));
+    await expect.poll(() => ty('orb-a'), { timeout: 3_000 }).toBeLessThan(-20);
+    await expect.poll(() => ty('orb-b'), { timeout: 3_000 }).toBeGreaterThan(10);
+  });
+
+  test('a timeline da ilustração monta os clipes em sequência e todos terminam inteiros', async ({ page }) => {
+    await page.goto('/');
+    const clips = page.getByTestId('product-mock').locator('span.absolute.top-0\\.5');
+    await expect
+      .poll(() => clips.evaluateAll((els) => els.length >= 10 && els.every((e) => { const m = getComputedStyle(e).transform; return m === 'none' || /^matrix\(1, 0, 0, 1, /.test(m); })), { timeout: 6_000 })
+      .toBe(true);
+  });
+});
