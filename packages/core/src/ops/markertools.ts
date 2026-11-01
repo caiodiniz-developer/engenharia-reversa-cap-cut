@@ -62,3 +62,16 @@ export function markersAtGaps(p: Project, minGap = 0.1): { project: Project; add
   }
   return { project: { ...p, markers: sortMarkers(markers) }, added };
 }
+
+/** Remove os marcadores do trecho [from, to] (ou todos, sem trecho). */
+export function clearMarkers(p: Project, range?: { from: number; to: number }): { project: Project; removed: number } {
+  const keep = range ? p.markers.filter((m) => m.time < range.from - 1e-6 || m.time > range.to + 1e-6) : [];
+  return { project: { ...p, markers: keep }, removed: p.markers.length - keep.length };
+}
+
+/** Desloca os marcadores (todos ou só os ids) por ${delta} segundos, sem passar de 0. */
+export function shiftMarkers(p: Project, delta: number, ids?: string[]): Project {
+  if (!Number.isFinite(delta)) throw new TimelineError('Deslocamento inválido', 'INVALID');
+  const only = ids ? new Set(ids) : null;
+  return { ...p, markers: sortMarkers(p.markers.map((m) => (!only || only.has(m.id) ? { ...m, time: round6(Math.max(0, m.time + delta)) } : m))) };
+}
