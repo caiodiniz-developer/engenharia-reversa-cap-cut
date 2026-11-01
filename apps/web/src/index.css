@@ -381,3 +381,44 @@ input[type='range']:focus-visible::-webkit-slider-thumb {
     transition: none;
   }
 }
+
+
+/* Barra no pé do aviso que se esvazia no tempo de vida dele (a duração vem do estilo inline). */
+.toast-timer {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 100%;
+  transform-origin: left;
+  background: rgb(var(--accent) / 0.55);
+  animation: toast-timer linear forwards;
+}
+@keyframes toast-timer {
+  to {
+    transform: scaleX(0);
+  }
+}
+
+/* Ícone dos estados vazios sobe e desce bem de leve. */
+.float-slow {
+  animation: float-slow 4.5s ease-in-out infinite;
+}
+@keyframes float-slow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .toast-timer,
+  .float-slow {
+    animation: none;
+  }
+  .toast-timer {
+    display: none;
+  }
+}
