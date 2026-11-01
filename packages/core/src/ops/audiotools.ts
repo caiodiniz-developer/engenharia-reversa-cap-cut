@@ -35,3 +35,8 @@ export function adjustVolumeDb(p: Project, ids: string[], db: number): Project {
   const gain = Math.pow(10, db / 20);
   return mapMediaClips(p, ids, (c) => withAudio(c, { volume: round6(Math.min(4, Math.max(0, c.audio.volume * gain))) }));
 }
+
+/** Silencia (ou reativa) o som dos clipes escolhidos. */
+export function setMuted(p: Project, ids: string[], muted: boolean): Project {
+  return mapMediaClips(p, ids, (c) => withAudio(c, { muted }));
+}
