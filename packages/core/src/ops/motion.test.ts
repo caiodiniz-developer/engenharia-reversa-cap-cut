@@ -68,3 +68,12 @@ describe('flipClips', () => {
     expect(tr(ops.flipClips(hv, [id], 'h'), id)).toMatchObject({ flipH: false, flipV: true });
   });
 });
+
+describe('centerClips', () => {
+  it('zera x e y e mantém o resto', () => {
+    const { p, id } = one();
+    const moved = ops.rotateClipsBy(ops.scaleClipsBy(ops.nudgeClips(p, [id], 0.3, -0.4), [id], 2), [id], 30);
+    const out = ops.centerClips(moved, [id]);
+    expect(tr(out, id)).toMatchObject({ x: 0, y: 0, scale: 2, rotation: 30 });
+  });
+});
