@@ -182,6 +182,21 @@ Operações puras em `packages/core/src/ops` (testadas) ligadas a comandos da pa
 | Zoom de ênfase e fade de opacidade (entra/sai) | ✅ | core `ops/motion.test` |
 | Tremor de câmera (determinístico por semente; começa e termina na posição original) | ✅ | core `ops/motion.test` |
 
+### Texto, marcadores e projeto
+
+| Recurso | Estado | Verificação |
+|---|---|---|
+| Estilo de vários textos de uma vez (cor, tamanho, contorno) e posição no topo/meio/base | ✅ | core `ops/texttools.test` |
+| Numerar textos ("Cena 1, 2…") na ordem do tempo e limpar espaços repetidos | ✅ | core `ops/texttools.test` |
+| Título, terço inferior (nome e função agrupados), contagem regressiva e marca d’água de texto | ✅ | core `ops/texttools.test`, E2E `organizacao` (título) |
+| **Roteiro em legendas**: cola o texto e distribui as falas num intervalo, com tempo proporcional ao tamanho | ✅ | core `ops/texttools.test`, E2E `organizacao` (resumo ao vivo, aviso de falas rápidas, legendas contíguas até o fim) |
+| Marcadores a cada N s, no início dos clipes e nos vãos; apagar e deslocar | ✅ | core `ops/markertools.test`, E2E `organizacao` |
+| Solo de faixa, mostrar todas e nomes automáticos (Vídeo 1, Áudio 1…) | ✅ | core `ops/markertools.test` |
+| **Estatísticas do projeto** (duração, clipes por tipo, palavras, mídia usada, mais longo/mais curto) | ✅ | core `stats.test`, E2E `organizacao` |
+| **Substituir mídia** por outra do mesmo tipo mantendo posição e ajustes | ✅ | core `ops/mediatools.test`, web `replaceMedia.test`, E2E `organizacao` |
+| Remover clipes duplicados empilhados | ✅ | core `ops/mediatools.test` |
+| Avisos com barra de tempo; botões do trilho agrupados; estados vazios com ícone flutuante; tela de entrada animada | ✅ | web `toasts.test`, E2E `landing`/`auth` |
+
 ## Plataforma
 
 | Recurso | Estado | Verificação |
