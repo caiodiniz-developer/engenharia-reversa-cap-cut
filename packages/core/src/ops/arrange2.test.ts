@@ -224,3 +224,30 @@ describe('insertGap', () => {
     expect(() => ops.insertGap(p, -1, 1)).toThrow();
   });
 });
+
+describe('cutRange', () => {
+  it('em várias faixas: divide as bordas, apaga o miolo e puxa o resto', () => {
+    const { project, trackId } = fixtureProject();
+    const t2 = addTrack(project, 'video');
+    const big = mediaClip('m1', 0, 10);
+    const inner = mediaClip('m1', 3, 1); // todo dentro do trecho 2–5
+    const later = mediaClip('m1', 6, 2);
+    let p = addClip(t2.project, trackId, big);
+    p = addClip(p, t2.track.id, inner);
+    p = addClip(p, t2.track.id, later);
+    p = addMarker(addMarker(p, 3).project, 8).project;
+    const out = ops.cutRange(p, 2, 5);
+    const a = [...out.tracks.find((t) => t.id === trackId)!.clips].sort((x, y) => x.start - y.start);
+    expect(a.map((c) => [c.start, c.duration])).toEqual([[0, 2], [2, 5]]);
+    const b = out.tracks.find((t) => t.id === t2.track.id)!.clips;
+    expect(b.map((c) => [c.start, c.duration])).toEqual([[3, 2]]);
+    expect(out.markers.map((m) => m.time)).toEqual([5]); // o marcador de 3 s estava no trecho; o de 8 s voltou 3 s
+  });
+
+  it('recusa trecho vazio e faixa bloqueada com clipe no trecho', () => {
+    const { p, trackId } = build([0, 6]);
+    expect(() => ops.cutRange(p, 3, 3)).toThrow();
+    const locked = { ...p, tracks: p.tracks.map((t) => (t.id === trackId ? { ...t, locked: true } : t)) };
+    expect(() => ops.cutRange(locked, 1, 2)).toThrow(/bloqueada/);
+  });
+});
