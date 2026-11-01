@@ -128,3 +128,17 @@ export function kenBurns(p: Project, ids: string[], opts: KenBurnsOptions = {}):
   if (!n) throw new TimelineError('Selecione clipes de vídeo, imagem ou texto', 'KIND_MISMATCH');
   return next;
 }
+
+/** "Soco" de zoom: a escala sobe para ${amount} × em ${at} (s desde o início do clipe) e volta ao valor original depois de ${length} s. */
+export function punchIn(p: Project, id: string, at: number, amount = 1.25, length = 0.6): Project {
+  const clip = requireClip(p, id).clip;
+  if (!hasTransform(clip)) throw new TimelineError('Selecione um clipe de vídeo, imagem ou texto', 'KIND_MISMATCH');
+  if (!(amount > 1) || !(length > 0.05)) throw new TimelineError('Valores do zoom inválidos', 'OUT_OF_RANGE');
+  if (!(at >= 0) || at + length > clip.duration + 1e-6) throw new TimelineError('O zoom precisa caber dentro do clipe', 'OUT_OF_RANGE');
+  const s0 = clip.transform.scale;
+  let k = clip.keyframes.scale ?? [];
+  k = upsertKeyframe(k, at, s0, 'ease');
+  k = upsertKeyframe(k, at + length * 0.35, round6(clamp(s0 * amount, 0.01, 20)), 'ease');
+  k = upsertKeyframe(k, at + length, s0, 'linear');
+  return withKeyframes(p, id, { scale: k });
+}
