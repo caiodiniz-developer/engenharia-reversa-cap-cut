@@ -1,4 +1,5 @@
-import { motion, useReducedMotion } from 'framer-motion';
+import type { RefObject } from 'react';
+import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Icon } from '../../components/Icon';
 import { HERO } from './content';
@@ -10,8 +11,11 @@ import { Tilt } from './Tilt';
 import { scrollToSection } from './scroll';
 
 /** Primeira dobra: promessa, chamadas para cadastro/login e a ilustração do editor. */
-export function Hero() {
+export function Hero({ scroller }: { scroller?: RefObject<HTMLElement | null> }) {
   const reduce = useReducedMotion();
+  const { scrollY } = useScroll({ container: scroller });
+  const orbA = useTransform(scrollY, [0, 700], [0, reduce ? 0 : -110]);
+  const orbB = useTransform(scrollY, [0, 700], [0, reduce ? 0 : 70]);
   const fade = (delay: number) => (reduce ? {} : { initial: { opacity: 0, y: 16 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.55, delay, ease: 'easeOut' as const } });
   return (
     <section
@@ -26,8 +30,12 @@ export function Hero() {
     >
       <div className="landing-grid pointer-events-none absolute inset-0" aria-hidden="true" />
       <div className="hero-cursor" aria-hidden="true" />
-      <div className="hero-orb -left-24 top-10 h-72 w-72 bg-accent" aria-hidden="true" />
-      <div className="hero-orb hero-orb-b -right-20 top-40 h-80 w-80 bg-clip-caption" aria-hidden="true" />
+      <motion.div className="pointer-events-none absolute inset-0" style={{ y: orbA }} aria-hidden="true">
+        <div className="hero-orb -left-24 top-10 h-72 w-72 bg-accent" />
+      </motion.div>
+      <motion.div className="pointer-events-none absolute inset-0" style={{ y: orbB }} aria-hidden="true">
+        <div className="hero-orb hero-orb-b -right-20 top-40 h-80 w-80 bg-clip-caption" />
+      </motion.div>
       <div className="relative mx-auto max-w-3xl text-center">
         <motion.p {...fade(0)} className="mx-auto mb-5 inline-flex items-center gap-2 rounded-full border border-line bg-panel/70 px-3.5 py-1.5 text-xs font-medium text-mute backdrop-blur">
           <Icon name="sparkles" size={13} className="text-accent" /> {HERO.eyebrow}
