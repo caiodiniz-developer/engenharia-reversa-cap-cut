@@ -94,3 +94,27 @@ describe('fillFrame', () => {
     expect(() => ops.fillFrame(sem, [id], 'cover')).toThrow(/tamanho/);
   });
 });
+
+describe('cropToAspect', () => {
+  it('1:1 em 16:9 corta as laterais (21,875% de cada lado)', () => {
+    const { p, id } = one();
+    const crop = tr(ops.cropToAspect(p, [id], 1), id).crop;
+    expect(crop.l).toBeCloseTo(0.21875, 5);
+    expect(crop.r).toBeCloseTo(0.21875, 5);
+    expect(crop.t).toBe(0);
+  });
+
+  it('proporção mais larga que a origem corta em cima e embaixo', () => {
+    const { p, id } = one();
+    const crop = tr(ops.cropToAspect(p, [id], 32 / 9), id).crop; // origem 16:9 → altura 50%
+    expect(crop.t).toBeCloseTo(0.25, 5);
+    expect(crop.b).toBeCloseTo(0.25, 5);
+    expect(crop.l).toBe(0);
+  });
+
+  it('mesma proporção não corta nada e proporção absurda falha', () => {
+    const { p, id } = one();
+    expect(tr(ops.cropToAspect(p, [id], 16 / 9), id).crop).toEqual({ l: 0, r: 0, t: 0, b: 0 });
+    expect(() => ops.cropToAspect(p, [id], 50)).toThrow();
+  });
+});
