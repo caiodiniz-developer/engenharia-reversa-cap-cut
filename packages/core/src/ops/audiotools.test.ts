@@ -61,3 +61,19 @@ describe('setMuted', () => {
     expect(audioOf(back, ids[1]!).muted).toBe(false);
   });
 });
+
+describe('setFades', () => {
+  it('aplica entrada e saída', () => {
+    const { p, ids } = build([0, 10]);
+    const a = audioOf(ops.setFades(p, ids, 1, 2), ids[0]!);
+    expect([a.fadeIn, a.fadeOut]).toEqual([1, 2]);
+  });
+
+  it('encolhe na mesma proporção quando a soma passa da duração', () => {
+    const { p, ids } = build([0, 2]);
+    const a = audioOf(ops.setFades(p, ids, 3, 1), ids[0]!); // soma 4 > 2
+    expect(a.fadeIn).toBeCloseTo(1.5, 6);
+    expect(a.fadeOut).toBeCloseTo(0.5, 6);
+    expect(() => ops.setFades(p, ids, -1, 0)).toThrow();
+  });
+});
