@@ -187,3 +187,25 @@ function requireTrackOf(p: Project, trackId: string) {
   if (!t) throw new TimelineError('Faixa não encontrada', 'NOT_FOUND');
   return t;
 }
+
+/** Arredonda início e fim de todos os clipes ao quadro mais próximo (a duração nunca fica menor que 1 quadro). Devolve quantos mudaram. */
+export function snapToFrameGrid(p: Project): { project: Project; changed: number } {
+  const fps = p.settings.fps;
+  let changed = 0;
+  const tracks = p.tracks.map((t) => ({
+    ...t,
+    clips: t.locked
+      ? t.clips
+      : t.clips.map((c) => {
+          const start = round6(Math.round(c.start * fps) / fps);
+          const end = Math.max(round6(Math.round(clipEnd(c) * fps) / fps), round6(start + 1 / fps));
+          const duration = round6(end - start);
+          if (Math.abs(start - c.start) < 1e-9 && Math.abs(duration - c.duration) < 1e-9) return c;
+          changed++;
+          return { ...c, start, duration } as Clip;
+        }),
+  }));
+  const next = { ...p, tracks };
+  assertTracksValid(next, tracks.map((t) => t.id));
+  return { project: next, changed };
+}
