@@ -38,3 +38,5 @@ export * from './todo';
 export * from './interchange';
 export * from './diff';
 export * from './ops/arrange2';
+export * from './ops/audiotools';
+export * from './ops/motion';
