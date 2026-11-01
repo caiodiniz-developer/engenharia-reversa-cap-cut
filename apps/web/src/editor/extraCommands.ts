@@ -225,3 +225,35 @@ export function textCommands(): Command[] {
     cmd('script-captions', 'Criar legendas a partir de um roteiro…', G, 'captions', () => window.dispatchEvent(new Event('editor:open-script')), { keywords: 'texto colar falas distribuir tempo' }),
   ];
 }
+
+export function markerCommands(): Command[] {
+  const G = 'Marcadores e faixas';
+  return [
+    ...[5, 10, 30].map((n) => cmd('markers-every-' + n, 'Marcar a cada ' + n + ' s', G, 'flag', () => applyCounted('Marcadores periódicos', (p) => core.markersEvery(p, n), (r) => r.added, 'Já existem marcadores em todas essas posições', (k) => k + (k === 1 ? ' marcador criado' : ' marcadores criados')), { keywords: 'marcador periódico intervalo' })),
+    cmd('markers-clip-starts', 'Marcar o início de cada clipe', G, 'flag', () => applyCounted('Marcar inícios', (p) => core.markersAtClipStarts(p, hasSel() ? sel() : undefined), (r) => r.added, 'Já existem marcadores nos inícios dos clipes', (k) => k + (k === 1 ? ' marcador criado' : ' marcadores criados')), { keywords: 'marcador cortes capítulos' }),
+    cmd('markers-gaps', 'Marcar os vãos vazios da timeline', G, 'alert', () => applyCounted('Marcar vãos', (p) => core.markersAtGaps(p), (r) => r.added, 'A timeline não tem vãos', (k) => k + (k === 1 ? ' vão marcado' : ' vãos marcados')), { keywords: 'buracos espaços vazios pretos' }),
+    cmd('markers-clear', 'Apagar todos os marcadores', G, 'trash', () => {
+      if (!s().project.markers.length) return void toast.info('Não há marcadores');
+      s().run('Apagar marcadores', (p) => core.clearMarkers(p).project);
+    }, { keywords: 'remover limpar' }),
+    cmd('markers-forward', 'Deslocar todos os marcadores 1 s para frente', G, 'stepForward', () => void s().run('Deslocar marcadores', (p) => core.shiftMarkers(p, 1)), { enabled: () => s().project.markers.length > 0, keywords: 'mover atrasar' }),
+    cmd('markers-back', 'Deslocar todos os marcadores 1 s para trás', G, 'stepBack', () => void s().run('Deslocar marcadores', (p) => core.shiftMarkers(p, -1)), { enabled: () => s().project.markers.length > 0, keywords: 'mover adiantar' }),
+    cmd('solo-track', 'Solo: ver/ouvir só a faixa em foco', G, 'eye', onTrack('Solo da faixa', core.soloTrack), { enabled: hasTrack, keywords: 'isolar silenciar outras' }),
+    cmd('show-all-tracks', 'Mostrar e reativar todas as faixas', G, 'eyeOff', () => void s().run('Mostrar todas as faixas', core.showAllTracks), { keywords: 'desfazer solo ocultar silenciar' }),
+    cmd('auto-name-tracks', 'Renomear as faixas automaticamente (Vídeo 1, Áudio 1…)', G, 'pencil', () => void s().run('Renomear faixas', core.autoNameTracks), { keywords: 'nomes organizar numerar' }),
+  ];
+}
+
+export function projectCommands(): Command[] {
+  const G = 'Projeto';
+  return [
+    cmd('project-stats', 'Estatísticas do projeto…', G, 'info', () => window.dispatchEvent(new Event('editor:open-stats')), { keywords: 'resumo números duração quantos clipes palavras' }),
+    cmd('remove-duplicates', 'Remover clipes duplicados empilhados', G, 'copy', () => applyCounted('Remover duplicados', core.removeDuplicateClips, (r) => r.removed, 'Não há clipes idênticos empilhados', (n) => n + (n === 1 ? ' duplicado removido' : ' duplicados removidos')), { keywords: 'repetidos iguais limpar' }),
+    cmd('replace-media', 'Substituir uma mídia por outra…', G, 'film', () => window.dispatchEvent(new Event('editor:open-replace-media')), { keywords: 'trocar arquivo relink proxy' }),
+  ];
+}
+
+/** Todos os comandos extras, na ordem em que aparecem na paleta. */
+export function buildExtraCommands(): Command[] {
+  return [...arrangeCommands(), ...audioCommands(), ...frameCommands(), ...textCommands(), ...markerCommands(), ...projectCommands()];
+}
