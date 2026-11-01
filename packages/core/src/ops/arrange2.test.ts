@@ -269,3 +269,18 @@ describe('loopToFill', () => {
     expect(() => ops.loopToFill(p, ids[0]!, 2)).toThrow();
   });
 });
+
+describe('swapClips', () => {
+  it('troca os inícios; o mais curto e o mais longo mudam de lugar', () => {
+    const { p, ids } = build([0, 2], [5, 8]);
+    const out = ops.swapClips(p, ids[0]!, ids[1]!);
+    expect(startOf(out, ids[0]!)).toBe(5);
+    expect(startOf(out, ids[1]!)).toBe(0);
+  });
+
+  it('falha se a troca causar sobreposição e se os ids forem iguais', () => {
+    const { p, ids } = build([0, 2], [3, 4], [5, 9]);
+    expect(() => ops.swapClips(p, ids[1]!, ids[2]!)).toThrow(); // o clipe longo passaria por cima do curto
+    expect(() => ops.swapClips(p, ids[0]!, ids[0]!)).toThrow();
+  });
+});
