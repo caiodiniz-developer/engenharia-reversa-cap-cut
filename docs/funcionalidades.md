@@ -145,6 +145,24 @@ Cada ✅ aponta o teste que o exercita. "E2E" = Playwright no Chrome com API, Vi
 | Salvar o quadro atual como PNG | ✅ | E2E `novidades` (assinatura PNG verificada) |
 | Modelos de projeto (vertical curto etc.), busca, renomear, duplicar e capa dos projetos | ✅ | web `templates.test`, API `projects.test`, E2E `novidades` |
 
+## Ferramentas em lote pela paleta (Ctrl+K)
+
+Operações puras em `packages/core/src/ops` (testadas) ligadas a comandos da paleta, que passam pelo histórico (desfazer/refazer). Os valores dos comandos são predefinidos (ex.: ±3 dB, 10%, 5 s); o ajuste fino fica nas propriedades.
+
+### Organização da timeline
+
+| Recurso | Estado | Verificação |
+|---|---|---|
+| Inverter a ordem dos clipes da faixa (vãos ficam nos encaixes) e embaralhar com semente | ✅ | core `ops/arrange2.test` (inverter duas vezes volta ao original; mesma semente = mesma ordem) |
+| Alinhar clipes pelo início, fim ou centro (faixas diferentes) | ✅ | core `ops/arrange2.test` |
+| Distribuir com vãos iguais e espaçar com vão fixo | ✅ | core `ops/arrange2.test` |
+| Dividir a cada N s e em N partes iguais (seleciona os pedaços) | ✅ | core `ops/arrange2.test`, E2E `organizacao` |
+| Juntar pedaços contínuos (inverso de dividir; só quando visual, som e efeitos são iguais) | ✅ | core `ops/arrange2.test`, E2E `organizacao` |
+| Encaixar todos os clipes na grade de quadros | ✅ | core `ops/arrange2.test`, web `extraCommands.test` (sem mudança, não cria entrada no histórico) |
+| Abrir espaço na cabeça (divide o que atravessa e empurra o resto e os marcadores) | ✅ | core `ops/arrange2.test` |
+| Remover o trecho marcado de todas as faixas e fechar o vazio | ✅ | core `ops/arrange2.test`, web `extraCommands.test` |
+| Repetir o clipe até o fim do trecho marcado e trocar dois clipes de lugar | ✅ | core `ops/arrange2.test` |
+
 ## Plataforma
 
 | Recurso | Estado | Verificação |
