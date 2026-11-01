@@ -17,8 +17,10 @@ export function Faq() {
                 <Icon name="chevronDown" size={16} className={`shrink-0 text-mute transition-transform ${isOpen ? 'rotate-180' : ''}`} />
               </button>
             </h3>
-            <div id={`faq-${i}`} role="region" aria-labelledby={`faq-q-${i}`} hidden={!isOpen} className="px-5 pb-5 text-sm leading-relaxed text-mute">
-              {f.a}
+            <div id={`faq-${i}`} role="region" aria-labelledby={`faq-q-${i}`} data-open={isOpen} className="faq-panel">
+              <div className="faq-panel-inner">
+                <p className="px-5 pb-5 text-sm leading-relaxed text-mute">{f.a}</p>
+              </div>
             </div>
           </div>
         );
