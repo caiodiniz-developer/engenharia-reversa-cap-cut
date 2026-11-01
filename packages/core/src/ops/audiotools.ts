@@ -1,5 +1,4 @@
 import { TimelineError } from '../errors';
-import { findClip } from '../project';
 import { upsertKeyframe } from '../keyframes';
 import type { AudioProps, Clip, Keyframe, MediaClip, Project } from '../schema';
 import { clipEnd, round6 } from '../time';

@@ -1,6 +1,5 @@
 import { TimelineError } from '../errors';
 import { upsertKeyframe } from '../keyframes';
-import { findClip } from '../project';
 import type { AnimatableProp, Clip, Keyframe, Project, Transform } from '../schema';
 import { round6 } from '../time';
 import { mulberry32 } from './arrange2';
