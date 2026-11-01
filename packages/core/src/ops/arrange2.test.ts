@@ -58,3 +58,41 @@ describe('shuffleSequence', () => {
     expect([...order].sort()).toEqual([1, 2, 3, 4]);
   });
 });
+
+describe('alignClips', () => {
+  function two() {
+    const { project, trackId } = fixtureProject();
+    const t2 = addTrack(project, 'video');
+    const a = mediaClip('m1', 1, 2); // [1,3]
+    const b = mediaClip('m1', 5, 4); // [5,9]
+    let p = addClip(project === t2.project ? project : t2.project, trackId, a);
+    p = addClip(p, t2.track.id, b);
+    return { p, a, b };
+  }
+
+  it('início: todos começam onde o primeiro começa', () => {
+    const { p, a, b } = two();
+    const out = ops.alignClips(p, [a.id, b.id], 'start');
+    expect(startOf(out, a.id)).toBe(1);
+    expect(startOf(out, b.id)).toBe(1);
+  });
+
+  it('fim: todos terminam onde o último termina', () => {
+    const { p, a, b } = two();
+    const out = ops.alignClips(p, [a.id, b.id], 'end');
+    expect(endOf(out, a.id)).toBe(9);
+    expect(endOf(out, b.id)).toBe(9);
+  });
+
+  it('centro: o centro de cada clipe vai para o centro do conjunto', () => {
+    const { p, a, b } = two();
+    const out = ops.alignClips(p, [a.id, b.id], 'center'); // conjunto [1,9], centro 5
+    expect(startOf(out, a.id) + 1).toBe(5);
+    expect(startOf(out, b.id) + 2).toBe(5);
+  });
+
+  it('exige pelo menos dois clipes', () => {
+    const { p, a } = two();
+    expect(() => ops.alignClips(p, [a.id], 'start')).toThrow(/dois clipes/);
+  });
+});
