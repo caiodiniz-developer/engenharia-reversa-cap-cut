@@ -209,3 +209,22 @@ export function snapToFrameGrid(p: Project): { project: Project; changed: number
   assertTracksValid(next, tracks.map((t) => t.id));
   return { project: next, changed };
 }
+
+/**
+ * Abre um espaço de ${seconds} s em ${time}: clipes que atravessam o ponto são divididos (juntos, para manter as ligações),
+ * e tudo o que começa a partir dele, em faixas desbloqueadas, e os marcadores andam para a frente.
+ */
+export function insertGap(p: Project, time: number, seconds: number): Project {
+  if (!(seconds > 0) || !(time >= 0)) throw new TimelineError('Informe um instante e uma duração positivos', 'OUT_OF_RANGE');
+  const min = minClipDuration(p);
+  const crossing = p.tracks.flatMap((t) => (t.locked ? [] : t.clips.filter((c) => time > c.start + min - EPS && time < clipEnd(c) - min + EPS).map((c) => c.id)));
+  let next = crossing.length ? splitClips(p, crossing, round6(time)).project : p;
+  const touched = new Set<string>();
+  for (const t of next.tracks) {
+    if (t.locked || !t.clips.some((c) => c.start >= time - EPS)) continue;
+    touched.add(t.id);
+    next = withTrackClips(next, t.id, (cs) => cs.map((c) => (c.start >= time - EPS ? ({ ...c, start: round6(c.start + seconds) } as Clip) : c)));
+  }
+  assertTracksValid(next, touched);
+  return { ...next, markers: next.markers.map((m) => (m.time >= time - EPS ? { ...m, time: round6(m.time + seconds) } : m)) };
+}
