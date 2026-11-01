@@ -57,3 +57,31 @@ export function numberTexts(p: Project, ids: string[], template: string, first =
   });
   return next;
 }
+
+/** Normaliza um texto: espaços/tabs repetidos viram um, espaços nas pontas das linhas somem e no máximo uma linha em branco seguida. */
+export function cleanString(s: string): string {
+  return s
+    .replace(/\r\n?/g, '\n')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/ ?\n ?/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+/** Limpa o texto de todos os textos/legendas (ou só dos ids), ignorando faixas bloqueadas. Devolve quantos mudaram. */
+export function cleanText(p: Project, ids?: string[]): { project: Project; changed: number } {
+  const only = ids ? new Set(ids) : null;
+  let next = p;
+  let changed = 0;
+  for (const t of p.tracks) {
+    if (t.locked) continue;
+    for (const c of t.clips) {
+      if (!isTextLike(c) || (only && !only.has(c.id))) continue;
+      const text = cleanString(c.text);
+      if (text === c.text) continue;
+      next = updateClip(next, c.id, (x) => ({ ...(x as TextLike), text }) as TextLike);
+      changed++;
+    }
+  }
+  return { project: next, changed };
+}
