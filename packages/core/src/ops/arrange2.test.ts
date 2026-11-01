@@ -129,3 +129,19 @@ describe('spaceClips', () => {
     expect(() => ops.spaceClips(p, ids, -1)).toThrow();
   });
 });
+
+describe('splitEvery', () => {
+  it('divide em pedaços de N segundos e o último leva o resto', () => {
+    const { p, ids } = build([0, 10]);
+    const r = ops.splitEvery(p, ids[0]!, 3);
+    expect(r.ids).toHaveLength(4);
+    expect(r.ids.map((id) => [startOf(r.project, id), findClip(r.project, id)!.clip.duration])).toEqual([[0, 3], [3, 3], [6, 3], [9, 1]]);
+  });
+
+  it('intervalo maior que o clipe não divide; intervalo inválido ou excessivo falha', () => {
+    const { p, ids } = build([0, 4]);
+    expect(ops.splitEvery(p, ids[0]!, 10).ids).toEqual([ids[0]]);
+    expect(() => ops.splitEvery(p, ids[0]!, 0)).toThrow();
+    expect(() => ops.splitEvery(p, ids[0]!, 0.01)).toThrow(/demais/);
+  });
+});
