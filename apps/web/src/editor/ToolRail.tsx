@@ -36,7 +36,7 @@ export function ToolRail({ value, onChange }: { value: PanelTab; onChange: (t: P
             title={t.title}
             data-testid={`tab-${t.id}`}
             onClick={() => onChange(t.id)}
-            className={`group relative mx-1.5 flex flex-col items-center gap-1 rounded-lg px-0.5 py-2 text-[10px] font-medium transition-colors ${active ? 'bg-accent/12 text-accent' : 'text-mute hover:bg-panel-3 hover:text-ink'}`}
+            className={`group relative mx-1.5 flex flex-col items-center gap-0.5 rounded-lg px-0.5 py-1.5 text-[10px] font-medium transition-colors ${active ? 'bg-accent/12 text-accent' : 'text-mute hover:bg-panel-3 hover:text-ink'}`}
           >
             {active && <span className="absolute -left-1.5 top-2 h-[calc(100%-16px)] w-0.5 rounded-full bg-accent" />}
             <Icon name={t.icon} size={19} />
@@ -47,7 +47,7 @@ export function ToolRail({ value, onChange }: { value: PanelTab; onChange: (t: P
             )}
             <span className="leading-none">{t.label}</span>
           </button>
-          {GROUP_END.has(t.id) && <span className="mx-4 my-1 h-px shrink-0 bg-line" aria-hidden="true" />}
+          {GROUP_END.has(t.id) && <span className="mx-4 my-0.5 h-px shrink-0 bg-line" aria-hidden="true" />}
           </Fragment>
         );
       })}
