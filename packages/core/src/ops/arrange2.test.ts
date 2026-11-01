@@ -38,3 +38,23 @@ describe('reverseSequence', () => {
     expect(ops.reverseSequence(one.p, one.trackId)).toEqual(one.p);
   });
 });
+
+describe('shuffleSequence', () => {
+  it('shuffledOrder é uma permutação e depende da semente', () => {
+    const a = ops.shuffledOrder([1, 2, 3, 4, 5, 6, 7, 8], 7);
+    expect([...a].sort()).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+    expect(ops.shuffledOrder([1, 2, 3, 4, 5, 6, 7, 8], 7)).toEqual(a);
+    expect(ops.shuffledOrder([1, 2, 3, 4, 5, 6, 7, 8], 8)).not.toEqual(a);
+  });
+
+  it('a faixa continua com os mesmos clipes e o mesmo fim; a mesma semente repete a ordem', () => {
+    const { p, trackId, ids } = build([0, 1], [1, 3], [3, 6], [6, 10]);
+    const a = ops.shuffleSequence(p, trackId, 3);
+    const b = ops.shuffleSequence(p, trackId, 3);
+    expect(a).toEqual(b);
+    expect(a.tracks[0]!.clips).toHaveLength(4);
+    expect(Math.max(...ids.map((id) => endOf(a, id)))).toBe(10);
+    const order = [...a.tracks[0]!.clips].sort((x, y) => x.start - y.start).map((c) => c.duration);
+    expect([...order].sort()).toEqual([1, 2, 3, 4]);
+  });
+});
