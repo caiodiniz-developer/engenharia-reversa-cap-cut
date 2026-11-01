@@ -57,3 +57,8 @@ export function rotateClipsBy(p: Project, ids: string[], degrees: number): Proje
     return { ...t, rotation: round6(r) };
   });
 }
+
+/** Alterna o espelhamento horizontal ('h') ou vertical ('v') dos clipes escolhidos. */
+export function flipClips(p: Project, ids: string[], axis: 'h' | 'v'): Project {
+  return mapTransform(p, ids, (t) => (axis === 'h' ? { ...t, flipH: !t.flipH } : { ...t, flipV: !t.flipV }));
+}
