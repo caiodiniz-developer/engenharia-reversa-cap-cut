@@ -76,3 +76,24 @@ describe('cleanText', () => {
     expect(ops.cleanText(locked).changed).toBe(0);
   });
 });
+
+describe('addTitleCard', () => {
+  it('sem faixa de texto cria uma; depois reaproveita a livre', () => {
+    const { project } = fixtureProject();
+    const a = ops.addTitleCard(project, ' Meu vídeo ', 0, 3);
+    expect(a.project.tracks.filter((t) => t.kind === 'text')).toHaveLength(1);
+    expect(textOf(a.project, a.clipId)).toMatchObject({ text: 'Meu vídeo', start: 0, duration: 3 });
+    expect(textOf(a.project, a.clipId).animationIn.type).toBe('pop');
+    const b = ops.addTitleCard(a.project, 'Fim', 5, 2);
+    expect(b.project.tracks.filter((t) => t.kind === 'text')).toHaveLength(1);
+  });
+
+  it('título sobreposto vai para outra faixa; texto vazio e duração zero falham', () => {
+    const { project } = fixtureProject();
+    const a = ops.addTitleCard(project, 'A', 0, 3);
+    const b = ops.addTitleCard(a.project, 'B', 1, 3);
+    expect(b.project.tracks.filter((t) => t.kind === 'text')).toHaveLength(2);
+    expect(() => ops.addTitleCard(project, '   ', 0, 1)).toThrow();
+    expect(() => ops.addTitleCard(project, 'x', 0, 0)).toThrow();
+  });
+});
