@@ -20,3 +20,20 @@ export function removeDuplicateClips(p: Project): { project: Project; removed: n
   if (!extra.length) return { project: p, removed: 0 };
   return { project: deleteClips(p, extra, { ripple: false }), removed: extra.length };
 }
+
+/**
+ * Substitui a mídia ${fromId} por ${toId} em todos os clipes da timeline, mantendo posição, efeitos e ajustes.
+ * Os dois precisam ser do mesmo tipo e a nova mídia precisa cobrir o trecho que cada clipe usa.
+ */
+export function replaceMedia(p: Project, fromId: string, toId: string): { project: Project; replaced: number } {
+  const from = p.media[fromId];
+  const to = p.media[toId];
+  if (!from || !to) throw new TimelineError('Mídia não encontrada', 'NOT_FOUND');
+  if (fromId === toId) throw new TimelineError('Escolha uma mídia diferente', 'INVALID');
+  if (from.kind !== to.kind) throw new TimelineError('A nova mídia precisa ser do mesmo tipo (vídeo, imagem ou áudio)', 'KIND_MISMATCH');
+  const targets = allClips(p).filter(({ clip }) => clip.type === 'media' && clip.mediaId === fromId);
+  if (!targets.length) throw new TimelineError('Essa mídia não está sendo usada na timeline', 'NOT_FOUND');
+  let next = p;
+  for (const { clip } of targets) next = updateClip(next, clip.id, (c) => ({ ...c, mediaId: toId }) as typeof c);
+  return { project: next, replaced: targets.length };
+}
