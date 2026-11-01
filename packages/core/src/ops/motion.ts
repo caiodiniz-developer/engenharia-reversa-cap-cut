@@ -62,3 +62,8 @@ export function rotateClipsBy(p: Project, ids: string[], degrees: number): Proje
 export function flipClips(p: Project, ids: string[], axis: 'h' | 'v'): Project {
   return mapTransform(p, ids, (t) => (axis === 'h' ? { ...t, flipH: !t.flipH } : { ...t, flipV: !t.flipV }));
 }
+
+/** Leva os clipes escolhidos para o centro do quadro (x = 0, y = 0), sem mexer em escala ou rotação. */
+export function centerClips(p: Project, ids: string[]): Project {
+  return mapTransform(p, ids, (t) => ({ ...t, x: 0, y: 0 }));
+}
