@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useRef } from 'react';
+import { AnimatedDivider } from './AnimatedDivider';
 import { BackToTop } from './BackToTop';
 import { DIFFERENTIALS, FEATURES } from './content';
 import { Faq } from './Faq';
@@ -6,7 +7,7 @@ import { FeatureGrid } from './FeatureGrid';
 import { FinalCta, LandingFooter } from './Footer';
 import { Hero } from './Hero';
 import { LandingHeader } from './LandingHeader';
-import { Marquee } from './Marquee';
+import { Marquee, ToolsMarquee } from './Marquee';
 import { PlatformStrip } from './PlatformStrip';
 import { ReviewShowcase } from './ReviewShowcase';
 import { MobileCta } from './MobileCta';
@@ -44,10 +45,11 @@ export function LandingPage() {
       <ScrollProgress container={scroller} />
       <LandingHeader scroller={scroller} />
       <main id="conteudo">
-        <Hero />
+        <Hero scroller={scroller} />
         <StatsStrip />
         <PlatformStrip />
         <Marquee />
+        <ToolsMarquee />
         <LandingSection id="recursos" eyebrow="Recursos" title="Tudo o que um vídeo precisa, em um só lugar" subtitle="Da primeira importação ao arquivo final, sem alternar entre programas.">
           <FeatureGrid items={FEATURES} testId="features" />
         </LandingSection>
@@ -66,6 +68,7 @@ export function LandingPage() {
         <LandingSection id="perguntas" eyebrow="Perguntas" title="Perguntas frequentes" tone="tinted">
           <Faq />
         </LandingSection>
+        <AnimatedDivider />
         <FinalCta />
       </main>
       <LandingFooter />
