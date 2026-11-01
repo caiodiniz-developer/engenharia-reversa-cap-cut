@@ -191,3 +191,29 @@ describe('shakeClips', () => {
     expect(() => ops.shakeClips(p, [id], 0.01, 1, 100)).toThrow();
   });
 });
+
+describe('fadeOpacity', () => {
+  it('entra e sai: 0 nas pontas e o valor cheio no meio', () => {
+    const { p, id } = one(4);
+    const k = clipOf(ops.fadeOpacity(p, [id], 1, 1), id).keyframes.opacity!;
+    expect(evaluateKeyframes(k, 0, 1)).toBe(0);
+    expect(evaluateKeyframes(k, 1, 1)).toBe(1);
+    expect(evaluateKeyframes(k, 2, 1)).toBe(1);
+    expect(evaluateKeyframes(k, 4, 1)).toBe(0);
+  });
+
+  it('só entrada deixa o fim cheio e só saída começa cheio', () => {
+    const { p, id } = one(4);
+    const a = clipOf(ops.fadeOpacity(p, [id], 1, 0), id).keyframes.opacity!;
+    expect(evaluateKeyframes(a, 4, 1)).toBe(1);
+    const b = clipOf(ops.fadeOpacity(p, [id], 0, 1), id).keyframes.opacity!;
+    expect(evaluateKeyframes(b, 0, 1)).toBe(1);
+    expect(evaluateKeyframes(b, 4, 1)).toBe(0);
+  });
+
+  it('fades somados maiores que o clipe e fades zerados falham', () => {
+    const { p, id } = one(2);
+    expect(() => ops.fadeOpacity(p, [id], 1.5, 1)).toThrow();
+    expect(() => ops.fadeOpacity(p, [id], 0, 0)).toThrow();
+  });
+});
