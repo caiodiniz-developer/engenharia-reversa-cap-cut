@@ -82,12 +82,17 @@ export function ProductMock() {
         {/* timeline */}
         <div className="relative border-t border-line bg-bg px-3 py-2.5">
           <div className="space-y-1.5">
-            {TRACKS.map((t) => (
+            {TRACKS.map((t, ti) => (
               <div key={t.label} className="flex items-center gap-2">
                 <span className="w-12 shrink-0 text-[9px] font-medium text-mute">{t.label}</span>
                 <div className="relative h-5 flex-1 rounded bg-panel-2/70">
                   {t.clips.map(([start, width], i) => (
-                    <span key={i} className={`absolute top-0.5 h-4 rounded ${t.color} opacity-90`} style={{ left: start + '%', width: width + '%' }} />
+                    <motion.span
+                      key={i}
+                      className={`absolute top-0.5 h-4 rounded ${t.color} opacity-90`}
+                      style={{ left: start + '%', width: width + '%', transformOrigin: 'left' }}
+                      {...(reduce ? {} : { initial: { scaleX: 0 }, animate: { scaleX: 1 }, transition: { duration: 0.55, delay: 0.7 + ti * 0.14 + i * 0.09, ease: 'easeOut' as const } })}
+                    />
                   ))}
                 </div>
               </div>
