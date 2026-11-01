@@ -24,3 +24,20 @@ export function markersEvery(p: Project, seconds: number, label = 'Marca'): { pr
   }
   return { project: { ...p, markers: sortMarkers(markers) }, added };
 }
+
+/** Põe um marcador no início de cada clipe de mídia (ou só dos ids), com o nome do arquivo; pula onde já há marcador. */
+export function markersAtClipStarts(p: Project, ids?: string[]): { project: Project; added: number } {
+  const only = ids ? new Set(ids) : null;
+  let markers = p.markers;
+  let added = 0;
+  const starts = allClips(p)
+    .filter(({ clip }) => clip.type === 'media' && (!only || only.has(clip.id)) && p.media[clip.mediaId]?.kind !== 'audio')
+    .map(({ clip }) => ({ time: clip.start, label: clip.type === 'media' ? (p.media[clip.mediaId]?.name ?? '') : '' }))
+    .sort((a, b) => a.time - b.time);
+  for (const s of starts) {
+    if (hasMarkerAt(markers, s.time)) continue;
+    markers = [...markers, { id: newId('mk'), time: round6(s.time), label: s.label, color: '#f5a524' }];
+    added++;
+  }
+  return { project: { ...p, markers: sortMarkers(markers) }, added };
+}
