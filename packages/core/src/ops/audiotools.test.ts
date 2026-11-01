@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { evaluateKeyframes } from '../keyframes';
-import { findClip } from '../project';
+import { addMedia, findClip } from '../project';
 import type { MediaClip, Project } from '../schema';
-import { addClip, fixtureProject, mediaClip } from '../testing';
+import { addClip, fixtureProject, mediaClip, videoAsset } from '../testing';
 import { addTrack } from './tracks';
 import * as ops from './audiotools';
 
@@ -115,8 +115,8 @@ describe('setAudioFlags', () => {
 describe('duckUnder', () => {
   function scene() {
     const { project, trackId } = fixtureProject();
-    const v = addTrack(project, 'audio');
-    const music = mediaClip('m1', 0, 20);
+    const v = addTrack(addMedia(project, videoAsset('longa', 30)), 'audio');
+    const music = mediaClip('longa', 0, 20);
     const voice1 = mediaClip('m1', 5, 3); // [5,8]
     const voice2 = mediaClip('m1', 8.4, 2); // [8.4,10.4], perto o bastante para fundir
     const voice3 = mediaClip('m1', 15, 1); // [15,16]

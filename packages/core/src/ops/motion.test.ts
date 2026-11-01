@@ -4,6 +4,7 @@ import { findClip } from '../project';
 import type { MediaClip, Project } from '../schema';
 import { TextClipSchema } from '../schema';
 import { addClip, fixtureProject, mediaClip } from '../testing';
+import { addTrack } from './tracks';
 import * as ops from './motion';
 
 function one(duration = 4, start = 0) {
@@ -16,9 +17,10 @@ const tr = (p: Project, id: string) => clipOf(p, id).transform;
 
 describe('setOpacity', () => {
   it('vale para mídia e texto e recusa fora de 0–1', () => {
-    const { p, id, trackId } = one();
+    const { p, id } = one();
+    const tt = addTrack(p, 'text');
     const text = TextClipSchema.parse({ id: 'tx1', type: 'text', text: 'oi', start: 5, duration: 1 });
-    const p2 = addClip(p, trackId, text);
+    const p2 = addClip(tt.project, tt.track.id, text);
     const out = ops.setOpacity(p2, [id, 'tx1'], 0.4);
     expect(tr(out, id).opacity).toBe(0.4);
     expect(findClip(out, 'tx1')!.clip).toMatchObject({ transform: { opacity: 0.4 } });
