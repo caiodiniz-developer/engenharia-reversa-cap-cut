@@ -155,3 +155,26 @@ describe('splitScript', () => {
     expect(ops.splitScript('   ')).toEqual([]);
   });
 });
+
+describe('scriptToCaptions', () => {
+  const caption = (p: Project, id: string) => findClip(p, id)!.clip as CaptionClip;
+
+  it('cobre exatamente o intervalo, sem vãos, e a fala longa dura mais', () => {
+    const { project } = fixtureProject();
+    const r = ops.scriptToCaptions(project, 'Fala bem mais comprida que a outra. Curta.', 2, 12);
+    const [a, b] = r.ids.map((id) => caption(r.project, id));
+    expect(a!.start).toBe(2);
+    expect(a!.start + a!.duration).toBeCloseTo(b!.start, 6);
+    expect(b!.start + b!.duration).toBeCloseTo(12, 6);
+    expect(a!.duration).toBeGreaterThan(b!.duration);
+    expect(r.project.tracks.filter((t) => t.kind === 'caption')).toHaveLength(1);
+    expect(a!.words.length).toBeGreaterThan(3);
+  });
+
+  it('roteiro vazio, intervalo invertido e tempo curto demais falham', () => {
+    const { project } = fixtureProject();
+    expect(() => ops.scriptToCaptions(project, '  ', 0, 5)).toThrow();
+    expect(() => ops.scriptToCaptions(project, 'a', 5, 5)).toThrow();
+    expect(() => ops.scriptToCaptions(project, 'a. b. c. d.', 0, 0.5)).toThrow(/0,3 s/);
+  });
+});
