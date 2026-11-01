@@ -14,8 +14,18 @@ export function Hero() {
   const reduce = useReducedMotion();
   const fade = (delay: number) => (reduce ? {} : { initial: { opacity: 0, y: 16 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.55, delay, ease: 'easeOut' as const } });
   return (
-    <section className="relative overflow-hidden px-5 pb-20 pt-14 sm:pt-20" aria-labelledby="hero-title" data-testid="hero">
+    <section
+      className="relative overflow-hidden px-5 pb-20 pt-14 sm:pt-20"
+      aria-labelledby="hero-title"
+      data-testid="hero"
+      onPointerMove={(e) => {
+        const r = e.currentTarget.getBoundingClientRect();
+        e.currentTarget.style.setProperty('--cx', e.clientX - r.left + 'px');
+        e.currentTarget.style.setProperty('--cy', e.clientY - r.top + 'px');
+      }}
+    >
       <div className="landing-grid pointer-events-none absolute inset-0" aria-hidden="true" />
+      <div className="hero-cursor" aria-hidden="true" />
       <div className="hero-orb -left-24 top-10 h-72 w-72 bg-accent" aria-hidden="true" />
       <div className="hero-orb hero-orb-b -right-20 top-40 h-80 w-80 bg-clip-caption" aria-hidden="true" />
       <div className="relative mx-auto max-w-3xl text-center">
