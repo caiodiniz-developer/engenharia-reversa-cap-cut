@@ -59,3 +59,20 @@ describe('numberTexts', () => {
     expect(() => ops.numberTexts(p, ids, 'Cena')).toThrow(/\{n\}/);
   });
 });
+
+describe('cleanText', () => {
+  it('cleanString arruma espaços e linhas', () => {
+    expect(ops.cleanString('  olá    mundo \t !  ')).toBe('olá mundo !');
+    expect(ops.cleanString('a \n\n\n\n b')).toBe('a\n\nb');
+    expect(ops.cleanString('a\r\nb')).toBe('a\nb');
+  });
+
+  it('só conta os clipes que mudaram e respeita faixa bloqueada', () => {
+    const { p, ids, trackId } = withTexts(['  sujo   ', 0, 1], ['limpo', 2, 1]);
+    const r = ops.cleanText(p, undefined);
+    expect(r.changed).toBe(1);
+    expect(textOf(r.project, ids[0]!).text).toBe('sujo');
+    const locked = { ...p, tracks: p.tracks.map((t) => (t.id === trackId ? { ...t, locked: true } : t)) };
+    expect(ops.cleanText(locked).changed).toBe(0);
+  });
+});
