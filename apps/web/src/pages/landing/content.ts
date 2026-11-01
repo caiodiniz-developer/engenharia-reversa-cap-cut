@@ -80,3 +80,28 @@ export function liveStats(): Stat[] {
     { value: String(PLATFORMS.length), label: 'plataformas de destino' },
   ];
 }
+
+
+/** Ferramentas de edição reais do editor (todas têm comando na paleta Ctrl+K), mostradas na segunda faixa que corre ao contrário. */
+export const TOOLS_MARQUEE: string[] = [
+  'Ken Burns',
+  'Tremor de câmera',
+  'Zoom de ênfase',
+  'Ducking de música',
+  'Remover trecho',
+  'Abrir espaço',
+  'Embaralhar clipes',
+  'Alinhar e distribuir',
+  'Dividir em partes iguais',
+  'Juntar pedaços',
+  'Roteiro em legendas',
+  'Terço inferior',
+  'Contagem regressiva',
+  'Marca d’água',
+  'Marcar vãos',
+  'Solo de faixa',
+  'Substituir mídia',
+  'Estatísticas do projeto',
+  'Grade de quadros',
+  'Equalizador em lote',
+];
