@@ -89,3 +89,17 @@ export function soloTrack(p: Project, trackId: string): Project {
 export function showAllTracks(p: Project): Project {
   return { ...p, tracks: p.tracks.map((t) => ({ ...t, muted: false, hidden: false })) };
 }
+
+const KIND_LABEL: Record<Track['kind'], string> = { video: 'Vídeo', audio: 'Áudio', text: 'Texto', caption: 'Legendas' };
+
+/** Renomeia todas as faixas como "Vídeo 1", "Vídeo 2", "Áudio 1"... numerando por tipo, de cima para baixo. */
+export function autoNameTracks(p: Project): Project {
+  const counts: Record<string, number> = {};
+  return {
+    ...p,
+    tracks: p.tracks.map((t) => {
+      counts[t.kind] = (counts[t.kind] ?? 0) + 1;
+      return { ...t, name: KIND_LABEL[t.kind] + ' ' + counts[t.kind] };
+    }),
+  };
+}
