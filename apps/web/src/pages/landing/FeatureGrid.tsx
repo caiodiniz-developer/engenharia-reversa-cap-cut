@@ -19,7 +19,7 @@ export function FeatureGrid({ items, testId, columns = 3 }: { items: Feature[]; 
           }}
           data-testid="feature-card"
         >
-          <span className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-accent/12 text-accent transition-transform group-hover:scale-110">
+          <span className="icon-wiggle mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-accent/12 text-accent transition-transform group-hover:scale-110">
             <Icon name={f.icon} size={20} />
           </span>
           <h3 className="mb-1.5 text-[15px] font-semibold">{f.title}</h3>
