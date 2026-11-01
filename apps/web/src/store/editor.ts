@@ -72,6 +72,7 @@ import {
   changeTextCase,
   replaceInText,
   replaceMedia as coreReplaceMedia,
+  scriptToCaptions as coreScriptToCaptions,
   duplicateTrack,
   positionFor,
   coverScale,
@@ -330,6 +331,8 @@ interface EditorState {
   changeCaseSelection(mode: TextCase): void;
   /** Localiza e substitui em todos os textos/legendas (ou só na seleção). Devolve quantas trocas fez. */
   replaceAllText(find: string, replacement: string, opts?: { matchCase?: boolean; onlySelection?: boolean }): number;
+  /** Cria legendas a partir de um roteiro entre dois instantes. Devolve quantas criou (0 se falhou; o motivo vai num aviso). */
+  scriptToCaptions(script: string, start: number, end: number): number;
   /** Troca uma mídia do projeto por outra da biblioteca em todos os clipes que a usam. Devolve quantos clipes mudaram (0 se falhou; o motivo vai num aviso). */
   replaceMediaWith(fromId: string, toId: string): number;
   /** Repete o clipe selecionado N vezes logo depois dele. */
@@ -944,6 +947,16 @@ export const useEditor = create<EditorState>((set, get) => {
         return r.project;
       });
       return count;
+    },
+    scriptToCaptions(script, start, end) {
+      let ids: string[] = [];
+      const ok = get().run('Legendas do roteiro', (p) => {
+        const r = coreScriptToCaptions(p, script, start, end);
+        ids = r.ids;
+        return r.project;
+      });
+      if (ok) set({ selection: ids });
+      return ok ? ids.length : 0;
     },
     replaceMediaWith(fromId, toId) {
       const item = get().media[toId];
