@@ -35,3 +35,14 @@ describe('nudgeClips', () => {
     expect(() => ops.nudgeClips(p, [id], Number.NaN, 0)).toThrow();
   });
 });
+
+describe('scaleClipsBy', () => {
+  it('multiplica e respeita os limites', () => {
+    const { p, id } = one();
+    expect(tr(ops.scaleClipsBy(p, [id], 1.5), id).scale).toBe(1.5);
+    expect(tr(ops.scaleClipsBy(ops.scaleClipsBy(p, [id], 1.5), [id], 2), id).scale).toBe(3);
+    expect(tr(ops.scaleClipsBy(p, [id], 1000), id).scale).toBe(20);
+    expect(tr(ops.scaleClipsBy(p, [id], 0.0001), id).scale).toBe(0.01);
+    expect(() => ops.scaleClipsBy(p, [id], 0)).toThrow();
+  });
+});
