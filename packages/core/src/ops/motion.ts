@@ -142,3 +142,30 @@ export function punchIn(p: Project, id: string, at: number, amount = 1.25, lengt
   k = upsertKeyframe(k, at + length, s0, 'linear');
   return withKeyframes(p, id, { scale: k });
 }
+
+/** Tremor de câmera: keyframes de x/y a ${rate} por segundo, deslocando até ${amount} (fração do quadro). Começa e termina na posição original. */
+export function shakeClips(p: Project, ids: string[], amount = 0.01, seed = 1, rate = 12): Project {
+  if (!(amount > 0 && amount <= 0.2)) throw new TimelineError('A intensidade vai de 0 a 20% do quadro', 'OUT_OF_RANGE');
+  if (!(rate >= 1 && rate <= 30)) throw new TimelineError('A frequência vai de 1 a 30 por segundo', 'OUT_OF_RANGE');
+  let next = p;
+  let n = 0;
+  for (const id of new Set(ids)) {
+    const clip = requireClip(next, id).clip;
+    if (!hasTransform(clip)) continue;
+    const rnd = mulberry32(seed + n * 977);
+    const steps = Math.max(2, Math.round(clip.duration * rate));
+    if (steps > 600) throw new TimelineError('Clipe longo demais para o tremor nessa frequência', 'OUT_OF_RANGE');
+    let kx: Keyframe[] = [];
+    let ky: Keyframe[] = [];
+    for (let i = 0; i <= steps; i++) {
+      const t = round6((clip.duration * i) / steps);
+      const edge = i === 0 || i === steps;
+      kx = upsertKeyframe(kx, t, round6(clip.transform.x + (edge ? 0 : (rnd() * 2 - 1) * amount)), 'ease');
+      ky = upsertKeyframe(ky, t, round6(clip.transform.y + (edge ? 0 : (rnd() * 2 - 1) * amount)), 'ease');
+    }
+    next = withKeyframes(next, id, { x: kx, y: ky });
+    n++;
+  }
+  if (!n) throw new TimelineError('Selecione clipes de vídeo, imagem ou texto', 'KIND_MISMATCH');
+  return next;
+}
