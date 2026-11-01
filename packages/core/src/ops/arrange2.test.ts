@@ -145,3 +145,18 @@ describe('splitEvery', () => {
     expect(() => ops.splitEvery(p, ids[0]!, 0.01)).toThrow(/demais/);
   });
 });
+
+describe('splitIntoParts', () => {
+  it('9 s em 3 partes dão três pedaços de 3 s consecutivos', () => {
+    const { p, ids } = build([2, 11]);
+    const r = ops.splitIntoParts(p, ids[0]!, 3);
+    expect(r.ids.map((id) => [startOf(r.project, id), findClip(r.project, id)!.clip.duration])).toEqual([[2, 3], [5, 3], [8, 3]]);
+  });
+
+  it('rejeita menos de 2 e mais de 100 partes e partes menores que um quadro', () => {
+    const { p, ids } = build([0, 2]);
+    expect(() => ops.splitIntoParts(p, ids[0]!, 1)).toThrow();
+    expect(() => ops.splitIntoParts(p, ids[0]!, 101)).toThrow();
+    expect(() => ops.splitIntoParts(p, ids[0]!, 100)).toThrow(); // 0,02 s < 1 quadro a 30 fps
+  });
+});
