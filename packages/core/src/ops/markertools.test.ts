@@ -93,3 +93,24 @@ describe('clearMarkers / shiftMarkers', () => {
     expect(() => ops.shiftMarkers(p, Number.NaN)).toThrow();
   });
 });
+
+describe('soloTrack / showAllTracks', () => {
+  it('só a faixa escolhida fica ligada', () => {
+    const { p, trackId } = build([0, 2]);
+    const a = addTrack(p, 'audio');
+    const t = addTrack(a.project, 'text');
+    const solo = ops.soloTrack(t.project, a.track.id);
+    const by = (id: string): Track => solo.tracks.find((x) => x.id === id)!;
+    expect(by(a.track.id)).toMatchObject({ muted: false, hidden: false });
+    expect(by(trackId)).toMatchObject({ muted: true, hidden: true });
+    expect(by(t.track.id)).toMatchObject({ muted: true, hidden: true });
+  });
+
+  it('showAllTracks restaura e faixa inexistente falha', () => {
+    const { p, trackId } = build([0, 2]);
+    const a = addTrack(p, 'audio');
+    const back = ops.showAllTracks(ops.soloTrack(a.project, trackId));
+    expect(back.tracks.every((t) => !t.muted && !t.hidden)).toBe(true);
+    expect(() => ops.soloTrack(p, 'nao-existe')).toThrow();
+  });
+});
