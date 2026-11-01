@@ -72,3 +72,53 @@ export function setAudioFlags(p: Project, ids: string[], flags: { normalize?: bo
     }),
   );
 }
+
+export interface DuckOptions {
+  /** Fração do volume mantida durante a voz (0 a 1). Padrão 0,25. */
+  amount?: number;
+  /** Segundos para descer e para voltar. Padrão 0,3. */
+  ramp?: number;
+}
+
+/**
+ * Cria keyframes de volume nos clipes de música: o volume desce para ${amount} × o volume base enquanto algum clipe da voz
+ * estiver tocando e volta depois, com rampas suaves. Trechos de voz próximos são fundidos para não "pulsar".
+ * Substitui keyframes de volume existentes nesses clipes. Devolve também quantos clipes receberam rebaixamento.
+ */
+export function duckUnder(p: Project, musicIds: string[], voiceIds: string[], opts: DuckOptions = {}): { project: Project; ducked: number } {
+  const amount = opts.amount ?? 0.25;
+  const ramp = opts.ramp ?? 0.3;
+  if (!(amount >= 0 && amount <= 1)) throw new TimelineError('O rebaixamento vai de 0% a 100%', 'OUT_OF_RANGE');
+  if (!(ramp > 0)) throw new TimelineError('A rampa precisa ser maior que zero', 'OUT_OF_RANGE');
+  const voices = [...new Set(voiceIds)].map((id) => requireClip(p, id).clip);
+  if (!voices.length) throw new TimelineError('Escolha ao menos um clipe de voz', 'KIND_MISMATCH');
+  let next = p;
+  let ducked = 0;
+  for (const id of new Set(musicIds)) {
+    const m = requireClip(next, id).clip;
+    if (!isMedia(m) || voices.some((v) => v.id === id)) continue;
+    const base = m.audio.volume;
+    const local = voices
+      .filter((v) => v.start < clipEnd(m) && clipEnd(v) > m.start)
+      .map((v) => [Math.max(0, v.start - m.start), Math.min(m.duration, clipEnd(v) - m.start)] as [number, number])
+      .sort((a, b) => a[0] - b[0]);
+    if (!local.length) continue;
+    const merged: Array<[number, number]> = [];
+    for (const iv of local) {
+      const last = merged[merged.length - 1];
+      if (last && iv[0] <= last[1] + 2 * ramp) last[1] = Math.max(last[1], iv[1]);
+      else merged.push([iv[0], iv[1]]);
+    }
+    let kfs: Keyframe[] = [];
+    const low = round6(base * amount);
+    for (const [a, b] of merged) {
+      if (a - ramp > 0) kfs = upsertKeyframe(kfs, a - ramp, base, 'ease');
+      kfs = upsertKeyframe(kfs, a, low, 'linear');
+      kfs = upsertKeyframe(kfs, b, low, 'ease');
+      if (b + ramp < m.duration) kfs = upsertKeyframe(kfs, b + ramp, base, 'linear');
+    }
+    next = updateClip(next, id, (c) => ({ ...c, keyframes: { ...c.keyframes, volume: kfs } }) as Clip);
+    ducked++;
+  }
+  return { project: next, ducked };
+}
