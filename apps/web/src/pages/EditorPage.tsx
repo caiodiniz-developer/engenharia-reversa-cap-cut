@@ -7,6 +7,9 @@ import { CommandPalette } from '../editor/CommandPalette';
 import { ExportDialog } from '../editor/ExportDialog';
 import { CleanupDialog } from '../editor/CleanupDialog';
 import { ReplaceDialog } from '../editor/ReplaceDialog';
+import { ReplaceMediaDialog } from '../editor/ReplaceMediaDialog';
+import { ScriptDialog } from '../editor/ScriptDialog';
+import { StatsDialog } from '../editor/StatsDialog';
 import { ReviewPanel } from '../editor/panels/ReviewPanel';
 import { StoryboardPanel } from '../editor/panels/StoryboardPanel';
 import { StatusBar } from '../editor/StatusBar';
@@ -85,6 +88,20 @@ export function EditorPage() {
   const [versionsOpen, setVersionsOpen] = useState(false);
   const [replaceOpen, setReplaceOpen] = useState(false);
   const [cleanupOpen, setCleanupOpen] = useState(false);
+  const [statsOpen, setStatsOpen] = useState(false);
+  const [replaceMediaOpen, setReplaceMediaOpen] = useState(false);
+  const [scriptOpen, setScriptOpen] = useState(false);
+  useEffect(() => {
+    const events: Array<[string, () => void]> = [
+      ['editor:open-stats', () => setStatsOpen(true)],
+      ['editor:open-replace-media', () => setReplaceMediaOpen(true)],
+      ['editor:open-script', () => setScriptOpen(true)],
+    ];
+    for (const [name, fn] of events) window.addEventListener(name, fn);
+    return () => {
+      for (const [name, fn] of events) window.removeEventListener(name, fn);
+    };
+  }, []);
   useEffect(() => {
     const open = () => setCleanupOpen(true);
     window.addEventListener('editor:open-cleanup', open);
@@ -262,6 +279,9 @@ export function EditorPage() {
       <VersionsDialog projectId={id} open={versionsOpen} onClose={() => setVersionsOpen(false)} />
       <ReplaceDialog open={replaceOpen} onClose={() => setReplaceOpen(false)} />
       <CleanupDialog open={cleanupOpen} onClose={() => setCleanupOpen(false)} />
+      <StatsDialog open={statsOpen} onClose={() => setStatsOpen(false)} />
+      <ReplaceMediaDialog open={replaceMediaOpen} onClose={() => setReplaceMediaOpen(false)} />
+      <ScriptDialog open={scriptOpen} onClose={() => setScriptOpen(false)} />
       <ShortcutsDialog open={help} onClose={() => setHelp(false)} />
       <CommandPalette open={palette} onClose={() => setPalette(false)} onExport={() => setExporting(true)} onHelp={openHelp} />
     </div>
