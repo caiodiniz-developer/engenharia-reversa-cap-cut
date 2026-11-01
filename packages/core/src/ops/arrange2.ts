@@ -154,3 +154,36 @@ export function splitIntoParts(p: Project, clipId: string, parts: number): { pro
   }
   return { project: next, ids };
 }
+
+const lookOf = (c: MediaClip) =>
+  JSON.stringify({ m: c.mediaId, s: c.speed, r: c.reverse, f: c.freeze, t: c.transform, a: c.audio, fx: c.effects.map((e) => ({ type: e.type, enabled: e.enabled, params: e.params })), k: c.mask, st: c.stabilize });
+
+/**
+ * Une clipes seguidos da mesma mídia que são continuação um do outro (o fim de um é o começo do próximo, tanto na
+ * timeline quanto na origem) e têm o mesmo visual, som e efeitos. É o inverso de dividir. Ignora clipes ligados,
+ * com keyframes, invertidos, congelados ou com transição.
+ */
+export function joinContiguous(p: Project, trackId: string): { project: Project; merged: number } {
+  const order = sequenceOrder(p, trackId);
+  assertUnlocked(requireTrackOf(p, trackId));
+  const keep: Clip[] = [];
+  let merged = 0;
+  const plain = (c: Clip): c is MediaClip => c.type === 'media' && !c.linkId && !c.reverse && !c.freeze && !c.transitionIn && Object.keys(c.keyframes).length === 0;
+  for (const c of order) {
+    const prev = keep[keep.length - 1];
+    if (prev && plain(prev) && plain(c) && Math.abs(c.start - clipEnd(prev)) < 1e-5 && Math.abs(c.sourceIn - (prev.sourceIn + prev.duration * prev.speed)) < 1e-4 && lookOf(prev) === lookOf(c)) {
+      keep[keep.length - 1] = { ...prev, duration: round6(prev.duration + c.duration) } as Clip;
+      merged++;
+    } else keep.push(c);
+  }
+  if (!merged) return { project: p, merged: 0 };
+  const next = withTrackClips(p, trackId, () => keep);
+  assertTracksValid(next, [trackId]);
+  return { project: next, merged };
+}
+
+function requireTrackOf(p: Project, trackId: string) {
+  const t = p.tracks.find((x) => x.id === trackId);
+  if (!t) throw new TimelineError('Faixa não encontrada', 'NOT_FOUND');
+  return t;
+}
