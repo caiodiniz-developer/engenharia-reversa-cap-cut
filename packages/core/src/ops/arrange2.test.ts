@@ -96,3 +96,21 @@ describe('alignClips', () => {
     expect(() => ops.alignClips(p, [a.id], 'start')).toThrow(/dois clipes/);
   });
 });
+
+describe('distributeClips', () => {
+  it('vãos iguais entre os clipes e extremos fixos', () => {
+    const { p, ids } = build([0, 1], [1.5, 2.5], [9, 10]); // sobram 7 s para 2 vãos
+    const out = ops.distributeClips(p, ids);
+    expect(startOf(out, ids[0]!)).toBe(0);
+    expect(startOf(out, ids[1]!)).toBe(4.5);
+    expect(startOf(out, ids[2]!)).toBe(9);
+    expect(endOf(out, ids[1]!)).toBe(5.5);
+  });
+
+  it('precisa de três clipes e de espaço livre', () => {
+    const { p, ids } = build([0, 1], [1, 2]);
+    expect(() => ops.distributeClips(p, ids)).toThrow(/três|3/);
+    const apertado = build([0, 3], [3, 6], [6, 9]);
+    expect(ops.distributeClips(apertado.p, apertado.ids)).toEqual(apertado.p); // sem folga: nada se mexe
+  });
+});
