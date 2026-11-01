@@ -16,7 +16,7 @@ export function Toasts() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 24 }}
             transition={{ duration: 0.16 }}
-            className={`pointer-events-auto flex items-start gap-2.5 overflow-hidden rounded-xl border border-l-4 bg-panel-2 px-3 py-2.5 text-xs shadow-pop ${
+            className={`pointer-events-auto relative flex items-start gap-2.5 overflow-hidden rounded-xl border border-l-4 bg-panel-2 px-3 py-2.5 text-xs shadow-pop ${
               t.kind === 'error' ? 'border-danger/40 border-l-danger' : t.kind === 'success' ? 'border-ok/40 border-l-ok' : 'border-line border-l-accent'
             }`}
           >
@@ -27,6 +27,7 @@ export function Toasts() {
             <button type="button" className="rounded p-0.5 text-mute transition-colors hover:bg-panel-3 hover:text-ink" aria-label="Dispensar" onClick={() => dismiss(t.id)}>
               <Icon name="x" size={14} />
             </button>
+            {t.ttl > 0 && <span className="toast-timer" style={{ animationDuration: t.ttl + 'ms' }} aria-hidden="true" data-testid="toast-timer" />}
           </motion.div>
         ))}
       </AnimatePresence>
