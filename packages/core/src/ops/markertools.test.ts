@@ -65,3 +65,31 @@ describe('markersAtGaps', () => {
     expect(ops.markersAtGaps(p).added).toBe(1);
   });
 });
+
+describe('clearMarkers / shiftMarkers', () => {
+  function withMarkers() {
+    let p = build([0, 10]).p;
+    const ids: string[] = [];
+    for (const t of [1, 3, 5, 8]) {
+      const r = addMarker(p, t);
+      p = r.project;
+      ids.push(r.marker.id);
+    }
+    return { p, ids };
+  }
+
+  it('limpa só o trecho (bordas incluídas) ou tudo', () => {
+    const { p } = withMarkers();
+    const r = ops.clearMarkers(p, { from: 3, to: 5 });
+    expect(r.removed).toBe(2);
+    expect(r.project.markers.map((m) => m.time)).toEqual([1, 8]);
+    expect(ops.clearMarkers(p).removed).toBe(4);
+  });
+
+  it('desloca todos ou só os escolhidos e nunca fica abaixo de zero', () => {
+    const { p, ids } = withMarkers();
+    expect(ops.shiftMarkers(p, 2).markers.map((m) => m.time)).toEqual([3, 5, 7, 10]);
+    expect(ops.shiftMarkers(p, -2, [ids[0]!, ids[3]!]).markers.map((m) => m.time)).toEqual([0, 3, 5, 6]);
+    expect(() => ops.shiftMarkers(p, Number.NaN)).toThrow();
+  });
+});
