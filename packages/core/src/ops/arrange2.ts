@@ -15,7 +15,8 @@ export function reverseSequence(p: Project, trackId: string): Project {
   return next;
 }
 
-function mulberry32(seed: number): () => number {
+/** Gerador pseudoaleatório determinístico (mulberry32): a mesma semente repete a mesma sequência em [0, 1). */
+export function mulberry32(seed: number): () => number {
   let a = seed >>> 0;
   return () => {
     a = (a + 0x6d2b79f5) >>> 0;
