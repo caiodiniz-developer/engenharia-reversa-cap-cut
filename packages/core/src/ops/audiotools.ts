@@ -62,3 +62,13 @@ export function setEq(p: Project, ids: string[], bands: Partial<AudioProps['eq']
   for (const v of Object.values(bands)) if (v !== undefined && !(v >= -24 && v <= 24)) throw new TimelineError('O equalizador vai de -24 a 24 dB', 'OUT_OF_RANGE');
   return mapMediaClips(p, ids, (c) => withAudio(c, { eq: { ...c.audio.eq, ...bands } }));
 }
+
+/** Liga ou desliga a normalização de volume e a redução de ruído; o que não for informado não muda. */
+export function setAudioFlags(p: Project, ids: string[], flags: { normalize?: boolean; denoise?: boolean }): Project {
+  return mapMediaClips(p, ids, (c) =>
+    withAudio(c, {
+      normalize: flags.normalize ?? c.audio.normalize,
+      denoise: flags.denoise ?? c.audio.denoise,
+    }),
+  );
+}
