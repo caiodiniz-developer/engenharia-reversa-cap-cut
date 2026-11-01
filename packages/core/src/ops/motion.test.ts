@@ -25,3 +25,13 @@ describe('setOpacity', () => {
     expect(() => ops.setOpacity(p2, [id], 1.5)).toThrow();
   });
 });
+
+describe('nudgeClips', () => {
+  it('acumula deslocamentos', () => {
+    const { p, id } = one();
+    const out = ops.nudgeClips(ops.nudgeClips(p, [id], 0.1, -0.2), [id], 0.05, 0.1);
+    expect(tr(out, id).x).toBeCloseTo(0.15, 6);
+    expect(tr(out, id).y).toBeCloseTo(-0.1, 6);
+    expect(() => ops.nudgeClips(p, [id], Number.NaN, 0)).toThrow();
+  });
+});
