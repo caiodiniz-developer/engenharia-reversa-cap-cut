@@ -83,3 +83,16 @@ export function fillFrame(p: Project, ids: string[], mode: 'cover' | 'contain'):
     return { ...t, x: 0, y: 0, scale: mode === 'cover' ? round6(clamp(cover / contain, 0.01, 20)) : 1 };
   });
 }
+
+/** Corta a mídia, centrada, para a proporção largura/altura dada (por exemplo 1 para quadrado, 9/16 para vertical). */
+export function cropToAspect(p: Project, ids: string[], aspect: number): Project {
+  if (!(aspect > 0.1 && aspect < 10)) throw new TimelineError('Proporção fora do intervalo 1:10 a 10:1', 'OUT_OF_RANGE');
+  return mapTransform(p, ids, (t, c) => {
+    if (c.type !== 'media') return t;
+    const a = p.media[c.mediaId];
+    if (!a || !(a.width > 0) || !(a.height > 0)) throw new TimelineError('Não sei o tamanho dessa mídia para cortar', 'INVALID');
+    const src = a.width / a.height;
+    const crop = aspect < src ? { l: (1 - aspect / src) / 2, r: (1 - aspect / src) / 2, t: 0, b: 0 } : { l: 0, r: 0, t: (1 - src / aspect) / 2, b: (1 - src / aspect) / 2 };
+    return { ...t, crop: { l: round6(crop.l), r: round6(crop.r), t: round6(crop.t), b: round6(crop.b) } };
+  });
+}
