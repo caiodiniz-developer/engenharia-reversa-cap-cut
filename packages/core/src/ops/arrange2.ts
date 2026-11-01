@@ -74,3 +74,31 @@ export function alignClips(p: Project, ids: string[], mode: AlignMode): Project 
   assertTracksValid(next, touched);
   return next;
 }
+
+function sameTrack(p: Project, ids: string[], min: number, what: string) {
+  const found = [...new Set(ids)].map((id) => requireClip(p, id));
+  if (found.length < min) throw new TimelineError('Selecione pelo menos ' + min + ' clipes para ' + what, 'OUT_OF_RANGE');
+  const track = found[0]!.track;
+  if (found.some((f) => f.track.id !== track.id)) throw new TimelineError('Os clipes precisam estar na mesma faixa', 'KIND_MISMATCH');
+  assertUnlocked(track);
+  return { track, clips: found.map((f) => f.clip).sort((a, b) => a.start - b.start) };
+}
+
+/** Deixa vãos iguais entre os clipes escolhidos, mantendo o início do primeiro e o fim do último (mesma faixa, 3 ou mais). */
+export function distributeClips(p: Project, ids: string[]): Project {
+  const { track, clips } = sameTrack(p, ids, 3, 'distribuir');
+  const first = clips[0]!.start;
+  const last = clipEnd(clips[clips.length - 1]!);
+  const free = last - first - clips.reduce((n, c) => n + c.duration, 0);
+  if (free < -EPS) throw new TimelineError('Os clipes se sobrepõem: não há espaço para distribuir', 'OVERLAP');
+  const gap = free / (clips.length - 1);
+  const starts = new Map<string, number>();
+  let cursor = first;
+  for (const c of clips) {
+    starts.set(c.id, round6(cursor));
+    cursor += c.duration + gap;
+  }
+  const next = withTrackClips(p, track.id, (cs) => cs.map((c) => (starts.has(c.id) ? ({ ...c, start: starts.get(c.id)! } as Clip) : c)));
+  assertTracksValid(next, [track.id]);
+  return next;
+}
