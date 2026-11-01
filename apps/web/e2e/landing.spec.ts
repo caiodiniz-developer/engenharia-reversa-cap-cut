@@ -520,3 +520,79 @@ test.describe('landing: novas animações do topo', () => {
       .toBe(true);
   });
 });
+
+
+test.describe('landing: animações das seções', () => {
+  test('a segunda faixa lista as ferramentas e corre no sentido contrário à primeira', async ({ page }) => {
+    await page.goto('/');
+    const tools = page.getByTestId('marquee-tools');
+    await expect(tools.locator('ul')).toHaveCount(2);
+    await expect(tools.locator('ul').nth(1)).toHaveAttribute('aria-hidden', 'true');
+    await expect(tools.locator('ul').first().getByRole('listitem').filter({ hasText: 'Ken Burns' })).toHaveCount(1);
+    const dir = (id: string) => page.getByTestId(id).locator('.marquee-track').evaluate((el) => getComputedStyle(el).animationDirection);
+    expect(await dir('marquee')).toBe('normal');
+    expect(await dir('marquee-tools')).toBe('reverse');
+  });
+
+  test('o divisor desenha as linhas e mostra o ponto ao entrar na tela', async ({ page }) => {
+    await page.goto('/');
+    const divider = page.getByTestId('divider');
+    await divider.scrollIntoViewIfNeeded();
+    const dot = divider.locator('circle');
+    await expect
+      .poll(() => dot.evaluate((el) => { const m = getComputedStyle(el).transform; return m === 'none' || /^matrix\(1, 0, 0, 1, /.test(m); }), { timeout: 4_000 })
+      .toBe(true);
+  });
+
+  test('o FAQ abre deslizando: a altura cresce até o texto e o painel fechado fica invisível', async ({ page }) => {
+    await page.goto('/');
+    const faq = page.getByTestId('faq');
+    await faq.scrollIntoViewIfNeeded();
+    const panel = (i: number) => faq.locator('#faq-' + i);
+    await expect(panel(0)).toHaveAttribute('data-open', 'true');
+    await page.locator('#faq-q-2').click();
+    await expect(panel(2)).toHaveAttribute('data-open', 'true');
+    await expect.poll(async () => (await panel(2).boundingBox())?.height ?? 0, { timeout: 3_000 }).toBeGreaterThan(30);
+    await expect.poll(() => panel(0).evaluate((el) => getComputedStyle(el).visibility), { timeout: 3_000 }).toBe('hidden');
+  });
+
+  test('o ícone do cartão balança ao passar o mouse', async ({ page }) => {
+    await page.goto('/');
+    const card = page.getByTestId('features').getByTestId('feature-card').first();
+    await card.scrollIntoViewIfNeeded();
+    const icon = card.locator('.icon-wiggle');
+    expect(await icon.evaluate((el) => getComputedStyle(el).animationName)).toBe('none');
+    await card.hover();
+    await expect.poll(() => icon.evaluate((el) => getComputedStyle(el).animationName)).toBe('icon-wiggle');
+  });
+
+  test('confete solta quando a nota da demonstração chega a 100, a cada vez', async ({ page }) => {
+    await page.goto('/');
+    await page.getByTestId('lab').scrollIntoViewIfNeeded();
+    const confetti = page.getByTestId('confetti');
+    await expect(confetti).toHaveAttribute('data-fired', '0');
+    const fixAll = async () => {
+      await page.getByTestId('demo-fix-gap').click();
+      await page.getByTestId('demo-fix-hidden-has-clips').click();
+      await page.getByTestId('demo-fix-caption-fast').click();
+      await expect(page.getByTestId('demo-clean')).toBeVisible();
+    };
+    await fixAll();
+    await expect(confetti).toHaveAttribute('data-fired', '1');
+    await page.getByTestId('demo-reset').click();
+    await expect(page.getByTestId('demo-issue')).toHaveCount(3);
+    await fixAll();
+    await expect(confetti).toHaveAttribute('data-fired', '2');
+  });
+
+  test('com menos movimento não há confete', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+    await page.getByTestId('lab').scrollIntoViewIfNeeded();
+    await page.getByTestId('demo-fix-gap').click();
+    await page.getByTestId('demo-fix-hidden-has-clips').click();
+    await page.getByTestId('demo-fix-caption-fast').click();
+    await expect(page.getByTestId('demo-clean')).toBeVisible();
+    await expect(page.getByTestId('confetti')).toHaveAttribute('data-fired', '0');
+  });
+});
