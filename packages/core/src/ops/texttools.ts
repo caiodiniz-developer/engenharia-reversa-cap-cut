@@ -44,3 +44,16 @@ export function placeText(p: Project, ids: string[], where: 'top' | 'middle' | '
   const y = where === 'top' ? -0.38 : where === 'bottom' ? 0.38 : 0;
   return mapTexts(p, ids, (c) => ({ ...c, transform: { ...c.transform, x: 0, y } }) as TextLike);
 }
+
+/** Numera os textos escolhidos na ordem em que aparecem, trocando {n} no modelo ("Cena {n}") a partir de ${first}. */
+export function numberTexts(p: Project, ids: string[], template: string, first = 1): Project {
+  if (!template.includes('{n}')) throw new TimelineError('O modelo precisa conter {n}, onde entra o número', 'INVALID');
+  const picked = [...new Set(ids)].map((id) => requireClip(p, id).clip).filter((c): c is TextClip => c.type === 'text');
+  if (!picked.length) throw new TimelineError('Selecione clipes de texto', 'KIND_MISMATCH');
+  picked.sort((a, b) => a.start - b.start);
+  let next = p;
+  picked.forEach((c, i) => {
+    next = updateClip(next, c.id, (x) => ({ ...(x as TextClip), text: template.split('{n}').join(String(first + i)) }));
+  });
+  return next;
+}
