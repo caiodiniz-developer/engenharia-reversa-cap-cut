@@ -46,3 +46,14 @@ describe('scaleClipsBy', () => {
     expect(() => ops.scaleClipsBy(p, [id], 0)).toThrow();
   });
 });
+
+describe('rotateClipsBy', () => {
+  it('soma e normaliza para (-180, 180]', () => {
+    const { p, id } = one();
+    expect(tr(ops.rotateClipsBy(p, [id], 90), id).rotation).toBe(90);
+    expect(tr(ops.rotateClipsBy(ops.rotateClipsBy(p, [id], 90), [id], 120), id).rotation).toBe(-150);
+    expect(tr(ops.rotateClipsBy(p, [id], 360), id).rotation).toBe(0);
+    expect(tr(ops.rotateClipsBy(p, [id], 180), id).rotation).toBe(180);
+    expect(tr(ops.rotateClipsBy(p, [id], -90), id).rotation).toBe(-90);
+  });
+});
