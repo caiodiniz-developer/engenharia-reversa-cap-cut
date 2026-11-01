@@ -67,3 +67,19 @@ export function flipClips(p: Project, ids: string[], axis: 'h' | 'v'): Project {
 export function centerClips(p: Project, ids: string[]): Project {
   return mapTransform(p, ids, (t) => ({ ...t, x: 0, y: 0 }));
 }
+
+/**
+ * Ajusta a escala da mídia ao quadro do projeto e a centraliza: 'cover' preenche tudo cortando o excesso,
+ * 'contain' mostra a imagem inteira (escala 1). Precisa das dimensões da mídia.
+ */
+export function fillFrame(p: Project, ids: string[], mode: 'cover' | 'contain'): Project {
+  const { width: W, height: H } = p.settings;
+  return mapTransform(p, ids, (t, c) => {
+    if (c.type !== 'media') return t;
+    const a = p.media[c.mediaId];
+    if (!a || !(a.width > 0) || !(a.height > 0)) throw new TimelineError('Não sei o tamanho dessa mídia para ajustar ao quadro', 'INVALID');
+    const contain = Math.min(W / a.width, H / a.height);
+    const cover = Math.max(W / a.width, H / a.height);
+    return { ...t, x: 0, y: 0, scale: mode === 'cover' ? round6(clamp(cover / contain, 0.01, 20)) : 1 };
+  });
+}
