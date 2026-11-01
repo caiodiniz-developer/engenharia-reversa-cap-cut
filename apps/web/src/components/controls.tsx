@@ -313,7 +313,7 @@ export function ProgressBar({ value, label }: { value: number; label?: string })
 export function Empty({ icon, title, hint, children }: { icon: IconName; title: string; hint?: string; children?: ReactNode }) {
   return (
     <div className="flex flex-col items-center gap-2 px-4 py-10 text-center text-mute">
-      <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-panel-3">
+      <span className="float-slow flex h-12 w-12 items-center justify-center rounded-2xl bg-panel-3">
         <Icon name={icon} size={22} />
       </span>
       <p className="text-xs font-medium text-ink">{title}</p>
