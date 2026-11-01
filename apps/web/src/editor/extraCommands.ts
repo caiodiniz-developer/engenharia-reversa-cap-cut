@@ -155,3 +155,38 @@ export function audioCommands(): Command[] {
     }, { ...en, keywords: 'ducking voz narração fundo rebaixar automático' }),
   ];
 }
+
+export function frameCommands(): Command[] {
+  const G = 'Quadro e movimento';
+  const visual = () => sel().some((id) => findClip(s().project, id)?.clip.type !== undefined);
+  const en = { enabled: visual };
+  const dirs = [['esquerda', -0.05, 0], ['direita', 0.05, 0], ['cima', 0, -0.05], ['baixo', 0, 0.05]] as const;
+  return [
+    ...[100, 75, 50, 25].map((o) => cmd('opacity-' + o, 'Opacidade da seleção: ' + o + '%', G, 'eye', onSelection('Opacidade ' + o + '%', (p, ids) => core.setOpacity(p, ids, o / 100)), { ...en, keywords: 'transparência' })),
+    ...dirs.map(([name, dx, dy]) => cmd('nudge-' + name, 'Mover a imagem 5% para ' + name, G, 'grip', onSelection('Mover para ' + name, (p, ids) => core.nudgeClips(p, ids, dx, dy)), { ...en, keywords: 'posição deslocar empurrar' })),
+    cmd('scale-up', 'Ampliar a seleção em 10%', G, 'zoomIn', onSelection('Ampliar', (p, ids) => core.scaleClipsBy(p, ids, 1.1)), { ...en, keywords: 'zoom escala maior' }),
+    cmd('scale-down', 'Reduzir a seleção em 10%', G, 'zoomOut', onSelection('Reduzir', (p, ids) => core.scaleClipsBy(p, ids, 0.9)), { ...en, keywords: 'zoom escala menor' }),
+    ...([['90° no sentido horário', 90], ['90° no sentido anti-horário', -90], ['15° no sentido horário', 15], ['15° no sentido anti-horário', -15]] as const).map(([name, deg]) => cmd('rotate-' + deg, 'Girar a seleção ' + name, G, 'repeat', onSelection('Girar ' + name, (p, ids) => core.rotateClipsBy(p, ids, deg)), { ...en, keywords: 'rotação virar' })),
+    cmd('flip-h', 'Espelhar a seleção na horizontal', G, 'shuffle', onSelection('Espelhar na horizontal', (p, ids) => core.flipClips(p, ids, 'h')), { ...en, keywords: 'inverter lado' }),
+    cmd('flip-v', 'Espelhar a seleção na vertical', G, 'shuffle', onSelection('Espelhar na vertical', (p, ids) => core.flipClips(p, ids, 'v')), { ...en, keywords: 'inverter cima baixo' }),
+    cmd('center', 'Centralizar a seleção no quadro', G, 'maximize', onSelection('Centralizar', core.centerClips), { ...en, keywords: 'meio posição' }),
+    cmd('fill-cover', 'Preencher o quadro com a seleção (cortando as sobras)', G, 'maximize', onSelection('Preencher o quadro', (p, ids) => core.fillFrame(p, ids, 'cover')), { ...en, keywords: 'cobrir tela cheia vertical barras pretas' }),
+    cmd('fill-contain', 'Encaixar a seleção inteira no quadro', G, 'minimize', onSelection('Encaixar no quadro', (p, ids) => core.fillFrame(p, ids, 'contain')), { ...en, keywords: 'caber conter' }),
+    ...([['1:1 (quadrado)', 1], ['9:16 (vertical)', 9 / 16], ['16:9 (horizontal)', 16 / 9], ['4:5 (retrato)', 4 / 5]] as const).map(([name, ratio]) => cmd('crop-' + name.split(' ')[0]!.replace(':', 'x'), 'Cortar a seleção para ' + name, G, 'layout', onSelection('Cortar para ' + name, (p, ids) => core.cropToAspect(p, ids, ratio)), { ...en, keywords: 'recortar proporção aspecto' })),
+    cmd('ken-in', 'Efeito Ken Burns: aproximar devagar', G, 'zoomIn', onSelection('Ken Burns (aproximar)', (p, ids) => core.kenBurns(p, ids, { zoom: 1.15, direction: 'in' })), { ...en, keywords: 'zoom lento movimento foto documentário' }),
+    cmd('ken-out', 'Efeito Ken Burns: afastar devagar', G, 'zoomOut', onSelection('Ken Burns (afastar)', (p, ids) => core.kenBurns(p, ids, { zoom: 1.15, direction: 'out' })), { ...en, keywords: 'zoom lento movimento foto documentário' }),
+    cmd('ken-pan', 'Efeito Ken Burns: aproximar deslizando para a direita', G, 'zoomIn', onSelection('Ken Burns (deslizar)', (p, ids) => core.kenBurns(p, ids, { zoom: 1.2, pan: 0.06 })), { ...en, keywords: 'panorâmica movimento' }),
+    cmd('punch-in', 'Zoom de ênfase na cabeça de reprodução', G, 'zap', () => {
+      const st = s();
+      const id = st.selection[0];
+      const f = id ? findClip(st.project, id) : undefined;
+      if (!f) return void toast.info('Selecione um clipe');
+      const at = st.playhead - f.clip.start;
+      if (at < 0 || at > f.clip.duration) return void toast.info('Posicione a cabeça de reprodução sobre o clipe selecionado');
+      s().run('Zoom de ênfase', (p) => core.punchIn(p, id!, at));
+    }, { enabled: () => sel().length === 1, keywords: 'destaque soco impacto' }),
+    cmd('shake-soft', 'Tremor de câmera leve', G, 'zap', onSelection('Tremor leve', (p, ids) => core.shakeClips(p, ids, 0.006, Math.floor(Math.random() * 99999))), { ...en, keywords: 'balançar vibrar câmera na mão' }),
+    cmd('shake-strong', 'Tremor de câmera forte', G, 'zap', onSelection('Tremor forte', (p, ids) => core.shakeClips(p, ids, 0.02, Math.floor(Math.random() * 99999))), { ...en, keywords: 'balançar vibrar terremoto impacto' }),
+    ...[0.5, 1].map((f) => cmd('fade-opacity-' + f, 'Aparecer e sumir com transparência (' + pt(f) + ' s)', G, 'eye', onSelection('Fade de imagem', (p, ids) => core.fadeOpacity(p, ids, f, f)), { ...en, keywords: 'fade dissolver entrada saída' })),
+  ];
+}
