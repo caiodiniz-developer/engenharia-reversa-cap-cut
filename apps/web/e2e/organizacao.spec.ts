@@ -143,3 +143,15 @@ test.describe('diálogos novos', () => {
     expect(captions[1]!.start + captions[1]!.duration).toBeCloseTo(4, 5);
   });
 });
+
+
+test.describe('aviso com Desfazer', () => {
+  test('marcar o início do clipe cria um marcador e o botão Desfazer do aviso o remove', async ({ page }) => {
+    await withClip(page);
+    await runCommand(page, 'marcar o início de cada clipe', /Marcar o início de cada clipe/);
+    await expect(page.getByText(/1 marcador criado/)).toBeVisible();
+    expect((await projectOf(page)).markers).toHaveLength(1);
+    await page.getByTestId('toast-action').click();
+    await expect.poll(async () => (await projectOf(page)).markers.length).toBe(0);
+  });
+});
