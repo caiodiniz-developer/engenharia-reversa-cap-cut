@@ -97,3 +97,44 @@ test.describe('ferramentas criativas pela paleta', () => {
     expect(reversed).toEqual([false, true]);
   });
 });
+
+
+test.describe('rampa de velocidade personalizada', () => {
+  test('mostra as barras e a duração final ao vivo e aplica a rampa escolhida', async ({ page }) => {
+    await twoClips(page, false);
+    const [first] = await clipsOf(page);
+    await page.locator('[data-clip-id="' + first!.id + '"]').click();
+    await runCommand(page, 'rampa de velocidade personalizada', /Rampa de velocidade personalizada/);
+    const bars = page.getByTestId('ramp-bars').locator('> div');
+    await expect(bars).toHaveCount(6);
+    // 0,5× → 2× em 4 s de mídia: o clipe fica mais longo
+    await page.getByTestId('ramp-from').fill('-1');
+    await page.getByTestId('ramp-to').fill('1');
+    await expect(page.getByTestId('ramp-from-label')).toHaveText('0,5×');
+    await expect(page.getByTestId('ramp-to-label')).toHaveText('2×');
+    await page.getByTestId('ramp-parts').fill('4');
+    await expect(bars).toHaveCount(4);
+    await expect(page.getByTestId('ramp-summary')).toContainText('4,0 s');
+    await page.getByTestId('ramp-smooth').uncheck();
+    await expect(page.getByTestId('ramp-summary')).toContainText(/fica mais (longo|curto)/);
+    await page.getByTestId('ramp-apply').click();
+    await expect(page.getByTestId('ramp-apply')).toBeHidden();
+    await expect.poll(async () => (await clipsOf(page)).length).toBe(5); // 4 trechos + o clipe azul
+    const p = await projectOf(page);
+    const speeds = p.tracks[0]!.clips.filter((c) => c.type === 'media').slice(0, 4).map((c) => (c as { speed: number }).speed);
+    expect(speeds).toEqual([...speeds].sort((a, b) => a - b));
+    expect(speeds[0]).toBeLessThan(1);
+    expect(speeds[3]).toBeGreaterThan(1);
+    await page.keyboard.press('Control+z');
+    await expect.poll(async () => (await clipsOf(page)).length).toBe(2);
+  });
+
+  test('sem um único clipe selecionado o diálogo explica o que fazer', async ({ page }) => {
+    await twoClips(page, false);
+    await page.evaluate(() => (window.__editor.getState() as unknown as { select(ids: string[]): void }).select([]));
+    await runCommand(page, 'rampa de velocidade personalizada', /Rampa de velocidade personalizada/);
+    await expect(page.getByTestId('ramp-empty')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByTestId('ramp-empty')).toBeHidden();
+  });
+});
