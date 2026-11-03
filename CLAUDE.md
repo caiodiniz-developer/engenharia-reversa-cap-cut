@@ -25,7 +25,7 @@
 - Operações de timeline são funções imutáveis em `packages/core/src/ops`; a interface chama `useEditor.run(...)`, que trata `TimelineError`.
 - Mudou o schema do projeto? Suba `SCHEMA_VERSION` e registre a migração em `packages/core/src/migrate.ts`. Mudou o Prisma? Gere uma migração em `apps/api/prisma/migrations`.
 - Nunca exponha chaves no frontend nem aceite comandos/argumentos do navegador para o FFmpeg.
-- Ação nova de edição: operação pura em `packages/core/src/ops` (com teste), ação no store, comando em `apps/web/src/editor/commands.ts` (paleta Ctrl+K) e, se houver tecla, linha em `SHORTCUTS` de `useShortcuts.ts`.
+- Ação nova de edição: operação pura em `packages/core/src/ops` (com teste), ação no store, comando em `apps/web/src/editor/commands.ts` (paleta Ctrl+K) e, se houver tecla, linha em `SHORTCUTS` (módulo puro `editor/shortcuts.ts`) e categoria em `shortcutGroups.ts`. Comandos em lote usam os helpers de `editor/commandKit.ts` (`onSelection`, `onTrack`, `applyCounted`: só entra no histórico se algo mudou, com aviso e botão Desfazer) e entram em `extraCommands.ts`/`creativeCommands.ts`; um item de `lib/changelog.ts` que cite um comando é conferido por teste.
 - Nos E2E, depois de executar um comando da paleta ou fechar um diálogo, espere o combobox/diálogo ficar oculto antes de usar atalhos de teclado (o atalho é ignorado enquanto o diálogo existe no DOM).
 
 ## Ambiente Windows com pouco disco
