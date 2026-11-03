@@ -165,3 +165,41 @@ describe('pictureInPicture', () => {
     expect(() => ops.pictureInPicture(p, ids[0]!, 'br', 0.9)).toThrow();
   });
 });
+
+describe('splitScreen', () => {
+  function two() {
+    const { project, trackId } = fixtureProject();
+    const a = mediaClip('m1', 0, 2);
+    const b = mediaClip('m2', 0, 2);
+    return { p: addClip(addClip(project, trackId, a), trackId, { ...b, start: 3 }), a: a.id, b: b.id };
+  }
+
+  it('lado a lado em 16:9: escala 1, corta 25% de cada lado e posiciona em −25% e +25%', () => {
+    const { p, a, b } = two();
+    const out = ops.splitScreen(p, [a, b], 'side');
+    expect(media(out, a).transform).toMatchObject({ scale: 1, x: -0.25, y: 0, crop: { l: 0.25, r: 0.25, t: 0, b: 0 } });
+    expect(media(out, b).transform).toMatchObject({ scale: 1, x: 0.25, crop: { l: 0.25, r: 0.25 } });
+  });
+
+  it('um sobre o outro em 16:9: corta em cima e embaixo e desloca no eixo vertical', () => {
+    const { p, a, b } = two();
+    const out = ops.splitScreen(p, [a, b], 'stack');
+    expect(media(out, a).transform).toMatchObject({ x: 0, y: -0.25, crop: { l: 0, r: 0, t: 0.25, b: 0.25 } });
+    expect(media(out, b).transform.y).toBe(0.25);
+  });
+
+  it('quadro vertical: a escala sobe para cobrir a metade (≈ 3,16×)', () => {
+    const { p, a, b } = two();
+    const vertical: Project = { ...p, settings: { ...p.settings, width: 1080, height: 1920 } };
+    const out = ops.splitScreen(vertical, [a, b], 'side');
+    expect(media(out, a).transform.scale).toBeCloseTo(1920 / 607.5, 4);
+    expect(media(out, a).transform.crop.l).toBeGreaterThan(0.4);
+  });
+
+  it('recusa ids iguais e mídia sem tamanho', () => {
+    const { p, a, b } = two();
+    expect(() => ops.splitScreen(p, [a, a], 'side')).toThrow(/diferentes/);
+    const sem: Project = { ...p, media: { ...p.media, m2: { ...p.media.m2!, width: 0, height: 0 } } };
+    expect(() => ops.splitScreen(sem, [a, b], 'side')).toThrow(/tamanho/);
+  });
+});
