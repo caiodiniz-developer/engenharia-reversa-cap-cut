@@ -138,3 +138,31 @@ test.describe('rampa de velocidade personalizada', () => {
     await expect(page.getByTestId('ramp-empty')).toBeHidden();
   });
 });
+
+
+test.describe('atalhos dos comandos criativos', () => {
+  test('Alt+I inverte a seleção, Alt+B cria o boomerang e Alt+R abre a rampa', async ({ page }) => {
+    await twoClips(page, false);
+    const [first, second] = await clipsOf(page);
+    await page.locator('[data-clip-id="' + first!.id + '"]').click();
+    await page.keyboard.press('Alt+i');
+    await expect.poll(() => page.evaluate(() => window.__editor.getState().selection)).toEqual([second!.id]);
+    await page.keyboard.press('Alt+r');
+    await expect(page.getByTestId('ramp-apply')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByTestId('ramp-apply')).toBeHidden();
+  });
+
+  test('Alt+B no clipe selecionado acrescenta a volta em reverso', async ({ page }) => {
+    await signup(page);
+    await newProject(page, 'Atalho boomerang');
+    const card = await uploadAndWait(page, media.red);
+    await card.dblclick();
+    const [c] = await clipsOf(page);
+    await page.locator('[data-clip-id="' + c!.id + '"]').click();
+    await runCommand(page, 'duração de 2 s', /Duração de 2 s para a seleção/);
+    await page.keyboard.press('Alt+b');
+    await expect.poll(async () => (await clipsOf(page)).length).toBe(2);
+    expect((await projectOf(page)).tracks[0]!.clips.map((x) => (x as { reverse?: boolean }).reverse)).toEqual([false, true]);
+  });
+});
