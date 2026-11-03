@@ -35,9 +35,17 @@ test.describe('login: senha e Caps Lock', () => {
   test('trocar de tema liga a transição suave por um instante e depois a retira', async ({ page }) => {
     await page.goto('/');
     const html = page.locator('html');
+    // a classe dura só 350 ms: um observador registra se ela apareceu, sem depender do instante da asserção
+    await page.evaluate(() => {
+      const w = window as unknown as { __fadeSeen: boolean };
+      w.__fadeSeen = false;
+      new MutationObserver(() => {
+        if (document.documentElement.classList.contains('theme-fade')) w.__fadeSeen = true;
+      }).observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    });
     await page.getByTestId('landing-theme').click();
-    await expect(html).toHaveClass(/theme-fade/);
-    await expect(html).not.toHaveClass(/theme-fade/, { timeout: 2_000 });
+    await expect.poll(() => page.evaluate(() => (window as unknown as { __fadeSeen: boolean }).__fadeSeen)).toBe(true);
+    await expect(html).not.toHaveClass(/theme-fade/, { timeout: 3_000 });
     await expect(html).toHaveAttribute('data-theme', 'light');
   });
 });
