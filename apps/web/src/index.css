@@ -422,3 +422,10 @@ input[type='range']:focus-visible::-webkit-slider-thumb {
     display: none;
   }
 }
+
+
+/* Texto selecionado na cor de destaque, com contraste garantido sobre o fundo. */
+::selection {
+  background: rgb(var(--accent) / 0.3);
+  color: rgb(var(--ink));
+}
