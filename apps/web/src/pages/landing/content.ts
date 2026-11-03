@@ -104,4 +104,9 @@ export const TOOLS_MARQUEE: string[] = [
   'Estatísticas do projeto',
   'Grade de quadros',
   'Equalizador em lote',
+  'Rampa de velocidade',
+  'Boomerang',
+  'Tela dividida',
+  'Gagueira',
+  'Carimbar nos marcadores',
 ];
