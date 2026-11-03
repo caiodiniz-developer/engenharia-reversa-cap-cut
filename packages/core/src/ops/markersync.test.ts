@@ -73,3 +73,26 @@ describe('stretchToNextMarker', () => {
     expect(() => ops.stretchToNextMarker(p, ids)).toThrow(/marcadores/);
   });
 });
+
+describe('stampAtMarkers', () => {
+  it('cria uma cópia por marcador fora do clipe, com ids novos e mesma duração', () => {
+    const { p, ids } = build([[0, 1]], [0.5, 3, 6]);
+    const r = ops.stampAtMarkers(p, ids[0]!);
+    expect(r.newIds).toHaveLength(2); // o marcador de 0,5 s cai dentro do original
+    expect(r.newIds.map((id) => startOf(r.project, id))).toEqual([3, 6]);
+    expect(r.newIds.every((id) => durOf(r.project, id) === 1 && id !== ids[0])).toBe(true);
+    expect(r.skipped).toBe(0);
+  });
+
+  it('conta como ignorado o marcador onde a cópia bateria em outro clipe', () => {
+    const { p, ids } = build([[0, 1], [3.5, 5]], [3]);
+    const r = ops.stampAtMarkers(p, ids[0]!);
+    expect(r.newIds).toHaveLength(0);
+    expect(r.skipped).toBe(1);
+  });
+
+  it('exige marcadores', () => {
+    const { p, ids } = build([[0, 1]]);
+    expect(() => ops.stampAtMarkers(p, ids[0]!)).toThrow(/marcadores/);
+  });
+});
