@@ -24,6 +24,19 @@ export function Toasts() {
               <Icon name={t.kind === 'error' ? 'alert' : t.kind === 'success' ? 'check' : 'sparkles'} />
             </span>
             <p className="flex-1 leading-snug">{t.message}</p>
+            {t.action && (
+              <button
+                type="button"
+                className="btn !h-6 shrink-0 px-2 text-2xs"
+                onClick={() => {
+                  t.action!.run();
+                  dismiss(t.id);
+                }}
+                data-testid="toast-action"
+              >
+                {t.action.label}
+              </button>
+            )}
             <button type="button" className="rounded p-0.5 text-mute transition-colors hover:bg-panel-3 hover:text-ink" aria-label="Dispensar" onClick={() => dismiss(t.id)}>
               <Icon name="x" size={14} />
             </button>
