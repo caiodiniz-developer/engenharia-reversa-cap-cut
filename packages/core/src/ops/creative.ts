@@ -72,3 +72,12 @@ export function speedRamp(p: Project, clipId: string, opts: SpeedRampOptions): {
   assertTracksValid(next, [track.id]);
   return { project: next, ids: copies.map((c) => c.id) };
 }
+
+/** Efeito ida e volta: acrescenta, logo depois do clipe, uma cópia dele em reverso (ou, se já era reverso, no sentido normal). */
+export function boomerang(p: Project, clipId: string): { project: Project; newId: string } {
+  const clip = requireMediaClip(p, clipId);
+  if (clip.freeze) throw new TimelineError('Não faz sentido repetir um quadro congelado em reverso', 'INVALID');
+  const r = repeatClip(p, clipId, 1);
+  const newId = r.newIds[0]!;
+  return { project: setReverse(r.project, newId, !clip.reverse), newId };
+}
