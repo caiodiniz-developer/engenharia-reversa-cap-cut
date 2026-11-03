@@ -237,7 +237,7 @@ export function ProjectsPage() {
           {projects === null ? (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" aria-label="Carregando">
               {[0, 1, 2, 3].map((i) => (
-                <div key={i} className="card h-52 animate-pulse" />
+                <div key={i} className="card skeleton h-52" />
               ))}
             </div>
           ) : projects.length === 0 ? (
