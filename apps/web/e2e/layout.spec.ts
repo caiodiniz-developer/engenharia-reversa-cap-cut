@@ -98,3 +98,29 @@ test.describe('novidades do editor', () => {
     await expect(page.getByRole('dialog', { name: 'Estatísticas do projeto' })).toBeVisible();
   });
 });
+
+
+test.describe('biblioteca de mídia', () => {
+  test('alterna entre grade e lista e lembra a escolha', async ({ page }) => {
+    await signup(page);
+    await newProject(page, 'Biblioteca');
+    await uploadAndWait(page, media.red);
+    await uploadAndWait(page, media.blue);
+    const list = page.getByTestId('media-list');
+    await expect(list).toHaveAttribute('data-view', 'grid');
+    const gridWidth = (await list.locator('> li').first().boundingBox())!.width;
+    await page.getByTestId('media-view-list').click();
+    await expect(list).toHaveAttribute('data-view', 'list');
+    await expect(page.getByTestId('media-view-list')).toHaveAttribute('aria-pressed', 'true');
+    const row = (await list.locator('> li').first().boundingBox())!;
+    expect(row.width).toBeGreaterThan(gridWidth * 1.5); // a linha ocupa a largura toda
+    expect(row.height).toBeLessThan(70);
+    await page.reload();
+    await expect(page.getByTestId('media-list')).toHaveAttribute('data-view', 'list');
+    // continua dando para adicionar à timeline com dois cliques
+    await page.getByRole('button', { name: /^vermelho\.mp4/ }).dblclick();
+    await expect(page.locator('[data-clip-id]')).toHaveCount(1);
+    await page.getByTestId('media-view-grid').click();
+    await expect(page.getByTestId('media-list')).toHaveAttribute('data-view', 'grid');
+  });
+});
