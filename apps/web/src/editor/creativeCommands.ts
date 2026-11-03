@@ -29,8 +29,8 @@ export function creativeEditCommands(): Command[] {
     ...ramps.map(([id, label, from, to, smooth]) =>
       cmd('ramp-' + id, label, G, 'gauge', createAndSelect('Rampa de velocidade', (p, ids) => core.speedRamp(p, ids[0]!, { from, to, smooth })), { enabled: oneMedia, keywords: 'velocidade slow motion câmera lenta acelerar curva timelapse' }),
     ),
-    cmd('ramp-custom', 'Rampa de velocidade personalizada…', G, 'gauge', () => window.dispatchEvent(new Event('editor:open-ramp')), { keywords: 'velocidade slow motion câmera lenta curva escolher trechos' }),
-    cmd('boomerang', 'Boomerang: o clipe toca e volta em reverso', G, 'repeat', createAndSelect('Boomerang', (p, ids) => { const r = core.boomerang(p, ids[0]!); return { project: r.project, ids: [r.newId] }; }), { enabled: oneMedia, keywords: 'ida e volta reverso loop vai e vem' }),
+    cmd('ramp-custom', 'Rampa de velocidade personalizada…', G, 'gauge', () => window.dispatchEvent(new Event('editor:open-ramp')), { shortcut: 'Alt+R', keywords: 'velocidade slow motion câmera lenta curva escolher trechos' }),
+    cmd('boomerang', 'Boomerang: o clipe toca e volta em reverso', G, 'repeat', createAndSelect('Boomerang', (p, ids) => { const r = core.boomerang(p, ids[0]!); return { project: r.project, ids: [r.newId] }; }), { enabled: oneMedia, shortcut: 'Alt+B', keywords: 'ida e volta reverso loop vai e vem' }),
     ...([[0.25, 3], [0.1, 6]] as const).map(([size, times]) =>
       cmd('stutter-' + size, 'Gagueira: repetir ' + String(size).replace('.', ',') + ' s por ' + (times + 1) + '× na cabeça de reprodução', G, 'zap', createAndSelect('Gagueira', (p, ids) => core.stutter(p, ids[0]!, s().playhead, size, times)), { enabled: oneMedia, keywords: 'beat repeat glitch repetição travar eco batida' }),
     ),
@@ -91,7 +91,7 @@ export function selectionCommands(): Command[] {
   ];
   return [
     ...rules.map(([criterion, label, what, secs]) => cmd('select-where-' + criterion, label, 'Seleção', 'layers', () => pick(core.selectWhere(s().project, criterion, secs), what), { keywords: 'selecionar filtrar encontrar achar critério' })),
-    cmd('select-invert', 'Inverter a seleção', 'Seleção', 'shuffle', () => pick(core.invertIds(s().project, sel()), 'para selecionar'), { keywords: 'oposto contrário restante resto' }),
+    cmd('select-invert', 'Inverter a seleção', 'Seleção', 'shuffle', () => pick(core.invertIds(s().project, sel()), 'para selecionar'), { shortcut: 'Alt+I', keywords: 'oposto contrário restante resto' }),
   ];
 }
 
