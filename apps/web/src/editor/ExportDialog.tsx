@@ -4,7 +4,7 @@ import { api, ApiError } from '../api/client';
 import type { ExportInfo } from '../api/types';
 import { Modal, ProgressBar, Segmented, Select } from '../components/controls';
 import { Icon } from '../components/Icon';
-import { EXPORT_PRESETS, getExportPreset, matchPreset } from '../lib/exportPresets';
+import { EXPORT_PRESETS, getExportPreset, loadLastPresetId, matchPreset, saveLastPresetId } from '../lib/exportPresets';
 import { estimateAudioBytes } from '../lib/audioSize';
 import { formatBytes, formatDuration } from '../lib/format';
 import { localRecordingSupported, recordLocalDraft, RecordCancelled } from '../lib/localRecord';
@@ -70,7 +70,15 @@ export function ExportDialog({ projectId, open, onClose }: { projectId: string; 
     setFps(p.fps);
     setCrf(p.crf);
     setAudioFormat(p.audioFormat);
+    saveLastPresetId(id);
   }
+
+  // Na primeira vez que o diálogo existe nesta sessão, volta ao formato que a pessoa usou por último.
+  useEffect(() => {
+    const last = loadLastPresetId();
+    if (last) applyPreset(last);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /** GIF é limitado a 720p; ao escolhê-lo, sai de resoluções maiores. */
   function changeKind(next: 'video' | 'audio' | 'gif') {
