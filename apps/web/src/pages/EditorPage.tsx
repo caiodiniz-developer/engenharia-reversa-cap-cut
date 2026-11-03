@@ -6,6 +6,7 @@ import { Icon } from '../components/Icon';
 import { CommandPalette } from '../editor/CommandPalette';
 import { ExportDialog } from '../editor/ExportDialog';
 import { CleanupDialog } from '../editor/CleanupDialog';
+import { NewsDialog } from '../editor/NewsDialog';
 import { RampDialog } from '../editor/RampDialog';
 import { ReplaceDialog } from '../editor/ReplaceDialog';
 import { ReplaceMediaDialog } from '../editor/ReplaceMediaDialog';
@@ -93,12 +94,14 @@ export function EditorPage() {
   const [replaceMediaOpen, setReplaceMediaOpen] = useState(false);
   const [scriptOpen, setScriptOpen] = useState(false);
   const [rampOpen, setRampOpen] = useState(false);
+  const [newsOpen, setNewsOpen] = useState(false);
   useEffect(() => {
     const events: Array<[string, () => void]> = [
       ['editor:open-stats', () => setStatsOpen(true)],
       ['editor:open-replace-media', () => setReplaceMediaOpen(true)],
       ['editor:open-script', () => setScriptOpen(true)],
       ['editor:open-ramp', () => setRampOpen(true)],
+      ['editor:open-news', () => setNewsOpen(true)],
     ];
     for (const [name, fn] of events) window.addEventListener(name, fn);
     return () => {
@@ -286,6 +289,7 @@ export function EditorPage() {
       <ReplaceMediaDialog open={replaceMediaOpen} onClose={() => setReplaceMediaOpen(false)} />
       <ScriptDialog open={scriptOpen} onClose={() => setScriptOpen(false)} />
       <RampDialog open={rampOpen} onClose={() => setRampOpen(false)} />
+      <NewsDialog open={newsOpen} onClose={() => setNewsOpen(false)} />
       <ShortcutsDialog open={help} onClose={() => setHelp(false)} />
       <CommandPalette open={palette} onClose={() => setPalette(false)} onExport={() => setExporting(true)} onHelp={openHelp} />
     </div>
