@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { projectDuration } from '@editor/core';
 import { saveNow } from '../store/persist';
 import { useEditor } from '../store/editor';
+import { buildCreativeCommands } from './creativeCommands';
 
 export interface Shortcut {
   keys: string;
@@ -108,6 +109,12 @@ export function useShortcuts(openHelp: () => void, openPalette: () => void): voi
         e.shiftKey ? s.ungroup(s.selection) : s.group(s.selection);
       } else if (mod) {
         return;
+      } else if (e.altKey && (key === 'i' || key === 'b' || key === 'r')) {
+        // antes das teclas simples: I (marcar entrada) e outras também casariam com Alt pressionado
+        e.preventDefault();
+        const id = { i: 'select-invert', b: 'boomerang', r: 'ramp-custom' }[key];
+        const c = buildCreativeCommands().find((x) => x.id === id);
+        if (c && (c.enabled?.() ?? true)) c.run();
       } else if (e.key === ' ') {
         e.preventDefault();
         s.togglePlay();
