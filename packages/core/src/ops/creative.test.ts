@@ -140,3 +140,28 @@ describe('smoothCuts', () => {
     expect(ops.smoothCuts(p, trackId)).toEqual({ project: p, cuts: 0 });
   });
 });
+
+describe('pictureInPicture', () => {
+  it('vai para cada canto com a escala escolhida e margem de 3%', () => {
+    const { p, ids } = build([0, 2]);
+    const tr = (corner: 'tl' | 'tr' | 'bl' | 'br') => media(ops.pictureInPicture(p, ids[0]!, corner, 0.3), ids[0]!).transform;
+    expect(tr('br')).toMatchObject({ scale: 0.3, x: 0.32, y: 0.32 }); // 0,5 − 0,15 − 0,03
+    expect(tr('tl')).toMatchObject({ x: -0.32, y: -0.32 });
+    expect(tr('tr')).toMatchObject({ x: 0.32, y: -0.32 });
+    expect(tr('bl')).toMatchObject({ x: -0.32, y: 0.32 });
+  });
+
+  it('mídia vertical num quadro horizontal ocupa menos largura e fica mais perto da borda', () => {
+    const { p, ids } = build([0, 2]);
+    const vertical: Project = { ...p, media: { ...p.media, m1: { ...p.media.m1!, width: 1080, height: 1920 } } };
+    const wide = media(ops.pictureInPicture(p, ids[0]!, 'br', 0.4), ids[0]!).transform.x;
+    const tall = media(ops.pictureInPicture(vertical, ids[0]!, 'br', 0.4), ids[0]!).transform.x;
+    expect(tall).toBeGreaterThan(wide); // largura exibida menor → centro mais perto do canto
+  });
+
+  it('recusa tamanhos fora de 10–60%', () => {
+    const { p, ids } = build([0, 2]);
+    expect(() => ops.pictureInPicture(p, ids[0]!, 'br', 0.05)).toThrow(/10%/);
+    expect(() => ops.pictureInPicture(p, ids[0]!, 'br', 0.9)).toThrow();
+  });
+});
