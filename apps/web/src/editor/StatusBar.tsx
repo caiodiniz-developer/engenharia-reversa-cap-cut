@@ -1,5 +1,5 @@
 import { useShallow } from 'zustand/react/shallow';
-import { findClip, formatTimecode, projectDuration } from '@editor/core';
+import { findClip, formatTimecode, projectDuration, selectionStats } from '@editor/core';
 import { aspectLabel, formatDuration } from '../lib/format';
 import { useReview } from '../lib/useReview';
 import { useEditor } from '../store/editor';
@@ -16,6 +16,8 @@ export function StatusBar() {
       clips: st.project.tracks.reduce((n, t) => n + t.clips.length, 0),
       total: projectDuration(st.project),
       selected: st.selection.length,
+      selTotal: (st.selection.length > 1 ? selectionStats(st.project, st.selection)?.total : 0) ?? 0,
+      selSpan: (st.selection.length > 1 ? selectionStats(st.project, st.selection)?.span : 0) ?? 0,
       one: st.selection.length === 1 ? (findClip(st.project, st.selection[0]!)?.clip ?? null) : null,
       zoom: st.zoom,
       rate: st.rate,
@@ -35,6 +37,7 @@ export function StatusBar() {
       {s.selected > 0 && (
         <span className="text-accent" data-testid="status-selected">
           {s.selected} {s.selected === 1 ? 'selecionado' : 'selecionados'}
+          {s.selTotal > 0 && <span className="ml-1 text-ink/70" title="Soma das durações dos clipes selecionados e o intervalo que eles cobrem na timeline">· {s.selTotal.toFixed(1).replace('.', ',')} s em {s.selSpan.toFixed(1).replace('.', ',')} s</span>}
         </span>
       )}
       {s.one && (
