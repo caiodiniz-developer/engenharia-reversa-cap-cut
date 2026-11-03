@@ -18,3 +18,27 @@ const createAndSelect = (label: string, make: (p: Project, ids: string[]) => { p
 
 const oneMedia = () => sel().length === 1 && findClip(s().project, sel()[0]!)?.clip.type === 'media';
 const G = 'Criativo';
+
+export function creativeEditCommands(): Command[] {
+  const ramps = [
+    ['slow-normal', 'Rampa de velocidade: câmera lenta → normal (0,3× → 1×)', 0.3, 1, false],
+    ['normal-fast', 'Rampa de velocidade: normal → acelerado (1× → 4×)', 1, 4, false],
+    ['smooth', 'Rampa de velocidade suave: lento → rápido (0,5× → 3×)', 0.5, 3, true],
+  ] as const;
+  return [
+    ...ramps.map(([id, label, from, to, smooth]) =>
+      cmd('ramp-' + id, label, G, 'gauge', createAndSelect('Rampa de velocidade', (p, ids) => core.speedRamp(p, ids[0]!, { from, to, smooth })), { enabled: oneMedia, keywords: 'velocidade slow motion câmera lenta acelerar curva timelapse' }),
+    ),
+    cmd('boomerang', 'Boomerang: o clipe toca e volta em reverso', G, 'repeat', createAndSelect('Boomerang', (p, ids) => { const r = core.boomerang(p, ids[0]!); return { project: r.project, ids: [r.newId] }; }), { enabled: oneMedia, keywords: 'ida e volta reverso loop vai e vem' }),
+    ...([[0.25, 3], [0.1, 6]] as const).map(([size, times]) =>
+      cmd('stutter-' + size, 'Gagueira: repetir ' + String(size).replace('.', ',') + ' s por ' + (times + 1) + '× na cabeça de reprodução', G, 'zap', createAndSelect('Gagueira', (p, ids) => core.stutter(p, ids[0]!, s().playhead, size, times)), { enabled: oneMedia, keywords: 'beat repeat glitch repetição travar eco batida' }),
+    ),
+    ...[0.05, 0.15].map((sec) =>
+      cmd('smooth-cuts-' + sec, 'Fades de ' + String(sec * 1000) + ' ms em cada corte da faixa (anti-estalo)', G, 'wave', () => {
+        const t = focusTrackId();
+        if (!t) return void toast.info('Selecione uma faixa ou um clipe');
+        applyCounted('Cortes suaves', (p) => core.smoothCuts(p, t, sec), (r) => r.cuts, 'Não há cortes secos (clipes encostados) nesta faixa', (n) => n + (n === 1 ? ' corte suavizado' : ' cortes suavizados'));
+      }, { enabled: hasTrack, keywords: 'estalo click pop áudio emenda costura' }),
+    ),
+  ];
+}
