@@ -209,6 +209,7 @@ Operações puras em `packages/core/src/ops` (testadas) ligadas a comandos da pa
 | **Tela dividida** (lado a lado ou empilhado): cada clipe cobre metade do quadro, cortado no centro sem deformar | 🟨 | core `ops/creative.test`, E2E `criativo` mede o **preview** (esquerda azul, direita vermelho); a exportação usa a mesma transformação, mas não foi medida no arquivo |
 | **Imagem dentro da imagem** (4 cantos, 30%, margem de 3%) | ✅ | core `ops/creative.test` (posição conferida com a proporção da mídia); sem medição de pixel |
 
+## Plataforma
 
 | Recurso | Estado | Verificação |
 |---|---|---|
