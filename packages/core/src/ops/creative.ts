@@ -109,3 +109,20 @@ export function stutter(p: Project, clipId: string, at: number, size: number, re
   const r = repeatClip(next, middle, repeats);
   return { project: r.project, ids: [middle, ...r.newIds] };
 }
+
+/** Em cada corte seco da faixa (clipes de mídia encostados), põe um fade de saída no anterior e de entrada no seguinte. */
+export function smoothCuts(p: Project, trackId: string, seconds = 0.05): { project: Project; cuts: number } {
+  if (!(seconds >= 0.01 && seconds <= 1)) throw new TimelineError('O fade vai de 0,01 s a 1 s', 'OUT_OF_RANGE');
+  const order = sequenceOrder(p, trackId).filter((c): c is MediaClip => c.type === 'media');
+  let next = p;
+  let cuts = 0;
+  for (let i = 1; i < order.length; i++) {
+    const a = order[i - 1]!;
+    const b = order[i]!;
+    if (Math.abs(b.start - clipEnd(a)) > 0.05) continue;
+    next = updateClip(next, a.id, (c) => ({ ...(c as MediaClip), audio: { ...(c as MediaClip).audio, fadeOut: round6(Math.min(seconds, a.duration / 2)) } }));
+    next = updateClip(next, b.id, (c) => ({ ...(c as MediaClip), audio: { ...(c as MediaClip).audio, fadeIn: round6(Math.min(seconds, b.duration / 2)) } }));
+    cuts++;
+  }
+  return { project: next, cuts };
+}
