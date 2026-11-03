@@ -6,11 +6,13 @@ export interface Toast {
   message: string;
   /** Milissegundos até sumir sozinho (0 = fica até ser dispensado). */
   ttl: number;
+  /** Botão opcional do aviso; clicar executa e dispensa o aviso. */
+  action?: { label: string; run: () => void };
 }
 
 interface ToastState {
   toasts: Toast[];
-  push(kind: Toast['kind'], message: string, ttl?: number): void;
+  push(kind: Toast['kind'], message: string, ttl?: number, action?: Toast['action']): void;
   dismiss(id: number): void;
 }
 
@@ -18,9 +20,10 @@ let nextId = 1;
 
 export const useToasts = create<ToastState>((set, get) => ({
   toasts: [],
-  push(kind, message, ttl = kind === 'error' ? 6000 : 3500) {
+  push(kind, message, ttlArg, action) {
     const id = nextId++;
-    set({ toasts: [...get().toasts.slice(-4), { id, kind, message, ttl }] });
+    const ttl = ttlArg ?? (action || kind === 'error' ? 6000 : 3500);
+    set({ toasts: [...get().toasts.slice(-4), { id, kind, message, ttl, action }] });
     if (ttl > 0) setTimeout(() => get().dismiss(id), ttl);
   },
   dismiss(id) {
@@ -30,6 +33,6 @@ export const useToasts = create<ToastState>((set, get) => ({
 
 export const toast = {
   info: (m: string) => useToasts.getState().push('info', m),
-  success: (m: string) => useToasts.getState().push('success', m),
+  success: (m: string, action?: Toast['action']) => useToasts.getState().push('success', m, undefined, action),
   error: (m: string) => useToasts.getState().push('error', m),
 };
