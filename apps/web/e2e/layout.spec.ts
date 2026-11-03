@@ -78,3 +78,23 @@ test.describe('editor: paleta e barra de estado', () => {
     await expect(page.getByTestId('status-selected')).toContainText('8,0 s em 8,0 s');
   });
 });
+
+
+test.describe('novidades do editor', () => {
+  test('lista as novidades e Experimentar fecha o diálogo e abre a ferramenta', async ({ page }) => {
+    await signup(page);
+    await newProject(page, 'Novidades');
+    await page.keyboard.press('Control+k');
+    const input = page.getByRole('combobox', { name: 'Buscar comandos' });
+    await input.fill('novidades do editor');
+    await page.getByRole('option', { name: /Novidades do editor/ }).first().click();
+    await expect(input).toBeHidden();
+    const news = page.getByTestId('news');
+    await expect(news).toBeVisible();
+    expect(await news.getByTestId('news-item').count()).toBeGreaterThan(10);
+    await expect(news.getByRole('heading', { name: /Ferramentas criativas/ })).toBeVisible();
+    await news.getByTestId('news-item').filter({ hasText: 'Estatísticas do projeto' }).getByTestId('news-try').click();
+    await expect(news).toBeHidden();
+    await expect(page.getByRole('dialog', { name: 'Estatísticas do projeto' })).toBeVisible();
+  });
+});
