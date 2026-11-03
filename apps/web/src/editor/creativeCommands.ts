@@ -69,3 +69,27 @@ export function syncCommands(): Command[] {
     ),
   ];
 }
+
+export function selectionCommands(): Command[] {
+  const pick = (ids: string[], what: string) => {
+    if (!ids.length) return void toast.info('Nenhum clipe ' + what);
+    s().select(ids);
+    toast.success(ids.length + (ids.length === 1 ? ' clipe selecionado' : ' clipes selecionados'));
+  };
+  const rules: Array<[core.SelectCriterion, string, string, number?]> = [
+    ['muted', 'Selecionar clipes silenciados', 'silenciado'],
+    ['effects', 'Selecionar clipes com efeitos', 'com efeitos'],
+    ['keyframes', 'Selecionar clipes com keyframes', 'com keyframes'],
+    ['transition', 'Selecionar clipes com transição', 'com transição'],
+    ['linked', 'Selecionar clipes ligados (vídeo e áudio)', 'ligado'],
+    ['grouped', 'Selecionar clipes agrupados', 'agrupado'],
+    ['speed', 'Selecionar clipes com velocidade alterada', 'com velocidade alterada'],
+    ['reversed', 'Selecionar clipes invertidos', 'invertido'],
+    ['shorter', 'Selecionar clipes mais curtos que 1 s', 'mais curto que 1 s', 1],
+    ['longer', 'Selecionar clipes mais longos que 5 s', 'mais longo que 5 s', 5],
+  ];
+  return [
+    ...rules.map(([criterion, label, what, secs]) => cmd('select-where-' + criterion, label, 'Seleção', 'layers', () => pick(core.selectWhere(s().project, criterion, secs), what), { keywords: 'selecionar filtrar encontrar achar critério' })),
+    cmd('select-invert', 'Inverter a seleção', 'Seleção', 'shuffle', () => pick(core.invertIds(s().project, sel()), 'para selecionar'), { keywords: 'oposto contrário restante resto' }),
+  ];
+}
