@@ -94,6 +94,7 @@ export function ProjectsPage() {
   const navigate = useNavigate();
   const [projects, setProjects] = useState<ProjectSummary[] | null>(null);
   const [query, setQuery] = useState('');
+  const searchRef = useRef<HTMLInputElement>(null);
   const [sort, setSort] = useState<Sort>('recent');
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState('');
@@ -237,7 +238,12 @@ export function ProjectsPage() {
           <div className="mb-5 flex flex-wrap items-center gap-3">
             <div className="relative min-w-[220px] flex-1">
               <Icon name="search" size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-mute" />
-              <input className="field h-9 pl-9" placeholder="Buscar projetos" aria-label="Buscar projetos" value={query} onChange={(e) => setQuery(e.target.value)} />
+              <input ref={searchRef} className="field h-9 pl-9 pr-9" placeholder="Buscar projetos" aria-label="Buscar projetos" value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === 'Escape' && setQuery('')} />
+              {query && (
+                <button type="button" className="btn-icon absolute right-1 top-1/2 -translate-y-1/2" aria-label="Limpar busca" onClick={() => { setQuery(''); searchRef.current?.focus(); }} data-testid="clear-search">
+                  <Icon name="x" size={14} />
+                </button>
+              )}
             </div>
             <label className="flex items-center gap-2 text-xs text-mute">
               Ordenar
