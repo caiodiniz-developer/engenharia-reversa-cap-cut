@@ -236,6 +236,9 @@ Operações puras em `packages/core/src/ops` (testadas) ligadas a comandos da pa
 | Transição suave ao trocar de tema; shimmer nos esqueletos; brilho no cursor de reprodução | 🟨 | só a transição de tema tem teste (E2E `layout`); shimmer e brilho do cursor são efeitos visuais sem teste |
 | Landing: menu que acompanha a seção lida, com indicador que desliza | ✅ | web `scrollspy.test`, E2E `landing` |
 | Landing: seção de **atalhos** com busca, lida da mesma lista do editor | ✅ | E2E `landing` |
+| Projetos: contagem ("2 de 5 projetos"), botão de limpar a busca, Esc e a tecla / para focar a busca | ✅ | web `countLabel.test`, E2E `projetos` |
+| Landing: rodapé com direitos, nota de projeto independente e "Voltar ao topo" | ✅ | web `scrollToTop.test`, E2E `layout` |
+| Helpers dos comandos da paleta (aplicar só se mudou, aviso com Desfazer, faixa em foco) | ✅ | web `commandKit.test` |
 | A exportação abre na **última predefinição** escolhida | ✅ | web `lastPreset.test`, E2E `layout` (sobrevive ao recarregar) |
 | Login: **Lembrar de mim neste aparelho** guarda só o e-mail (nunca a senha) | ✅ | web `rememberEmail.test`, E2E `layout` |
 | Biblioteca de mídia em **grade ou lista** (a escolha é lembrada) | ✅ | web `mediaView.test`, E2E `layout` (a lista ocupa a largura toda e continua arrastável) |
