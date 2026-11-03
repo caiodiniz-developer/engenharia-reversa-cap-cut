@@ -81,3 +81,31 @@ export function boomerang(p: Project, clipId: string): { project: Project; newId
   const newId = r.newIds[0]!;
   return { project: setReverse(r.project, newId, !clip.reverse), newId };
 }
+
+/**
+ * Efeito de gagueira (beat repeat): o trecho de ${size} s a partir de ${at} (tempo da timeline, dentro do clipe) é repetido
+ * ${repeats} vezes a mais e o resto da faixa anda para dar espaço. Não vale para clipes ligados a outro.
+ */
+export function stutter(p: Project, clipId: string, at: number, size: number, repeats: number): { project: Project; ids: string[] } {
+  if (!(size >= 0.05 && size <= 2)) throw new TimelineError('O trecho repetido vai de 0,05 s a 2 s', 'OUT_OF_RANGE');
+  if (!Number.isInteger(repeats) || repeats < 1 || repeats > 16) throw new TimelineError('Repita de 1 a 16 vezes', 'OUT_OF_RANGE');
+  const clip = requireMediaClip(p, clipId);
+  const { track } = requireClip(p, clipId);
+  assertUnlocked(track);
+  if (clip.linkId) throw new TimelineError('Desvincule o áudio antes de usar a gagueira', 'INVALID');
+  const end = at + size;
+  if (at < clip.start - EPS || end > clipEnd(clip) + EPS) throw new TimelineError('O trecho precisa ficar inteiro dentro do clipe', 'OUT_OF_RANGE');
+  let next = p;
+  let middle = clipId;
+  if (at > clip.start + EPS) {
+    const r = splitClips(next, [clipId], round6(at));
+    next = r.project;
+    middle = r.rightIds[clipId]!;
+  }
+  if (end < clipEnd(clip) - EPS) next = splitClips(next, [middle], round6(end)).project;
+  const mid = requireClip(next, middle).clip;
+  const shift = round6(repeats * mid.duration);
+  next = withTrackClips(next, track.id, (cs) => shiftFrom(cs, clipEnd(mid) - EPS, shift, new Set([middle])));
+  const r = repeatClip(next, middle, repeats);
+  return { project: r.project, ids: [middle, ...r.newIds] };
+}
