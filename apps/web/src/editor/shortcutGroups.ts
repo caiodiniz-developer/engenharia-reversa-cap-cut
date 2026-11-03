@@ -1,4 +1,4 @@
-import type { Shortcut } from './useShortcuts';
+import type { Shortcut } from './shortcuts';
 
 export const SHORTCUT_CATEGORIES = ['Reprodução', 'Edição', 'Timeline', 'Seleção', 'Projeto e interface'] as const;
 export type ShortcutCategory = (typeof SHORTCUT_CATEGORIES)[number];
