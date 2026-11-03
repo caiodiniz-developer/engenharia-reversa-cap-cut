@@ -34,3 +34,26 @@ export function snapClipsToMarkers(p: Project, ids: string[], tolerance = 0.5): 
   }
   return { project: next, moved, skipped };
 }
+
+/** Faz o fim de cada clipe coincidir com o primeiro marcador depois do início dele (aparando ou estendendo, se a mídia alcançar). */
+export function stretchToNextMarker(p: Project, ids: string[]): { project: Project; changed: number; skipped: number } {
+  const marks = times(p);
+  if (!marks.length) throw new TimelineError('Não há marcadores no projeto', 'NOT_FOUND');
+  let next = p;
+  let changed = 0;
+  let skipped = 0;
+  for (const id of new Set(ids)) {
+    const { clip, track } = requireClip(next, id);
+    assertUnlocked(track);
+    const target = marks.find((t) => t > clip.start + 1e-3);
+    if (target === undefined || Math.abs(target - clipEnd(clip)) < 1e-6) continue;
+    try {
+      for (const g of expandSelection(next, [id])) next = trimClip(next, g, 'end', target);
+      changed++;
+    } catch (e) {
+      if (!(e instanceof TimelineError)) throw e;
+      skipped++;
+    }
+  }
+  return { project: next, changed, skipped };
+}
