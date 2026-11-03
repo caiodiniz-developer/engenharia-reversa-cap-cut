@@ -86,3 +86,32 @@ describe('boomerang', () => {
     expect(() => ops.boomerang(p, ids[0]!)).toThrow();
   });
 });
+
+describe('stutter', () => {
+  it('repete o trecho do meio e empurra o clipe seguinte', () => {
+    const { p, ids } = build([0, 4], [4, 6]);
+    const r = ops.stutter(p, ids[0]!, 1, 0.5, 3);
+    const clips = sorted(r.project);
+    // 0–1, depois 4 cópias do trecho 1–1,5 (original + 3), depois 1,5–4 e o clipe seguinte
+    expect(r.ids).toHaveLength(4);
+    for (const id of r.ids) expect(media(r.project, id)).toMatchObject({ duration: 0.5, sourceIn: 1 });
+    expect(clips.map((c) => [c.start, c.duration])).toEqual([[0, 1], [1, 0.5], [1.5, 0.5], [2, 0.5], [2.5, 0.5], [3, 2.5], [5.5, 2]]);
+  });
+
+  it('funciona no início e no fim do clipe', () => {
+    const { p, ids } = build([0, 2]);
+    const start = ops.stutter(p, ids[0]!, 0, 0.25, 2);
+    expect(sorted(start.project).map((c) => c.duration)).toEqual([0.25, 0.25, 0.25, 1.75]);
+    const endCut = ops.stutter(p, ids[0]!, 1.5, 0.5, 1);
+    expect(sorted(endCut.project).map((c) => [c.start, c.duration])).toEqual([[0, 1.5], [1.5, 0.5], [2, 0.5]]);
+  });
+
+  it('recusa trecho fora do clipe, tamanho ou repetições inválidos e clipe ligado', () => {
+    const { p, ids } = build([0, 2]);
+    expect(() => ops.stutter(p, ids[0]!, 1.8, 0.5, 2)).toThrow(/dentro do clipe/);
+    expect(() => ops.stutter(p, ids[0]!, 0.5, 0.01, 2)).toThrow(/0,05/);
+    expect(() => ops.stutter(p, ids[0]!, 0.5, 0.5, 0)).toThrow(/1 a 16/);
+    const linked = { ...p, tracks: p.tracks.map((t) => ({ ...t, clips: t.clips.map((c) => ({ ...c, linkId: 'x' })) })) } as Project;
+    expect(() => ops.stutter(linked, ids[0]!, 0.5, 0.5, 2)).toThrow(/Desvincule/);
+  });
+});
