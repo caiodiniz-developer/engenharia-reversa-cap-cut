@@ -115,3 +115,28 @@ describe('stutter', () => {
     expect(() => ops.stutter(linked, ids[0]!, 0.5, 0.5, 2)).toThrow(/Desvincule/);
   });
 });
+
+describe('smoothCuts', () => {
+  it('aplica fade de saída e entrada só nos cortes encostados', () => {
+    const { p, trackId, ids } = build([0, 2], [2, 4], [6, 8]); // o terceiro tem vão antes
+    const r = ops.smoothCuts(p, trackId, 0.1);
+    expect(r.cuts).toBe(1);
+    expect(media(r.project, ids[0]!).audio.fadeOut).toBe(0.1);
+    expect(media(r.project, ids[1]!).audio.fadeIn).toBe(0.1);
+    expect(media(r.project, ids[1]!).audio.fadeOut).toBe(0);
+    expect(media(r.project, ids[2]!).audio.fadeIn).toBe(0);
+  });
+
+  it('o fade nunca passa da metade do clipe e valores fora de 0,01–1 falham', () => {
+    const { p, trackId, ids } = build([0, 0.2], [0.2, 2]);
+    const r = ops.smoothCuts(p, trackId, 0.5);
+    expect(media(r.project, ids[0]!).audio.fadeOut).toBe(0.1);
+    expect(() => ops.smoothCuts(p, trackId, 0)).toThrow();
+    expect(() => ops.smoothCuts(p, trackId, 2)).toThrow();
+  });
+
+  it('sem cortes encostados não muda nada', () => {
+    const { p, trackId } = build([0, 1], [3, 4]);
+    expect(ops.smoothCuts(p, trackId)).toEqual({ project: p, cuts: 0 });
+  });
+});
