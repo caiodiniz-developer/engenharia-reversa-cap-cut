@@ -82,5 +82,12 @@ Listadas para que ninguém descubra em produção. Itens marcados com 🔧 têm 
 - O botão **Desfazer** dos avisos desfaz a última edição do projeto, que pode não ser a do comando se algo mais foi editado nesse meio-tempo.
 - Os atalhos **Alt + I/B/R** podem conflitar com atalhos do sistema ou do teclado (por exemplo, AltGr em alguns layouts).
 
+## Interface nova
+- Os **projetos fixados** ficam no `localStorage` do navegador (até 12): não acompanham a conta nem outros dispositivos.
+- O **changelog** ("Novidades do editor") é escrito à mão em `lib/changelog.ts`; o teste só garante que todo comando citado existe na paleta, não que o texto descreva bem o comportamento.
+- O **aviso de Caps Lock** depende de o navegador informar o estado da tecla (o Chrome informa); em celulares não há aviso.
+- O **menu da landing** marca a seção cuja borda passou de 140 px do topo; seções curtas no fim da página podem nunca chegar a ficar marcadas em telas muito altas.
+- O **contraste** é conferido para os pares de cor principais (texto, destaque, botão primário, erro e sucesso) em cada tema, não para todas as combinações possíveis de fundo e texto da interface.
+
 ## Escala
 - Não houve teste de carga nem de vídeos muito longos (horas). Os limites configuráveis (2 GB por arquivo, 2 h por mídia, 200 mídias por projeto, 3000 clipes por exportação) existem para proteger o servidor, não foram calibrados com medições.
