@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '../components/Icon';
+import { highlightMatch } from '../lib/highlight';
 import { loadRecent, pushRecent, saveRecent, withRecentFirst } from '../lib/recentCommands';
 import { useEditor } from '../store/editor';
 import { buildCommands, searchCommands } from './commands';
@@ -106,7 +107,17 @@ export function CommandPalette({ open, onClose, onExport, onHelp }: { open: bool
               {results.map((c, i) => (
                 <li key={c.id} id={`cmd-${c.id}`} role="option" aria-selected={i === index} onMouseMove={() => setIndex(i)} onClick={() => run(i)} className={`flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-xs ${i === index ? 'bg-accent/15 text-ink' : 'text-ink/85'}`}>
                   <Icon name={c.icon} size={15} className={i === index ? 'text-accent' : 'text-mute'} />
-                  <span className="flex-1 truncate">{c.label}</span>
+                  <span className="flex-1 truncate">
+                    {highlightMatch(c.label, query).map((part, k) =>
+                      part.match ? (
+                        <mark key={k} className="bg-transparent font-semibold text-accent">
+                          {part.text}
+                        </mark>
+                      ) : (
+                        <span key={k}>{part.text}</span>
+                      ),
+                    )}
+                  </span>
                   {recentSet.has(c.id) && <span className="rounded bg-panel-3 px-1.5 py-0.5 text-[10px] font-medium text-accent" data-testid="recent-chip">Recente</span>}
                   <span className="text-2xs text-mute">{c.group}</span>
                   {c.shortcut && <span className="kbd">{c.shortcut}</span>}
