@@ -119,7 +119,7 @@ export function CommandPalette({ open, onClose, onExport, onHelp }: { open: bool
                     )}
                   </span>
                   {recentSet.has(c.id) && <span className="rounded bg-panel-3 px-1.5 py-0.5 text-[10px] font-medium text-accent" data-testid="recent-chip">Recente</span>}
-                  <span className="text-2xs text-mute">{c.group}</span>
+                  <span className="rounded bg-panel-3/70 px-1.5 py-0.5 text-2xs text-mute">{c.group}</span>
                   {c.shortcut && <span className="kbd">{c.shortcut}</span>}
                 </li>
               ))}
