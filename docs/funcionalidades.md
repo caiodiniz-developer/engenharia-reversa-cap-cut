@@ -198,7 +198,17 @@ Operações puras em `packages/core/src/ops` (testadas) ligadas a comandos da pa
 | Remover clipes duplicados empilhados | ✅ | core `ops/mediatools.test` |
 | Avisos com barra de tempo; botões do trilho agrupados; estados vazios com ícone flutuante; tela de entrada animada | ✅ | web `toasts.test`, E2E `landing`/`auth` |
 
-## Plataforma
+### Criativo (paleta Ctrl+K)
+
+| Recurso | Estado | Verificação |
+|---|---|---|
+| **Rampa de velocidade**: o clipe vira 3 a 12 trechos que acompanham uma curva de velocidade (linear ou suave); diálogo com barras ao vivo e a duração final | ✅ | core `ops/creative.test` e `ops/creativeRamp.test` (a prévia usa a mesma fórmula do corte), E2E `criativo` |
+| **Boomerang**: cópia em reverso logo depois do clipe (atalho Alt + B) | ✅ | core `ops/creative.test`, E2E `criativo` |
+| **Gagueira**: repete um trecho curto várias vezes e empurra o resto da faixa | ✅ | core `ops/creative.test`, web `creativeCommands.test` |
+| **Cortes suaves**: fades de 50 ou 150 ms em cada corte seco, contra estalos | ✅ | core `ops/creative.test`; o efeito sonoro em si não foi medido em arquivo |
+| **Tela dividida** (lado a lado ou empilhado): cada clipe cobre metade do quadro, cortado no centro sem deformar | 🟨 | core `ops/creative.test`, E2E `criativo` mede o **preview** (esquerda azul, direita vermelho); a exportação usa a mesma transformação, mas não foi medida no arquivo |
+| **Imagem dentro da imagem** (4 cantos, 30%, margem de 3%) | ✅ | core `ops/creative.test` (posição conferida com a proporção da mídia); sem medição de pixel |
+
 
 | Recurso | Estado | Verificação |
 |---|---|---|
