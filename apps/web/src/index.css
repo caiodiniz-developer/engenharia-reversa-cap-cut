@@ -429,3 +429,21 @@ input[type='range']:focus-visible::-webkit-slider-thumb {
   background: rgb(var(--accent) / 0.3);
   color: rgb(var(--ink));
 }
+
+
+/* Esqueleto de carregamento: faixa de luz que atravessa o bloco. */
+.skeleton {
+  background: linear-gradient(90deg, rgb(var(--panel-2)) 0%, rgb(var(--panel-3)) 50%, rgb(var(--panel-2)) 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s linear infinite;
+}
+@keyframes skeleton-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}
