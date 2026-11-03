@@ -42,3 +42,14 @@ export function creativeEditCommands(): Command[] {
     ),
   ];
 }
+
+export function layoutCommands(): Command[] {
+  const corners = [['tl', 'no canto superior esquerdo'], ['tr', 'no canto superior direito'], ['bl', 'no canto inferior esquerdo'], ['br', 'no canto inferior direito']] as const;
+  return [
+    ...corners.map(([corner, label]) =>
+      cmd('pip-' + corner, 'Imagem dentro da imagem ' + label + ' (30%)', G, 'layout', onSelection('Imagem dentro da imagem', (p, ids) => core.pictureInPicture(p, ids[0]!, corner, 0.3)), { enabled: oneMedia, keywords: 'pip miniatura reação webcam canto sobrepor' }),
+    ),
+    cmd('split-side', 'Tela dividida: dois clipes lado a lado', G, 'panelRight', onSelection('Tela dividida', (p, ids) => core.splitScreen(p, [ids[0]!, ids[1]!], 'side')), { enabled: () => sel().length === 2, keywords: 'dividir tela comparação antes depois metade' }),
+    cmd('split-stack', 'Tela dividida: um clipe sobre o outro', G, 'layers', onSelection('Tela dividida', (p, ids) => core.splitScreen(p, [ids[0]!, ids[1]!], 'stack')), { enabled: () => sel().length === 2, keywords: 'dividir tela comparação antes depois metade vertical' }),
+  ];
+}
