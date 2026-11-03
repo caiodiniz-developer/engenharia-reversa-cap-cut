@@ -12,6 +12,7 @@ import { PlatformStrip } from './PlatformStrip';
 import { ReviewShowcase } from './ReviewShowcase';
 import { MobileCta } from './MobileCta';
 import { ScrollProgress } from './ScrollProgress';
+import { ShortcutsSection } from './ShortcutsSection';
 import { LandingSection } from './Section';
 import { StatsStrip } from './StatsStrip';
 import { Steps } from './Steps';
@@ -64,6 +65,9 @@ export function LandingPage() {
         </LandingSection>
         <LandingSection id="como-funciona" eyebrow="Como funciona" title="Do cadastro ao arquivo exportado em três passos">
           <Steps container={scroller} />
+        </LandingSection>
+        <LandingSection id="atalhos" eyebrow="Atalhos" title="Feito para quem usa o teclado" subtitle="Dividir, marcar, aparar e navegar sem tirar a mão do teclado. A lista abaixo é a mesma do editor.">
+          <ShortcutsSection />
         </LandingSection>
         <LandingSection id="perguntas" eyebrow="Perguntas" title="Perguntas frequentes" tone="tinted">
           <Faq />
