@@ -38,7 +38,11 @@ export function Hero({ scroller }: { scroller?: RefObject<HTMLElement | null> })
       </motion.div>
       <div className="relative mx-auto max-w-3xl text-center">
         <motion.p {...fade(0)} className="mx-auto mb-5 inline-flex items-center gap-2 rounded-full border border-line bg-panel/70 px-3.5 py-1.5 text-xs font-medium text-mute backdrop-blur">
-          <Icon name="sparkles" size={13} className="text-accent" /> {HERO.eyebrow}
+          <span className="relative flex h-2 w-2" aria-hidden="true">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-accent opacity-60 motion-safe:animate-ping" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
+          </span>{' '}
+          {HERO.eyebrow}
         </motion.p>
         <h1 id="hero-title" className="text-balance text-4xl font-bold leading-[1.08] tracking-tight sm:text-6xl" data-testid="hero-title">
           <SplitText text="Edite, revise e exporte seus vídeos" delay={0.05} /> <SplitText text="sem instalar nada." delay={0.42} wordClassName="gradient-text" />
