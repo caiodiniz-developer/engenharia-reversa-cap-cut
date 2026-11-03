@@ -5,6 +5,7 @@ import { Empty, ProgressBar } from '../../components/controls';
 import { Icon } from '../../components/Icon';
 import { formatBytes, formatDuration } from '../../lib/format';
 import { MEDIA_SORT_LABEL, sortMedia, type MediaSort } from '../../lib/mediaSort';
+import { loadMediaView, mediaViewClasses, saveMediaView, type MediaView } from '../../lib/mediaView';
 import { useEditor } from '../../store/editor';
 import { toast } from '../../store/toasts';
 import { useUploads } from '../../store/uploads';
@@ -25,6 +26,7 @@ export function MediaPanel({ projectId }: { projectId: string }) {
   const [filter, setFilter] = useState<Filter>('all');
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState<MediaSort>('name');
+  const [view, setView] = useState<MediaView>(() => loadMediaView());
   const [limit, setLimit] = useState(PAGE);
   const [over, setOver] = useState(false);
   const [confirming, setConfirming] = useState<string | null>(null);
@@ -90,13 +92,34 @@ export function MediaPanel({ projectId }: { projectId: string }) {
         </button>
         <p className="text-2xs leading-relaxed text-mute">Os arquivos são enviados ao servidor para gerar prévias e exportar. Arraste e solte aqui.</p>
         <input className="field" placeholder="Buscar na biblioteca" aria-label="Buscar na biblioteca" value={query} onChange={(e) => setQuery(e.target.value)} />
-        <select className="field" aria-label="Ordenar biblioteca" value={sort} onChange={(e) => setSort(e.target.value as MediaSort)}>
+        <div className="flex gap-2">
+        <select className="field min-w-0 flex-1" aria-label="Ordenar biblioteca" value={sort} onChange={(e) => setSort(e.target.value as MediaSort)}>
           {(Object.keys(MEDIA_SORT_LABEL) as MediaSort[]).map((k) => (
             <option key={k} value={k}>
               {MEDIA_SORT_LABEL[k]}
             </option>
           ))}
         </select>
+        <div className="flex shrink-0 gap-0.5 rounded-lg bg-panel-2 p-0.5" role="group" aria-label="Modo de exibição">
+          {(['grid', 'list'] as MediaView[]).map((v) => (
+            <button
+              key={v}
+              type="button"
+              className={'btn-icon !h-7 !w-7 ' + (view === v ? '!bg-panel-3 !text-ink' : '')}
+              aria-label={v === 'grid' ? 'Ver em grade' : 'Ver em lista'}
+              title={v === 'grid' ? 'Grade' : 'Lista'}
+              aria-pressed={view === v}
+              onClick={() => {
+                setView(v);
+                saveMediaView(v);
+              }}
+              data-testid={'media-view-' + v}
+            >
+              <Icon name={v === 'grid' ? 'grid' : 'list'} size={14} />
+            </button>
+          ))}
+        </div>
+        </div>
         <div className="flex gap-1 rounded-lg bg-panel-2 p-1" role="tablist" aria-label="Filtrar por tipo">
           {(['all', 'video', 'audio', 'image'] as Filter[]).map((f) => (
             <button key={f} type="button" role="tab" aria-selected={filter === f} onClick={() => setFilter(f)} className={`flex-1 rounded-md px-2 py-1 text-2xs font-medium transition-colors ${filter === f ? 'bg-panel-3 text-ink shadow-sm' : 'text-mute hover:text-ink'}`}>
