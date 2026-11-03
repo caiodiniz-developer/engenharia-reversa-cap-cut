@@ -93,3 +93,32 @@ export function selectionCommands(): Command[] {
     cmd('select-invert', 'Inverter a seleção', 'Seleção', 'shuffle', () => pick(core.invertIds(s().project, sel()), 'para selecionar'), { keywords: 'oposto contrário restante resto' }),
   ];
 }
+
+export function trackAndCaptionCommands(): Command[] {
+  const trans = [['fade', 'dissolver'], ['slide-left', 'deslizar para a esquerda'], ['wipe-right', 'cortina para a direita']] as const;
+  const capSel = () => sel().some((id) => findClip(s().project, id)?.clip.type === 'caption');
+  return [
+    ...trans.map(([type, label]) =>
+      cmd('transitions-all-' + type, 'Transição em todos os cortes da faixa: ' + label + ' (0,5 s)', 'Transições', 'shuffle', () => {
+        const t = focusTrackId();
+        if (!t) return void toast.info('Selecione uma faixa ou um clipe');
+        applyCounted('Transições na faixa', (p) => core.setTransitionsOnTrack(p, t, type, 0.5), (r) => r.applied, 'Nenhum corte aceitou a transição (precisam estar encostados e ter mais de 0,6 s)', (n) => n + (n === 1 ? ' transição aplicada' : ' transições aplicadas')) ;
+      }, { enabled: hasTrack, keywords: 'todos os cortes lote aplicar' }),
+    ),
+    cmd('transitions-remove-all', 'Remover todas as transições da faixa', 'Transições', 'x', () => {
+      const t = focusTrackId();
+      if (!t) return void toast.info('Selecione uma faixa ou um clipe');
+      applyCounted('Remover transições', (p) => core.removeTransitionsOnTrack(p, t), (r) => r.removed, 'A faixa não tem transições', (n) => n + (n === 1 ? ' transição removida' : ' transições removidas'));
+    }, { enabled: hasTrack, keywords: 'tirar limpar lote' }),
+    cmd('captions-split-long', 'Quebrar legendas longas (mais de 42 caracteres)', 'Legendas', 'captions', () => applyCounted('Quebrar legendas', (p) => core.splitLongCaptions(p, 42), (r) => r.created, 'Nenhuma legenda passa de 42 caracteres', (n) => n + (n === 1 ? ' legenda nova' : ' legendas novas')), { keywords: 'dividir linhas curtas comprida tamanho' }),
+    ...([['amarelo', '#ffd60a'], ['ciano', '#22d3ee'], ['verde', '#4ade80']] as const).map(([name, color]) =>
+      cmd('caption-highlight-' + name, 'Destacar a palavra falada em ' + name + ' nas legendas selecionadas', 'Legendas', 'captions', onSelection('Cor de destaque', (p, ids) => core.setCaptionHighlight(p, ids, color)), { enabled: capSel, keywords: 'karaokê cor palavra falada realce' }),
+    ),
+    cmd('caption-highlight-off', 'Remover o destaque da palavra falada nas legendas selecionadas', 'Legendas', 'captions', onSelection('Remover destaque', (p, ids) => core.setCaptionHighlight(p, ids, null)), { enabled: capSel }),
+  ];
+}
+
+/** Todos os comandos criativos, na ordem em que aparecem na paleta. */
+export function buildCreativeCommands(): Command[] {
+  return [...creativeEditCommands(), ...layoutCommands(), ...syncCommands(), ...selectionCommands(), ...trackAndCaptionCommands()];
+}
