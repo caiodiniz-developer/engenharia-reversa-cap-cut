@@ -62,3 +62,27 @@ describe('speedRamp', () => {
     expect(() => ops.speedRamp(kf, ids[0]!, { from: 1, to: 2 })).toThrow(/keyframes/);
   });
 });
+
+describe('boomerang', () => {
+  it('a cópia começa no fim do original, toca o mesmo trecho em reverso', () => {
+    const { p, ids } = build([1, 3]);
+    const r = ops.boomerang(p, ids[0]!);
+    const copy = media(r.project, r.newId);
+    expect(copy).toMatchObject({ start: 3, duration: 2, sourceIn: 0, reverse: true });
+    expect(media(r.project, ids[0]!).reverse).toBe(false);
+  });
+
+  it('se o original já era reverso, a volta é no sentido normal; congelado é recusado', () => {
+    const { p, ids } = build([0, 2]);
+    const rev = ops.boomerang(p, ids[0]!);
+    const again = ops.boomerang(rev.project, rev.newId);
+    expect(media(again.project, again.newId).reverse).toBe(false);
+    const frozen = { ...p, tracks: p.tracks.map((t) => ({ ...t, clips: t.clips.map((c) => ({ ...c, freeze: true })) })) } as Project;
+    expect(() => ops.boomerang(frozen, ids[0]!)).toThrow(/congelado/);
+  });
+
+  it('falha se a cópia bater no clipe seguinte', () => {
+    const { p, ids } = build([0, 2], [2, 4]);
+    expect(() => ops.boomerang(p, ids[0]!)).toThrow();
+  });
+});
