@@ -3,6 +3,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom';
 import { ApiError } from '../api/client';
 import { Icon, type IconName } from '../components/Icon';
+import { clearRememberedEmail, loadRememberedEmail, saveRememberedEmail } from '../lib/rememberEmail';
 import { useAuth } from '../store/auth';
 
 export function LoginPage() {
@@ -14,7 +15,8 @@ export function LoginPage() {
   // /login?modo=cadastro (vindo da landing) já abre na aba de criar conta
   const [mode, setMode] = useState<'login' | 'register'>(params.get('modo') === 'cadastro' ? 'register' : 'login');
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(() => loadRememberedEmail());
+  const [remember, setRemember] = useState(() => loadRememberedEmail() !== '');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -29,7 +31,11 @@ export function LoginPage() {
     setError(null);
     setBusy(true);
     try {
-      if (mode === 'login') await login(email, password);
+      if (mode === 'login') {
+        await login(email, password);
+        if (remember) saveRememberedEmail(email);
+        else clearRememberedEmail();
+      }
       else await register(name, email, password);
     } catch (err) {
       if (err instanceof ApiError && err.code === 'validation') {
@@ -154,6 +160,11 @@ export function LoginPage() {
                 )}
                 {mode === 'register' && <p className="mt-1 text-2xs text-mute">Mínimo de 8 caracteres.</p>}
               </div>
+              {mode === 'login' && (
+                <label className="mb-4 flex items-center gap-2 text-xs text-mute">
+                  <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} data-testid="remember-me" /> Lembrar de mim neste aparelho
+                </label>
+              )}
               {error && (
                 <p role="alert" className="mb-3 rounded-md border border-danger/40 bg-danger/10 px-3 py-2 text-xs text-danger">
                   {error}
