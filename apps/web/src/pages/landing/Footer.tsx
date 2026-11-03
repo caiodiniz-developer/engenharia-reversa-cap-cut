@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Icon } from '../../components/Icon';
 import { NAV } from './content';
-import { scrollToSection } from './scroll';
+import { scrollToSection, scrollToTop } from './scroll';
 
 /** Chamada final para cadastro + rodapé com navegação. */
 export function FinalCta() {
@@ -52,6 +52,17 @@ export function LandingFooter() {
             Criar conta
           </Link>
         </nav>
+      </div>
+      <div className="mx-auto mt-8 flex max-w-6xl flex-col items-center justify-between gap-3 border-t border-line pt-6 text-xs text-mute sm:flex-row">
+        <p>© {new Date().getFullYear()} Editor de Vídeo · projeto independente, sem código nem recursos de terceiros.</p>
+        <button
+          type="button"
+          className="inline-flex items-center gap-1.5 hover:text-ink"
+          onClick={() => scrollToTop(document.querySelector<HTMLElement>('[data-testid="landing"]'), window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false)}
+          data-testid="footer-top"
+        >
+          Voltar ao topo <Icon name="chevronUp" size={13} />
+        </button>
       </div>
     </footer>
   );
