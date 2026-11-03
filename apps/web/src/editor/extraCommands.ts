@@ -4,6 +4,7 @@ import type { Project } from '@editor/core';
 import type { IconName } from '../components/Icon';
 import { toast } from '../store/toasts';
 import type { Command } from './commands';
+import { buildCreativeCommands } from './creativeCommands';
 import { applyCounted, atLeast, cmd, focusTrackId, hasSel, hasTrack, onSelection, onTrack, pt, s, sel } from './commandKit';
 
 export function arrangeCommands(): Command[] {
@@ -208,5 +209,5 @@ export function projectCommands(): Command[] {
 
 /** Todos os comandos extras, na ordem em que aparecem na paleta. */
 export function buildExtraCommands(): Command[] {
-  return [...arrangeCommands(), ...audioCommands(), ...frameCommands(), ...textCommands(), ...markerCommands(), ...projectCommands()];
+  return [...arrangeCommands(), ...audioCommands(), ...frameCommands(), ...textCommands(), ...markerCommands(), ...projectCommands(), ...buildCreativeCommands()];
 }
