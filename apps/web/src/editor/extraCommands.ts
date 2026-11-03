@@ -201,6 +201,7 @@ export function markerCommands(): Command[] {
 export function projectCommands(): Command[] {
   const G = 'Projeto';
   return [
+    cmd('whats-new', 'Novidades do editor…', G, 'sparkles', () => window.dispatchEvent(new Event('editor:open-news')), { keywords: 'o que há de novo mudanças recursos changelog atualizações' }),
     cmd('project-stats', 'Estatísticas do projeto…', G, 'info', () => window.dispatchEvent(new Event('editor:open-stats')), { keywords: 'resumo números duração quantos clipes palavras' }),
     cmd('remove-duplicates', 'Remover clipes duplicados empilhados', G, 'copy', () => applyCounted('Remover duplicados', core.removeDuplicateClips, (r) => r.removed, 'Não há clipes idênticos empilhados', (n) => n + (n === 1 ? ' duplicado removido' : ' duplicados removidos')), { keywords: 'repetidos iguais limpar' }),
     cmd('replace-media', 'Substituir uma mídia por outra…', G, 'film', () => window.dispatchEvent(new Event('editor:open-replace-media')), { keywords: 'trocar arquivo relink proxy' }),
