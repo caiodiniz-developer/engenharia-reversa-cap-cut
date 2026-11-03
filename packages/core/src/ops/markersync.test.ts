@@ -47,3 +47,29 @@ describe('snapClipsToMarkers', () => {
     expect(() => ops.snapClipsToMarkers(addMarker(p, 1).project, ids, 0)).toThrow();
   });
 });
+
+describe('stretchToNextMarker', () => {
+  it('encurta ou estende o fim até o marcador seguinte ao início', () => {
+    const { p, ids } = build([[0, 3], [5, 6]], [2, 7.5]);
+    const r = ops.stretchToNextMarker(p, ids);
+    expect(r.changed).toBe(2);
+    expect(durOf(r.project, ids[0]!)).toBe(2); // 0 → marcador 2
+    expect(durOf(r.project, ids[1]!)).toBe(2.5); // 5 → marcador 7,5 (a mídia tem 10 s)
+  });
+
+  it('clipe sem marcador depois do início não muda; mídia curta demais conta como ignorado', () => {
+    const { p, ids } = build([[0, 1]], [0.5]);
+    const none = ops.stretchToNextMarker(build([[3, 4]], [1]).p, [build([[3, 4]], [1]).ids[0]!]);
+    expect(none.changed).toBe(0);
+    const far = build([[0, 1]], [50]);
+    const r = ops.stretchToNextMarker(far.p, far.ids);
+    expect(r.skipped).toBe(1); // a mídia de 10 s não chega ao marcador de 50 s
+    expect(durOf(r.project, far.ids[0]!)).toBe(1);
+    expect(durOf(ops.stretchToNextMarker(p, ids).project, ids[0]!)).toBe(0.5);
+  });
+
+  it('exige marcadores', () => {
+    const { p, ids } = build([[0, 1]]);
+    expect(() => ops.stretchToNextMarker(p, ids)).toThrow(/marcadores/);
+  });
+});
