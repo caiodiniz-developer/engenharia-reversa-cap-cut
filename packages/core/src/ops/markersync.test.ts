@@ -59,8 +59,8 @@ describe('stretchToNextMarker', () => {
 
   it('clipe sem marcador depois do início não muda; mídia curta demais conta como ignorado', () => {
     const { p, ids } = build([[0, 1]], [0.5]);
-    const none = ops.stretchToNextMarker(build([[3, 4]], [1]).p, [build([[3, 4]], [1]).ids[0]!]);
-    expect(none.changed).toBe(0);
+    const before = build([[3, 4]], [1]);
+    expect(ops.stretchToNextMarker(before.p, before.ids).changed).toBe(0);
     const far = build([[0, 1]], [50]);
     const r = ops.stretchToNextMarker(far.p, far.ids);
     expect(r.skipped).toBe(1); // a mídia de 10 s não chega ao marcador de 50 s
