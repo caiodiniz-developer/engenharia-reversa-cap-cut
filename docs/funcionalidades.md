@@ -222,6 +222,21 @@ Operações puras em `packages/core/src/ops` (testadas) ligadas a comandos da pa
 | Cor de destaque da palavra falada em várias legendas | ✅ | core `ops/captiontools.test` |
 | Atalhos Alt + I, Alt + B e Alt + R, listados na ajuda e na paleta | ✅ | web `creativeShortcuts.test`, E2E `criativo` |
 
+### Interface, acessibilidade e landing
+
+| Recurso | Estado | Verificação |
+|---|---|---|
+| Avisos dos comandos em lote com botão **Desfazer** | ✅ | web `toastAction.test`, E2E `organizacao` |
+| Barra de estado: tempo somado e intervalo coberto pela seleção | ✅ | core `selectionStats.test`, E2E `layout` |
+| **Novidades do editor** (changelog em dados; "Experimentar" executa o comando) | ✅ | web `changelog.test` (todo comando citado existe na paleta), E2E `layout` |
+| **Projetos fixados** no topo da lista (guardados no navegador) | ✅ | web `pins.test`, E2E `projetos` |
+| Paleta: trecho buscado em destaque, rodapé com atalhos e contagem | ✅ | web `highlight.test`, E2E `layout` |
+| Login: mostrar/ocultar a senha e aviso de Caps Lock | ✅ | E2E `layout` (Caps Lock simulado por evento de teclado) |
+| Contraste WCAG AA dos tokens de cor nos dois temas (o tema claro foi corrigido: destaque e verde estavam em 3,7:1) | ✅ | web `tokens.test` |
+| Transição suave ao trocar de tema; shimmer nos esqueletos; brilho no cursor de reprodução | 🟨 | só a transição de tema tem teste (E2E `layout`); shimmer e brilho do cursor são efeitos visuais sem teste |
+| Landing: menu que acompanha a seção lida, com indicador que desliza | ✅ | web `scrollspy.test`, E2E `landing` |
+| Landing: seção de **atalhos** com busca, lida da mesma lista do editor | ✅ | E2E `landing` |
+
 ## Plataforma
 
 | Recurso | Estado | Verificação |
