@@ -458,3 +458,23 @@ input[type='range']:focus-visible::-webkit-slider-thumb {
 .btn-primary:disabled {
   box-shadow: none;
 }
+
+
+/* Aplicada por 350 ms só ao trocar de tema: as cores deslizam em vez de piscar. */
+.theme-fade,
+.theme-fade *,
+.theme-fade *::before,
+.theme-fade *::after {
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    color 0.3s ease,
+    fill 0.3s ease,
+    stroke 0.3s ease !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .theme-fade,
+  .theme-fade * {
+    transition: none !important;
+  }
+}
