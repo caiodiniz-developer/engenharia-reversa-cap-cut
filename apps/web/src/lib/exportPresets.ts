@@ -41,3 +41,25 @@ export function matchPreset(cur: Pick<ExportPreset, 'kind' | 'codec' | 'res' | '
   });
   return hit?.id ?? 'custom';
 }
+
+
+const LAST_KEY = 'editor.exportPreset';
+
+/** Id da última predefinição escolhida pelo usuário, se ainda existir na lista; senão undefined. */
+export function loadLastPresetId(): string | undefined {
+  try {
+    const id = localStorage.getItem(LAST_KEY);
+    return id && getExportPreset(id) ? id : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+export function saveLastPresetId(id: string): void {
+  if (!getExportPreset(id)) return;
+  try {
+    localStorage.setItem(LAST_KEY, id);
+  } catch {
+    /* sem armazenamento: vale só nesta sessão */
+  }
+}
