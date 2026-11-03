@@ -170,3 +170,37 @@ test.describe('login: lembrar de mim', () => {
     await expect(page.getByLabel('E-mail')).toHaveValue('');
   });
 });
+
+
+test.describe('biblioteca: busca', () => {
+  test('a contagem acompanha o filtro e o botão e o Esc limpam a busca', async ({ page }) => {
+    await signup(page);
+    await newProject(page, 'Busca');
+    await uploadAndWait(page, media.red);
+    await uploadAndWait(page, media.blue);
+    await expect(page.getByTestId('media-count')).toHaveText('2 itens');
+    const search = page.getByLabel('Buscar na biblioteca');
+    await search.fill('verm');
+    await expect(page.getByTestId('media-count')).toHaveText('1 de 2 itens');
+    await page.getByTestId('clear-media-search').click();
+    await expect(search).toHaveValue('');
+    await expect(page.getByTestId('media-count')).toHaveText('2 itens');
+    await search.fill('azu');
+    await expect(page.getByTestId('media-count')).toHaveText('1 de 2 itens');
+    await search.press('Escape');
+    await expect(search).toHaveValue('');
+  });
+});
+
+test.describe('landing: rodapé', () => {
+  test('mostra a nota de projeto independente e o link volta ao topo', async ({ page }) => {
+    await page.goto('/');
+    const footer = page.getByTestId('landing-footer');
+    await footer.scrollIntoViewIfNeeded();
+    await expect(footer).toContainText('projeto independente, sem código nem recursos de terceiros');
+    await expect(footer).toContainText(String(new Date().getFullYear()));
+    expect(await page.getByTestId('landing').evaluate((el) => el.scrollTop)).toBeGreaterThan(500);
+    await page.getByTestId('footer-top').click();
+    await expect.poll(() => page.getByTestId('landing').evaluate((el) => el.scrollTop), { timeout: 5_000 }).toBeLessThan(5);
+  });
+});
