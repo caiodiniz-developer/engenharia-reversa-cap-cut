@@ -45,7 +45,7 @@ export function applyCounted<R extends { project: Project }>(label: string, comp
   }
   const n = count(r);
   if (!n) return void toast.info(none);
-  if (s().run(label, () => r.project)) toast.success(done(n));
+  if (s().run(label, () => r.project)) toast.success(done(n), { label: 'Desfazer', run: () => s().undo() });
 }
 
 export function cmd(id: string, label: string, group: string, icon: IconName, run: () => void, extra: Partial<Command> = {}): Command {
