@@ -14,7 +14,7 @@ import { toast } from '../store/toasts';
 
 type Sort = 'recent' | 'name' | 'duration';
 
-function ProjectCard({ p, index, onOpen, onRename, onDuplicate, onDelete }: { p: ProjectSummary; index: number; onOpen: () => void; onRename: () => void; onDuplicate: () => void; onDelete: () => void }) {
+function ProjectCard({ p, index, pinned, onPin, onOpen, onRename, onDuplicate, onDelete }: { p: ProjectSummary; index: number; pinned: boolean; onPin: () => void; onOpen: () => void; onRename: () => void; onDuplicate: () => void; onDelete: () => void }) {
   const [menu, setMenu] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -37,6 +37,11 @@ function ProjectCard({ p, index, onOpen, onRename, onDuplicate, onDelete }: { p:
             {p.cover ? <img src={p.cover} alt="" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]" loading="lazy" /> : <Icon name="film" size={30} />}
             {m && m.duration > 0 && <span className="tnum absolute bottom-1.5 right-1.5 rounded bg-black/70 px-1.5 py-0.5 font-mono text-2xs text-white">{formatDuration(m.duration)}</span>}
             {m && <span className="absolute left-1.5 top-1.5 rounded bg-black/55 px-1.5 py-0.5 text-2xs font-medium text-white backdrop-blur">{aspectLabel(m.width, m.height)}</span>}
+            {pinned && (
+              <span className="absolute bottom-1.5 left-1.5 flex items-center gap-1 rounded bg-accent px-1.5 py-0.5 text-2xs font-semibold text-accent-ink" data-testid="pinned-badge">
+                <Icon name="pin" size={10} /> Fixado
+              </span>
+            )}
           </div>
           <div className="px-3.5 pb-3 pt-2.5">
             <h2 className="truncate text-sm font-semibold">{p.name}</h2>
@@ -54,6 +59,7 @@ function ProjectCard({ p, index, onOpen, onRename, onDuplicate, onDelete }: { p:
           <div role="menu" className="absolute right-0 top-8 z-20 w-44 overflow-hidden rounded-xl border border-line bg-panel py-1 shadow-pop">
             {[
               { label: 'Abrir', icon: 'play' as const, run: onOpen },
+              { label: pinned ? 'Desafixar' : 'Fixar no topo', icon: 'pin' as const, run: onPin },
               { label: 'Renomear', icon: 'pencil' as const, run: onRename },
               { label: 'Duplicar', icon: 'copyPlus' as const, run: onDuplicate },
               { label: 'Excluir', icon: 'trash' as const, run: onDelete, danger: true },
