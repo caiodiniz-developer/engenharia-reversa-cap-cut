@@ -124,6 +124,20 @@ export function CommandPalette({ open, onClose, onExport, onHelp }: { open: bool
                 </li>
               ))}
             </ul>
+            <footer className="flex items-center justify-between gap-3 border-t border-line bg-panel-2/60 px-4 py-2 text-2xs text-mute">
+              <span className="flex items-center gap-3">
+                <span className="flex items-center gap-1">
+                  <span className="kbd">↑</span>
+                  <span className="kbd">↓</span> navegar
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="kbd">Enter</span> executar
+                </span>
+              </span>
+              <span aria-live="polite" data-testid="palette-count">
+                {results.length} {results.length === 1 ? 'comando' : 'comandos'}
+              </span>
+            </footer>
           </motion.div>
         </motion.div>
       )}
