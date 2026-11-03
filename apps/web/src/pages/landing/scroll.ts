@@ -19,3 +19,9 @@ export function activeSectionId(tops: Array<{ id: string; top: number }>, offset
   for (const s of tops) if (s.top <= offset) current = s.id;
   return current;
 }
+
+
+/** Leva a área rolável da landing de volta ao topo. Com "menos movimento", o salto é instantâneo. */
+export function scrollToTop(el: Pick<HTMLElement, 'scrollTo'> | null, reduceMotion: boolean): void {
+  el?.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+}
