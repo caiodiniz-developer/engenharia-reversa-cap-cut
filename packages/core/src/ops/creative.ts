@@ -175,3 +175,20 @@ export function splitScreen(p: Project, ids: [string, string], layout: 'side' | 
   });
   return next;
 }
+
+
+/** Velocidade de cada trecho da rampa: do centro do primeiro (perto de from) ao centro do último (perto de to), linear ou suave. */
+export function rampSpeeds(from: number, to: number, parts: number, smooth = false): number[] {
+  return Array.from({ length: parts }, (_, i) => {
+    const t = (i + 0.5) / parts;
+    const k = smooth ? t * t * (3 - 2 * t) : t;
+    return round6(from + (to - from) * k);
+  });
+}
+
+/** Duração na timeline de ${sourceSeconds} s de mídia tocados com essas velocidades (partes iguais da mídia). */
+export function rampResultDuration(sourceSeconds: number, speeds: number[]): number {
+  if (!speeds.length) return 0;
+  const each = sourceSeconds / speeds.length;
+  return round6(speeds.reduce((n, v) => n + each / v, 0));
+}
