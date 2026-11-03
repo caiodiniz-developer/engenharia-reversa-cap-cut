@@ -124,3 +124,21 @@ test.describe('biblioteca de mídia', () => {
     await expect(page.getByTestId('media-list')).toHaveAttribute('data-view', 'grid');
   });
 });
+
+
+test.describe('exportação', () => {
+  test('a predefinição escolhida volta na próxima abertura, mesmo depois de recarregar', async ({ page }) => {
+    await signup(page);
+    await newProject(page, 'Exportar');
+    await page.getByRole('button', { name: 'Exportar' }).first().click();
+    const preset = page.getByLabel('Predefinição');
+    await expect(preset).toBeVisible();
+    await preset.selectOption({ label: 'WhatsApp · leve' });
+    await expect(preset).toHaveValue('whatsapp');
+    await page.keyboard.press('Escape');
+    await page.reload();
+    await expect(page.getByTestId('editor')).toBeVisible();
+    await page.getByRole('button', { name: 'Exportar' }).first().click();
+    await expect(page.getByLabel('Predefinição')).toHaveValue('whatsapp');
+  });
+});
