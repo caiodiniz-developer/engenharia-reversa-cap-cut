@@ -89,5 +89,9 @@ Listadas para que ninguém descubra em produção. Itens marcados com 🔧 têm 
 - O **menu da landing** marca a seção cuja borda passou de 140 px do topo; seções curtas no fim da página podem nunca chegar a ficar marcadas em telas muito altas.
 - O **contraste** é conferido para os pares de cor principais (texto, destaque, botão primário, erro e sucesso) em cada tema, não para todas as combinações possíveis de fundo e texto da interface.
 
+## Preferências no navegador
+- O **modo da biblioteca** (grade/lista), a **última predefinição de exportação**, o **e-mail lembrado** e os **projetos fixados** ficam no `localStorage`: valem por navegador e perfil, não acompanham a conta e somem se os dados do site forem limpos. O e-mail é guardado em texto, sem a senha; em computador compartilhado, deixe "Lembrar de mim" desmarcado.
+- A tecla **/** da lista de projetos só funciona fora de campos de texto e com nenhum diálogo aberto.
+
 ## Escala
 - Não houve teste de carga nem de vídeos muito longos (horas). Os limites configuráveis (2 GB por arquivo, 2 h por mídia, 200 mídias por projeto, 3000 clipes por exportação) existem para proteger o servidor, não foram calibrados com medições.
