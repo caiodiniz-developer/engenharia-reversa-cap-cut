@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Icon } from '../../components/Icon';
 import { useTheme } from '../../store/theme';
@@ -10,6 +11,7 @@ export function LandingHeader({ scroller }: { scroller: React.RefObject<HTMLElem
   const theme = useTheme((s) => s.theme);
   const toggle = useTheme((s) => s.toggle);
   const [open, setOpen] = useState(false);
+  const reduce = useReducedMotion();
   const [raised, setRaised] = useState(false);
   const [active, setActive] = useState<string | null>(null);
 
@@ -47,7 +49,8 @@ export function LandingHeader({ scroller }: { scroller: React.RefObject<HTMLElem
 
         <nav className="ml-6 hidden items-center gap-1 md:flex" aria-label="Seções da página">
           {NAV.map((n) => (
-            <button key={n.id} type="button" aria-current={active === n.id ? 'true' : undefined} className={'rounded-lg px-3 py-2 text-[13px] font-medium transition-colors hover:bg-panel-3 hover:text-ink ' + (active === n.id ? 'text-ink' : 'text-mute')} onClick={() => go(n.id)} data-testid={'nav-' + n.id}>
+            <button key={n.id} type="button" aria-current={active === n.id ? 'true' : undefined} className={'relative rounded-lg px-3 py-2 text-[13px] font-medium transition-colors hover:bg-panel-3 hover:text-ink ' + (active === n.id ? 'text-ink' : 'text-mute')} onClick={() => go(n.id)} data-testid={'nav-' + n.id}>
+              {active === n.id && <motion.span layoutId="nav-pill" className="absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-accent" transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 400, damping: 32 }} data-testid="nav-indicator" />}
               {n.label}
             </button>
           ))}
