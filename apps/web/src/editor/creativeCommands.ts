@@ -53,3 +53,19 @@ export function layoutCommands(): Command[] {
     cmd('split-stack', 'Tela dividida: um clipe sobre o outro', G, 'layers', onSelection('Tela dividida', (p, ids) => core.splitScreen(p, [ids[0]!, ids[1]!], 'stack')), { enabled: () => sel().length === 2, keywords: 'dividir tela comparação antes depois metade vertical' }),
   ];
 }
+
+export function syncCommands(): Command[] {
+  const noun = (n: number, one: string, many: string) => n + ' ' + (n === 1 ? one : many);
+  return [
+    cmd('snap-markers', 'Puxar o início dos clipes selecionados para o marcador mais próximo', G, 'magnet', () => applyCounted('Encaixar nos marcadores', (p) => core.snapClipsToMarkers(p, sel(), 0.5), (r) => r.moved, 'Nenhum clipe está a menos de 0,5 s de um marcador (ou já está nele)', (n) => noun(n, 'clipe encaixado', 'clipes encaixados')), { enabled: hasSel, keywords: 'sincronizar batida alinhar imantar' }),
+    cmd('stretch-marker', 'Esticar ou encurtar o clipe até o próximo marcador', G, 'stepForward', () => applyCounted('Esticar até o marcador', (p) => core.stretchToNextMarker(p, sel()), (r) => r.changed, 'Nada para ajustar: não há marcador depois do início, ou a mídia não alcança', (n) => noun(n, 'clipe ajustado', 'clipes ajustados')), { enabled: hasSel, keywords: 'duração fim marcador encaixar' }),
+    cmd('stamp-markers', 'Carimbar o clipe em cada marcador', G, 'copyPlus', createAndSelect('Carimbar nos marcadores', (p, ids) => {
+      const r = core.stampAtMarkers(p, ids[0]!);
+      if (!r.newIds.length) throw new core.TimelineError('Nenhum marcador livre para a cópia (todos dentro do clipe ou ocupados)', 'OUT_OF_RANGE');
+      return { project: r.project, ids: r.newIds };
+    }), { enabled: () => sel().length === 1, keywords: 'efeito sonoro selo copiar repetir marcadores sfx' }),
+    ...([['duration-asc', 'do mais curto ao mais longo'], ['duration-desc', 'do mais longo ao mais curto'], ['name', 'por nome']] as const).map(([by, label]) =>
+      cmd('sort-' + by, 'Ordenar os clipes da faixa ' + label, G, 'list', onTrack('Ordenar a faixa', (p, t) => core.sortSequence(p, t, by)), { enabled: hasTrack, keywords: 'organizar ordem sequência classificar' }),
+    ),
+  ];
+}
