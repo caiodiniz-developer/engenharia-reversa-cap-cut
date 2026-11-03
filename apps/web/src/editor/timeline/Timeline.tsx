@@ -374,7 +374,7 @@ function Playhead({ zoom, height }: { zoom: number; height: number }) {
     <div className="pointer-events-none absolute top-0 z-30" style={{ left: HEADER_W + playhead * zoom, height }} data-testid="playhead">
       <span className="absolute left-1.5 top-[3px] rounded bg-playhead px-1 font-mono text-[10px] leading-4 text-white shadow">{formatTimecode(playhead, fps).slice(3)}</span>
       <div className="absolute -left-[6px] top-0 h-0 w-0 border-x-[6px] border-t-[9px] border-x-transparent border-t-playhead" />
-      <div className="h-full w-px bg-playhead" />
+      <div className="h-full w-px bg-playhead shadow-[0_0_6px_rgb(var(--playhead)/0.7)]" />
     </div>
   );
 }
