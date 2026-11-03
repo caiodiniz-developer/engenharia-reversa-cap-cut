@@ -3,7 +3,7 @@ import { api } from '../../api/client';
 import type { MediaItem } from '../../api/types';
 import { Empty, ProgressBar } from '../../components/controls';
 import { Icon } from '../../components/Icon';
-import { formatBytes, formatDuration } from '../../lib/format';
+import { countLabel, formatBytes, formatDuration } from '../../lib/format';
 import { MEDIA_SORT_LABEL, sortMedia, type MediaSort } from '../../lib/mediaSort';
 import { loadMediaView, mediaViewClasses, saveMediaView, type MediaView } from '../../lib/mediaView';
 import { useEditor } from '../../store/editor';
@@ -92,7 +92,19 @@ export function MediaPanel({ projectId }: { projectId: string }) {
           <Icon name="upload" size={14} /> Importar mídia
         </button>
         <p className="text-2xs leading-relaxed text-mute">Os arquivos são enviados ao servidor para gerar prévias e exportar. Arraste e solte aqui.</p>
-        <input className="field" placeholder="Buscar na biblioteca" aria-label="Buscar na biblioteca" value={query} onChange={(e) => setQuery(e.target.value)} />
+        <div className="relative">
+          <input className="field pr-8" placeholder="Buscar na biblioteca" aria-label="Buscar na biblioteca" value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === 'Escape' && setQuery('')} />
+          {query && (
+            <button type="button" className="btn-icon absolute right-0.5 top-0.5 !h-7 !w-7" aria-label="Limpar busca da biblioteca" onClick={() => setQuery('')} data-testid="clear-media-search">
+              <Icon name="x" size={13} />
+            </button>
+          )}
+        </div>
+        {Object.keys(media).length > 0 && (
+          <p className="text-2xs text-mute" aria-live="polite" data-testid="media-count">
+            {countLabel(items.length, Object.keys(media).length, 'item', 'itens')}
+          </p>
+        )}
         <div className="flex gap-2">
         <select className="field min-w-0 flex-1" aria-label="Ordenar biblioteca" value={sort} onChange={(e) => setSort(e.target.value as MediaSort)}>
           {(Object.keys(MEDIA_SORT_LABEL) as MediaSort[]).map((k) => (
