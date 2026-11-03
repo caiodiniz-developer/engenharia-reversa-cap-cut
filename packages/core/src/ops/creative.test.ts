@@ -18,3 +18,47 @@ function build(...spans: Array<[number, number]>) {
 }
 const media = (p: Project, id: string) => findClip(p, id)!.clip as MediaClip;
 const sorted = (p: Project) => [...p.tracks[0]!.clips].sort((a, b) => a.start - b.start) as MediaClip[];
+
+describe('speedRamp', () => {
+  it('cobre toda a mídia, com velocidades crescentes e trechos encostados', () => {
+    const { p, ids } = build([0, 4], [4, 6]);
+    const r = ops.speedRamp(p, ids[0]!, { from: 0.5, to: 2, parts: 4 });
+    const parts = r.ids.map((id) => media(r.project, id));
+    expect(parts.map((c) => c.sourceIn)).toEqual([0, 1, 2, 3]);
+    const speeds = parts.map((c) => c.speed);
+    expect(speeds).toEqual([...speeds].sort((a, b) => a - b));
+    expect(speeds[0]).toBeCloseTo(0.6875, 6);
+    expect(speeds[3]).toBeCloseTo(1.8125, 6);
+    expect(parts.reduce((n, c) => n + c.duration * c.speed, 0)).toBeCloseTo(4, 5); // toda a mídia usada
+    for (let i = 1; i < parts.length; i++) expect(parts[i]!.start).toBeCloseTo(parts[i - 1]!.start + parts[i - 1]!.duration, 5);
+  });
+
+  it('o resto da faixa anda a diferença de duração', () => {
+    const { p, ids } = build([0, 4], [4, 6]);
+    const r = ops.speedRamp(p, ids[0]!, { from: 0.5, to: 2, parts: 4 });
+    const total = r.ids.reduce((n, id) => n + media(r.project, id).duration, 0);
+    expect(media(r.project, ids[1]!).start).toBeCloseTo(total, 5);
+    const fast = ops.speedRamp(p, ids[0]!, { from: 4, to: 8, parts: 3 }); // fica mais curto
+    expect(media(fast.project, ids[1]!).start).toBeLessThan(4);
+  });
+
+  it('a curva suave desacelera as pontas em relação à linear', () => {
+    const { p, ids } = build([0, 4]);
+    const lin = ops.speedRamp(p, ids[0]!, { from: 1, to: 4, parts: 6 });
+    const smooth = ops.speedRamp(p, ids[0]!, { from: 1, to: 4, parts: 6, smooth: true });
+    expect(media(smooth.project, smooth.ids[0]!).speed).toBeLessThan(media(lin.project, lin.ids[0]!).speed);
+    expect(media(smooth.project, smooth.ids[5]!).speed).toBeGreaterThan(media(lin.project, lin.ids[5]!).speed);
+  });
+
+  it('recusa velocidade fora de 0,1–16, partes inválidas, clipe invertido, ligado ou com keyframes', () => {
+    const { p, ids } = build([0, 4]);
+    expect(() => ops.speedRamp(p, ids[0]!, { from: 0.05, to: 2 })).toThrow(/0,1/);
+    expect(() => ops.speedRamp(p, ids[0]!, { from: 1, to: 2, parts: 2 })).toThrow(/3 a 12/);
+    const rev = { ...p, tracks: p.tracks.map((t) => ({ ...t, clips: t.clips.map((c) => ({ ...c, reverse: true })) })) } as Project;
+    expect(() => ops.speedRamp(rev, ids[0]!, { from: 1, to: 2 })).toThrow(/invertido/);
+    const linked = { ...p, tracks: p.tracks.map((t) => ({ ...t, clips: t.clips.map((c) => ({ ...c, linkId: 'x' })) })) } as Project;
+    expect(() => ops.speedRamp(linked, ids[0]!, { from: 1, to: 2 })).toThrow(/Desvincule/);
+    const kf = { ...p, tracks: p.tracks.map((t) => ({ ...t, clips: t.clips.map((c) => ({ ...c, keyframes: { scale: [{ time: 0, value: 1, easing: 'linear' as const }] } })) })) } as Project;
+    expect(() => ops.speedRamp(kf, ids[0]!, { from: 1, to: 2 })).toThrow(/keyframes/);
+  });
+});
