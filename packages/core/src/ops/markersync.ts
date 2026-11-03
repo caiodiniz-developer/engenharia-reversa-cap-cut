@@ -57,3 +57,37 @@ export function stretchToNextMarker(p: Project, ids: string[]): { project: Proje
   }
   return { project: next, changed, skipped };
 }
+
+/**
+ * Põe uma cópia do clipe em cada marcador (na mesma faixa), como efeitos sonoros ou selos. Marcadores dentro do próprio
+ * clipe ou onde a cópia bateria em outro clipe são ignorados e contados em skipped.
+ */
+export function stampAtMarkers(p: Project, clipId: string): { project: Project; newIds: string[]; skipped: number } {
+  const { clip, track } = requireClip(p, clipId);
+  assertUnlocked(track);
+  const marks = times(p);
+  if (!marks.length) throw new TimelineError('Não há marcadores no projeto', 'NOT_FOUND');
+  let next = p;
+  const newIds: string[] = [];
+  let skipped = 0;
+  for (const t of marks) {
+    if (t >= clip.start - 1e-6 && t < clipEnd(clip) - 1e-6) continue;
+    const copy: Clip = JSON.parse(JSON.stringify(clip));
+    copy.id = newId('clp');
+    copy.start = round6(t);
+    copy.linkId = undefined;
+    copy.groupId = undefined;
+    if (copy.type === 'media') {
+      copy.transitionIn = undefined;
+      copy.effects = copy.effects.map((e) => ({ ...e, id: newId('fx') }));
+    }
+    try {
+      next = addClip(next, track.id, copy);
+      newIds.push(copy.id);
+    } catch (e) {
+      if (!(e instanceof TimelineError)) throw e;
+      skipped++;
+    }
+  }
+  return { project: next, newIds, skipped };
+}
