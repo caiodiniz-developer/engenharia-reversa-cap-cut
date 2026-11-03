@@ -7,7 +7,7 @@ import type { ProjectSummary } from '../api/types';
 import { Empty, Modal } from '../components/controls';
 import { loadPins, pinnedFirst, savePins, togglePin } from '../lib/pins';
 import { Icon } from '../components/Icon';
-import { ASPECTS, aspectLabel, formatDuration, formatRelative } from '../lib/format';
+import { ASPECTS, aspectLabel, countLabel, formatDuration, formatRelative } from '../lib/format';
 import { getTemplate, TEMPLATES } from '../lib/templates';
 import { useAuth } from '../store/auth';
 import { useTheme } from '../store/theme';
@@ -219,7 +219,15 @@ export function ProjectsPage() {
           <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight">Seus projetos</h1>
-              <p className="mt-1 text-xs text-mute">Tudo é salvo automaticamente no servidor.</p>
+              <p className="mt-1 text-xs text-mute">
+                Tudo é salvo automaticamente no servidor.
+                {projects !== null && projects.length > 0 && (
+                  <span data-testid="project-count">
+                    {' · '}
+                    {countLabel(shown.length, projects.length, 'projeto', 'projetos')}
+                  </span>
+                )}
+              </p>
             </div>
             <button type="button" className="btn btn-primary h-10 px-5 text-sm shadow-sm" onClick={() => setCreating(true)}>
               <Icon name="plus" size={15} /> Novo projeto
