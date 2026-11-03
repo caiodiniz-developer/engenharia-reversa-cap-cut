@@ -634,3 +634,25 @@ test.describe('landing: menu que acompanha a leitura', () => {
     await expect(page.locator('[aria-current="true"]')).toHaveCount(0, { timeout: 5_000 });
   });
 });
+
+
+test.describe('landing: atalhos', () => {
+  test('mostra os atalhos por categoria e a busca filtra sem acento', async ({ page }) => {
+    await page.goto('/');
+    const section = page.getByTestId('shortcuts');
+    await section.scrollIntoViewIfNeeded();
+    await expect(section.getByTestId('shortcut-group')).toHaveCount(5);
+    const total = Number(((await page.getByTestId('shortcuts-count').textContent()) ?? '').split(' ')[0]);
+    expect(total).toBeGreaterThan(30);
+    await page.getByTestId('shortcuts-search').fill('reproducao');
+    await expect(section.getByText('Reproduzir / pausar')).toBeVisible();
+    const filtered = Number(((await page.getByTestId('shortcuts-count').textContent()) ?? '').split(' ')[0]);
+    expect(filtered).toBeLessThan(total);
+    await page.getByTestId('shortcuts-search').fill('boomerang');
+    await expect(section.getByText(/Boomerang: o clipe selecionado/)).toBeVisible();
+    await expect(section.locator('.kbd', { hasText: 'Alt + B' })).toBeVisible();
+    await page.getByTestId('shortcuts-search').fill('zzzzz');
+    await expect(page.getByTestId('shortcuts-empty')).toBeVisible();
+    await expect(page.getByTestId('shortcuts-count')).toHaveText('0 atalhos');
+  });
+});
