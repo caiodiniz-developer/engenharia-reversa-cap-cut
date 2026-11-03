@@ -40,7 +40,11 @@ export function shuffledOrder<T>(items: T[], seed: number): T[] {
 
 /** Embaralha a ordem dos clipes da faixa; os vãos ficam nos mesmos encaixes e a mesma semente repete o resultado. */
 export function shuffleSequence(p: Project, trackId: string, seed: number): Project {
-  const target = shuffledOrder(sequenceOrder(p, trackId).map((c) => c.id), seed);
+  return applySequenceOrder(p, trackId, shuffledOrder(sequenceOrder(p, trackId).map((c) => c.id), seed));
+}
+
+/** Reordena os clipes da faixa para a ordem de ids dada (os vãos continuam nos mesmos encaixes). */
+export function applySequenceOrder(p: Project, trackId: string, target: string[]): Project {
   let next = p;
   for (let i = 0; i < target.length; i++) {
     let pos = sequenceOrder(next, trackId).findIndex((c) => c.id === target[i]);
