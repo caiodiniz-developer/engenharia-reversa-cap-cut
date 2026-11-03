@@ -5,6 +5,7 @@ import type { Project } from '@editor/core';
 import { api, ApiError } from '../api/client';
 import type { ProjectSummary } from '../api/types';
 import { Empty, Modal } from '../components/controls';
+import { loadPins, pinnedFirst, savePins, togglePin } from '../lib/pins';
 import { Icon } from '../components/Icon';
 import { ASPECTS, aspectLabel, formatDuration, formatRelative } from '../lib/format';
 import { getTemplate, TEMPLATES } from '../lib/templates';
@@ -102,6 +103,7 @@ export function ProjectsPage() {
   const [confirmDelete, setConfirmDelete] = useState<ProjectSummary | null>(null);
   const [renaming, setRenaming] = useState<ProjectSummary | null>(null);
   const [renameValue, setRenameValue] = useState('');
+  const [pins, setPins] = useState<string[]>(() => loadPins());
 
   const load = useCallback(async () => {
     try {
@@ -119,10 +121,9 @@ export function ProjectsPage() {
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase();
     const list = (projects ?? []).filter((p) => !q || p.name.toLowerCase().includes(q));
-    if (sort === 'name') return [...list].sort((a, b) => a.name.localeCompare(b.name, 'pt'));
-    if (sort === 'duration') return [...list].sort((a, b) => (b.meta?.duration ?? 0) - (a.meta?.duration ?? 0));
-    return list;
-  }, [projects, query, sort]);
+    const ordered = sort === 'name' ? [...list].sort((a, b) => a.name.localeCompare(b.name, 'pt')) : sort === 'duration' ? [...list].sort((a, b) => (b.meta?.duration ?? 0) - (a.meta?.duration ?? 0)) : list;
+    return pinnedFirst(ordered, pins);
+  }, [projects, query, sort, pins]);
 
   function chooseTemplate(id: string) {
     setTemplateId(id);
@@ -263,6 +264,12 @@ export function ProjectsPage() {
                   key={p.id}
                   p={p}
                   index={i}
+                  pinned={pins.includes(p.id)}
+                  onPin={() => {
+                    const next = togglePin(pins, p.id);
+                    setPins(next);
+                    savePins(next);
+                  }}
                   onOpen={() => navigate(`/p/${p.id}`)}
                   onRename={() => {
                     setRenaming(p);
