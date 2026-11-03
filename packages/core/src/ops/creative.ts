@@ -141,3 +141,37 @@ export function pictureInPicture(p: Project, clipId: string, corner: Corner, siz
   const y = (corner === 'tl' || corner === 'tr' ? -1 : 1) * (0.5 - dispH / 2 - margin);
   return mapTransform(p, [clipId], (t) => ({ ...t, scale: round6(size), x: round6(x), y: round6(y) }));
 }
+
+/**
+ * Tela dividida: cada um dos dois clipes preenche metade do quadro (esquerda/direita em 'side', cima/baixo em 'stack'),
+ * ampliado para cobrir a metade e cortado no centro para não deformar. Usa o tamanho real das mídias.
+ */
+export function splitScreen(p: Project, ids: [string, string], layout: 'side' | 'stack'): Project {
+  if (ids[0] === ids[1]) throw new TimelineError('Escolha dois clipes diferentes', 'OUT_OF_RANGE');
+  const { width: W, height: H } = p.settings;
+  const boxW = layout === 'side' ? W / 2 : W;
+  const boxH = layout === 'stack' ? H / 2 : H;
+  let next = p;
+  ids.forEach((id, i) => {
+    const clip = requireMediaClip(next, id);
+    const a = next.media[clip.mediaId];
+    if (!a || !(a.width > 0) || !(a.height > 0)) throw new TimelineError('Não sei o tamanho dessa mídia para dividir a tela', 'INVALID');
+    const c0 = Math.min(W / a.width, H / a.height);
+    const bw = a.width * c0;
+    const bh = a.height * c0;
+    const s = Math.min(20, Math.max(0.01, Math.max(boxW / bw, boxH / bh)));
+    const dw = bw * s;
+    const dh = bh * s;
+    const cropX = Math.max(0, (dw - boxW) / (2 * dw));
+    const cropY = Math.max(0, (dh - boxH) / (2 * dh));
+    const sign = i === 0 ? -1 : 1;
+    next = mapTransform(next, [id], (t) => ({
+      ...t,
+      scale: round6(s),
+      x: layout === 'side' ? sign * 0.25 : 0,
+      y: layout === 'stack' ? sign * 0.25 : 0,
+      crop: { l: round6(cropX), r: round6(cropX), t: round6(cropY), b: round6(cropY) },
+    }));
+  });
+  return next;
+}
