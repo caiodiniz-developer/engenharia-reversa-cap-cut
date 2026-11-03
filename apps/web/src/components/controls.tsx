@@ -286,7 +286,7 @@ export function Modal({ open, onClose, title, children, width = 480 }: { open: b
             exit={{ y: 8, opacity: 0 }}
             transition={{ duration: 0.16 }}
           >
-            <header className="flex items-center justify-between border-b border-line px-5 py-3.5">
+            <header className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-panel px-5 py-3.5">
               <h2 className="text-sm font-semibold">{title}</h2>
               <button type="button" className="btn-icon" aria-label="Fechar" onClick={onClose}>
                 <Icon name="x" />
