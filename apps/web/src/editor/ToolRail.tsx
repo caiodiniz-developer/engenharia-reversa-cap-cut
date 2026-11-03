@@ -1,4 +1,5 @@
 import { Fragment } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Icon, type IconName } from '../components/Icon';
 import { useReview } from '../lib/useReview';
 import type { PanelTab } from '../store/editor';
@@ -22,6 +23,7 @@ const GROUP_END = new Set<PanelTab>(['text', 'elements', 'storyboard']);
 /** Trilho vertical de ferramentas (ícone + rótulo), como nos editores de vídeo profissionais. */
 export function ToolRail({ value, onChange }: { value: PanelTab; onChange: (t: PanelTab) => void }) {
   const { attention } = useReview();
+  const reduce = useReducedMotion();
   return (
     <nav className="flex w-[78px] shrink-0 flex-col items-stretch gap-0.5 overflow-y-auto border-r border-line bg-panel py-2" role="tablist" aria-label="Ferramentas" aria-orientation="vertical">
       {TOOLS.map((t) => {
@@ -38,7 +40,7 @@ export function ToolRail({ value, onChange }: { value: PanelTab; onChange: (t: P
             onClick={() => onChange(t.id)}
             className={`group relative mx-1.5 flex flex-col items-center gap-0.5 rounded-lg px-0.5 py-1.5 text-[10px] font-medium transition-colors ${active ? 'bg-accent/12 text-accent' : 'text-mute hover:bg-panel-3 hover:text-ink'}`}
           >
-            {active && <span className="absolute -left-1.5 top-2 h-[calc(100%-16px)] w-0.5 rounded-full bg-accent" />}
+            {active && <motion.span layoutId="tool-active" className="absolute -left-1.5 top-2 h-[calc(100%-16px)] w-0.5 rounded-full bg-accent" transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 420, damping: 34 }} />}
             <Icon name={t.icon} size={19} />
             {t.id === 'review' && attention > 0 && (
               <span className="absolute right-2 top-1 min-w-[15px] rounded-full bg-amber-500 px-1 text-center text-[9px] font-bold leading-[15px] text-black" data-testid="review-badge" aria-label={`${attention} ${attention === 1 ? 'ponto' : 'pontos'} de atenção na revisão`}>
