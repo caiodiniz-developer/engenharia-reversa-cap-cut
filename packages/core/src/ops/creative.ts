@@ -126,3 +126,18 @@ export function smoothCuts(p: Project, trackId: string, seconds = 0.05): { proje
   }
   return { project: next, cuts };
 }
+
+/** Imagem dentro da imagem: reduz o clipe para ${size} do tamanho natural e o põe num canto do quadro, com margem de 3%. */
+export function pictureInPicture(p: Project, clipId: string, corner: Corner, size = 0.3): Project {
+  if (!(size >= 0.1 && size <= 0.6)) throw new TimelineError('O tamanho vai de 10% a 60%', 'OUT_OF_RANGE');
+  const clip = requireMediaClip(p, clipId);
+  const { width: W, height: H } = p.settings;
+  const a = p.media[clip.mediaId];
+  const c0 = a && a.width > 0 && a.height > 0 ? Math.min(W / a.width, H / a.height) : 1;
+  const dispW = a && a.width > 0 ? (a.width * c0 * size) / W : size;
+  const dispH = a && a.height > 0 ? (a.height * c0 * size) / H : size;
+  const margin = 0.03;
+  const x = (corner === 'tl' || corner === 'bl' ? -1 : 1) * (0.5 - dispW / 2 - margin);
+  const y = (corner === 'tl' || corner === 'tr' ? -1 : 1) * (0.5 - dispH / 2 - margin);
+  return mapTransform(p, [clipId], (t) => ({ ...t, scale: round6(size), x: round6(x), y: round6(y) }));
+}
