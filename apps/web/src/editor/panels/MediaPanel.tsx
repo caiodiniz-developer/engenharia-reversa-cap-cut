@@ -65,6 +65,7 @@ export function MediaPanel({ projectId }: { projectId: string }) {
   }
 
   const used = new Set(usedIds.split(',').filter(Boolean));
+  const v = mediaViewClasses(view);
   const active = uploads.filter((u) => u.status === 'uploading');
 
   return (
@@ -159,7 +160,7 @@ export function MediaPanel({ projectId }: { projectId: string }) {
           <Empty icon="film" title={Object.keys(media).length ? 'Nada encontrado' : 'Biblioteca vazia'} hint={Object.keys(media).length ? 'Ajuste o filtro ou a busca.' : 'Importe vídeos, áudios ou imagens para começar.'} />
         ) : (
           <>
-            <ul className="grid grid-cols-2 gap-2" data-testid="media-list">
+            <ul className={v.list} data-testid="media-list" data-view={view}>
               {items.slice(0, limit).map((m) => (
                 <li key={m.id} className="group relative">
                   <div
@@ -173,16 +174,16 @@ export function MediaPanel({ projectId }: { projectId: string }) {
                     }}
                     onDoubleClick={() => m.status === 'ready' && addToTimeline(m.id)}
                     onKeyDown={(e) => e.key === 'Enter' && m.status === 'ready' && addToTimeline(m.id)}
-                    className="card card-hover cursor-grab overflow-hidden outline-none focus-visible:border-accent active:cursor-grabbing"
+                    className={'card card-hover cursor-grab overflow-hidden outline-none focus-visible:border-accent active:cursor-grabbing ' + v.card}
                   >
-                    <div className="relative flex aspect-video items-center justify-center bg-bg text-mute">
+                    <div className={'relative flex items-center justify-center bg-bg text-mute ' + v.thumb}>
                       {m.urls.thumb ? <img src={m.urls.thumb} alt="" className="h-full w-full object-cover" draggable={false} /> : <Icon name={m.kind === 'audio' ? 'music' : m.kind === 'image' ? 'image' : 'film'} size={22} />}
                       {m.status === 'processing' && <span className="absolute inset-0 flex items-center justify-center bg-black/60 text-2xs">Processando…</span>}
                       {m.status === 'failed' && <span className="absolute inset-0 flex items-center justify-center bg-black/70 px-1 text-center text-2xs text-danger">Falhou</span>}
                       {m.kind !== 'image' && <span className="absolute bottom-1 right-1 rounded bg-black/70 px-1 font-mono text-2xs">{formatDuration(m.duration)}</span>}
                       {used.has(m.id) && <span className="absolute left-1 top-1 rounded bg-accent px-1 text-2xs font-medium text-bg">Em uso</span>}
                     </div>
-                    <div className="px-1.5 py-1">
+                    <div className={v.text}>
                       {renaming === m.id ? (
                         <input
                           autoFocus
