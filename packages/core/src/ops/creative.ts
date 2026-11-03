@@ -58,10 +58,9 @@ export function speedRamp(p: Project, clipId: string, opts: SpeedRampOptions): {
   const src = (clip.duration * clip.speed) / parts;
   const copies: MediaClip[] = [];
   let cursor = clip.start;
+  const speeds = rampSpeeds(from, to, parts, !!opts.smooth);
   for (let i = 0; i < parts; i++) {
-    const t = (i + 0.5) / parts;
-    const k = opts.smooth ? t * t * (3 - 2 * t) : t;
-    const speed = round6(from + (to - from) * k);
+    const speed = speeds[i]!;
     const duration = round6(src / speed);
     const base = i === 0 ? clip : cloneMedia(clip);
     copies.push({ ...base, sourceIn: round6(clip.sourceIn + i * src), speed, start: round6(cursor), duration });
