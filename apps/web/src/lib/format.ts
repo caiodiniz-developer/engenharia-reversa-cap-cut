@@ -38,3 +38,10 @@ export function aspectLabel(width: number, height: number): string {
   const hit = ASPECTS.find((a) => a.width === width && a.height === height);
   return hit ? hit.id : `${width}×${height}`;
 }
+
+
+/** "1 projeto", "3 projetos" ou, com filtro ativo, "2 de 5 projetos". O substantivo concorda com o total. */
+export function countLabel(shown: number, total: number, one: string, many: string): string {
+  const noun = total === 1 ? one : many;
+  return shown === total ? total + ' ' + noun : shown + ' de ' + total + ' ' + noun;
+}
