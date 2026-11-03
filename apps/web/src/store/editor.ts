@@ -73,6 +73,7 @@ import {
   replaceInText,
   replaceMedia as coreReplaceMedia,
   scriptToCaptions as coreScriptToCaptions,
+  speedRamp as coreSpeedRamp,
   duplicateTrack,
   positionFor,
   coverScale,
@@ -331,6 +332,8 @@ interface EditorState {
   changeCaseSelection(mode: TextCase): void;
   /** Localiza e substitui em todos os textos/legendas (ou só na seleção). Devolve quantas trocas fez. */
   replaceAllText(find: string, replacement: string, opts?: { matchCase?: boolean; onlySelection?: boolean }): number;
+  /** Aplica a rampa de velocidade ao clipe selecionado e seleciona os trechos. Devolve se deu certo (o motivo da falha vai num aviso). */
+  applySpeedRamp(opts: { from: number; to: number; parts: number; smooth: boolean }): boolean;
   /** Cria legendas a partir de um roteiro entre dois instantes. Devolve quantas criou (0 se falhou; o motivo vai num aviso). */
   scriptToCaptions(script: string, start: number, end: number): number;
   /** Troca uma mídia do projeto por outra da biblioteca em todos os clipes que a usam. Devolve quantos clipes mudaram (0 se falhou; o motivo vai num aviso). */
@@ -947,6 +950,21 @@ export const useEditor = create<EditorState>((set, get) => {
         return r.project;
       });
       return count;
+    },
+    applySpeedRamp(opts) {
+      const id = get().selection[0];
+      if (get().selection.length !== 1 || !id) {
+        toast.info('Selecione um único clipe para a rampa de velocidade');
+        return false;
+      }
+      let ids: string[] = [];
+      const ok = get().run('Rampa de velocidade', (p) => {
+        const r = coreSpeedRamp(p, id, opts);
+        ids = r.ids;
+        return r.project;
+      });
+      if (ok) set({ selection: ids });
+      return ok;
     },
     scriptToCaptions(script, start, end) {
       let ids: string[] = [];
