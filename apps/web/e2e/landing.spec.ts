@@ -608,3 +608,29 @@ test.describe('tela de entrada animada', () => {
     expect(await page.getByText('Timeline multifaixa com efeitos, transições e animações').evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
   });
 });
+
+
+test.describe('landing: menu que acompanha a leitura', () => {
+  test('o item da seção em foco fica marcado e o indicador muda de lugar ao rolar', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+    await expect(page.locator('[aria-current="true"]')).toHaveCount(0);
+    await page.getByTestId('nav-recursos').click();
+    await expect(page.getByTestId('nav-recursos')).toHaveAttribute('aria-current', 'true', { timeout: 5_000 });
+    await expect(page.getByTestId('nav-indicator')).toHaveCount(1);
+    const before = (await page.getByTestId('nav-indicator').boundingBox())!.x;
+    await page.getByTestId('nav-perguntas').click();
+    await expect(page.getByTestId('nav-perguntas')).toHaveAttribute('aria-current', 'true', { timeout: 5_000 });
+    await expect(page.getByTestId('nav-recursos')).not.toHaveAttribute('aria-current', 'true');
+    await expect.poll(async () => (await page.getByTestId('nav-indicator').boundingBox())!.x, { timeout: 3_000 }).toBeGreaterThan(before + 50);
+  });
+
+  test('voltar ao topo desmarca o menu', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+    await page.getByTestId('nav-diferenciais').click();
+    await expect(page.getByTestId('nav-diferenciais')).toHaveAttribute('aria-current', 'true', { timeout: 5_000 });
+    await page.getByTestId('landing').evaluate((el) => el.scrollTo(0, 0));
+    await expect(page.locator('[aria-current="true"]')).toHaveCount(0, { timeout: 5_000 });
+  });
+});
