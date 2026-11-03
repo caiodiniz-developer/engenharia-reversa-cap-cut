@@ -26,6 +26,11 @@ interface ThemeState {
 export const useTheme = create<ThemeState>((set, get) => ({
   theme: initial(),
   setTheme(t) {
+    const root = document.documentElement;
+    if (root.dataset.theme !== t) {
+      root.classList.add('theme-fade');
+      window.setTimeout(() => root.classList.remove('theme-fade'), 350);
+    }
     applyTheme(t);
     try {
       localStorage.setItem(KEY, t);
