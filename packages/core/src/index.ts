@@ -44,3 +44,4 @@ export * from './ops/texttools';
 export * from './ops/markertools';
 export * from './ops/mediatools';
 export * from './stats';
+export * from './ops/creative';
