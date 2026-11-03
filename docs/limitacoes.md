@@ -72,5 +72,15 @@ Listadas para que ninguém descubra em produção. Itens marcados com 🔧 têm 
 - A lista **"ferramentas"** da segunda faixa da landing é escrita à mão em `content.ts` (diferente da primeira faixa, lida do núcleo); um teste só confere nomes únicos e quantidade mínima, não que cada nome tenha comando na paleta.
 - A animação de entrada dos benefícios da tela de login roda uma vez a cada visita; capturas de tela tiradas no primeiro instante mostram a lista ainda invisível.
 
+## Criativo e sincronia
+- **Rampa de velocidade, gagueira e boomerang** não vêm com o áudio ligado: a rampa e a gagueira recusam clipes ligados a outro (desvincule antes); no boomerang o clipe ligado é copiado sem o parceiro. A rampa também recusa clipes invertidos, congelados ou com keyframes. A qualidade do som em velocidades extremas (abaixo de 0,5× ou acima de 2×) não foi avaliada.
+- A **tela dividida** corta sempre no centro e vale para dois clipes; o preview foi medido, a exportação não foi medida no arquivo. A **imagem dentro da imagem** é posicionada por conta (sem borda nem sombra) e não considera recortes já aplicados.
+- Os **cortes suaves** só atuam em cortes secos (clipes encostados a menos de 50 ms) e não foram medidos em áudio real.
+- A **transição em todos os cortes** usa a mesma duração (0,5 s) e pula cortes com vão, de textos ou curtos demais; o aviso diz quantas foram aplicadas.
+- **Encaixar nos marcadores** usa tolerância fixa de 0,5 s; **esticar até o marcador** depende de a mídia alcançar. **Carimbar** cria cópias sem ligação com o original.
+- **Selecionar por critério** usa limites fixos pela paleta (1 s e 5 s); nas propriedades não há filtro livre.
+- O botão **Desfazer** dos avisos desfaz a última edição do projeto, que pode não ser a do comando se algo mais foi editado nesse meio-tempo.
+- Os atalhos **Alt + I/B/R** podem conflitar com atalhos do sistema ou do teclado (por exemplo, AltGr em alguns layouts).
+
 ## Escala
 - Não houve teste de carga nem de vídeos muito longos (horas). Os limites configuráveis (2 GB por arquivo, 2 h por mídia, 200 mídias por projeto, 3000 clipes por exportação) existem para proteger o servidor, não foram calibrados com medições.
