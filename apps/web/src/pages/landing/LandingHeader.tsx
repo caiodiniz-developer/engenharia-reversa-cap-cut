@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Icon } from '../../components/Icon';
 import { useTheme } from '../../store/theme';
 import { NAV } from './content';
-import { scrollToSection } from './scroll';
+import { activeSectionId, scrollToSection } from './scroll';
 
 /** Barra fixa no topo: marca, âncoras das seções, tema e acesso (entrar / criar conta). Vira menu em telas estreitas. */
 export function LandingHeader({ scroller }: { scroller: React.RefObject<HTMLElement | null> }) {
@@ -11,11 +11,20 @@ export function LandingHeader({ scroller }: { scroller: React.RefObject<HTMLElem
   const toggle = useTheme((s) => s.toggle);
   const [open, setOpen] = useState(false);
   const [raised, setRaised] = useState(false);
+  const [active, setActive] = useState<string | null>(null);
 
   useEffect(() => {
     const el = scroller.current;
     if (!el) return;
-    const onScroll = () => setRaised(el.scrollTop > 8);
+    const onScroll = () => {
+      setRaised(el.scrollTop > 8);
+      const base = el.getBoundingClientRect().top;
+      const tops = NAV.flatMap((n) => {
+        const s = document.getElementById(n.id);
+        return s ? [{ id: n.id, top: s.getBoundingClientRect().top - base }] : [];
+      });
+      setActive(activeSectionId(tops, 140));
+    };
     onScroll();
     el.addEventListener('scroll', onScroll, { passive: true });
     return () => el.removeEventListener('scroll', onScroll);
@@ -38,7 +47,7 @@ export function LandingHeader({ scroller }: { scroller: React.RefObject<HTMLElem
 
         <nav className="ml-6 hidden items-center gap-1 md:flex" aria-label="Seções da página">
           {NAV.map((n) => (
-            <button key={n.id} type="button" className="rounded-lg px-3 py-2 text-[13px] font-medium text-mute transition-colors hover:bg-panel-3 hover:text-ink" onClick={() => go(n.id)}>
+            <button key={n.id} type="button" aria-current={active === n.id ? 'true' : undefined} className={'rounded-lg px-3 py-2 text-[13px] font-medium transition-colors hover:bg-panel-3 hover:text-ink ' + (active === n.id ? 'text-ink' : 'text-mute')} onClick={() => go(n.id)} data-testid={'nav-' + n.id}>
               {n.label}
             </button>
           ))}
