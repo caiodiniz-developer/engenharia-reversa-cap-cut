@@ -142,3 +142,31 @@ test.describe('exportação', () => {
     await expect(page.getByLabel('Predefinição')).toHaveValue('whatsapp');
   });
 });
+
+
+test.describe('login: lembrar de mim', () => {
+  test('o e-mail volta preenchido depois de sair, e deixa de voltar se a opção for desmarcada', async ({ page }) => {
+    const { email, password } = await signup(page);
+    await page.getByRole('button', { name: 'Sair' }).click();
+    await page.goto('/login');
+    await expect(page.getByLabel('E-mail')).toHaveValue('');
+    await expect(page.getByTestId('remember-me')).not.toBeChecked();
+    await page.getByLabel('E-mail').fill(email);
+    await page.getByLabel('Senha').fill(password);
+    await page.getByTestId('remember-me').check();
+    await page.getByRole('button', { name: 'Entrar' }).last().click();
+    await expect(page.getByRole('heading', { name: 'Seus projetos' })).toBeVisible();
+    await page.getByRole('button', { name: 'Sair' }).click();
+    await page.goto('/login');
+    await expect(page.getByLabel('E-mail')).toHaveValue(email);
+    await expect(page.getByTestId('remember-me')).toBeChecked();
+    await expect(page.getByLabel('Senha')).toHaveValue(''); // a senha nunca é lembrada
+    await page.getByLabel('Senha').fill(password);
+    await page.getByTestId('remember-me').uncheck();
+    await page.getByRole('button', { name: 'Entrar' }).last().click();
+    await expect(page.getByRole('heading', { name: 'Seus projetos' })).toBeVisible();
+    await page.getByRole('button', { name: 'Sair' }).click();
+    await page.goto('/login');
+    await expect(page.getByLabel('E-mail')).toHaveValue('');
+  });
+});
