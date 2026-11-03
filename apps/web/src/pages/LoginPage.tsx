@@ -18,6 +18,8 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [reveal, setReveal] = useState(false);
+  const [caps, setCaps] = useState(false);
   const location = useLocation();
 
   if (status === 'authenticated') return <Navigate to={(location.state as { from?: string } | null)?.from ?? '/'} replace />;
@@ -128,7 +130,23 @@ export function LoginPage() {
                 <label className="label" htmlFor="password">
                   Senha
                 </label>
-                <input id="password" type="password" className="field" autoComplete={mode === 'login' ? 'current-password' : 'new-password'} value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} />
+                <div className="relative">
+                  <input
+                    id="password"
+                    type={reveal ? 'text' : 'password'}
+                    className="field pr-9"
+                    autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    onKeyDown={(e) => setCaps(e.getModifierState('CapsLock'))}
+                    onKeyUp={(e) => setCaps(e.getModifierState('CapsLock'))}
+                    required
+                    minLength={8}
+                  />
+                  <button type="button" className="btn-icon absolute right-0.5 top-0.5 !h-7 !w-7" aria-label={reveal ? 'Ocultar caracteres' : 'Mostrar caracteres'} aria-pressed={reveal} onClick={() => setReveal((v) => !v)} data-testid="reveal-password">
+                    <Icon name={reveal ? 'eyeOff' : 'eye'} size={14} />
+                  </button>
+                </div>
                 {mode === 'register' && <p className="mt-1 text-2xs text-mute">Mínimo de 8 caracteres.</p>}
               </div>
               {error && (
