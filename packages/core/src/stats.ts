@@ -52,3 +52,34 @@ export function projectStats(p: Project): ProjectStats {
     averageClip: clips.total ? Math.round((sum / clips.total) * 1e6) / 1e6 : 0,
   };
 }
+
+
+export interface SelectionStats {
+  count: number;
+  /** Início do primeiro e fim do último clipe selecionado. */
+  from: number;
+  to: number;
+  /** Tempo coberto entre o início do primeiro e o fim do último (inclui vãos). */
+  span: number;
+  /** Soma das durações dos clipes selecionados. */
+  total: number;
+}
+
+/** Resume uma seleção de clipes (ids que não existem mais são ignorados). Devolve null se nada restou. */
+export function selectionStats(p: Project, ids: Iterable<string>): SelectionStats | null {
+  const chosen = new Set(ids);
+  let count = 0;
+  let from = Infinity;
+  let to = -Infinity;
+  let total = 0;
+  for (const { clip } of allClips(p)) {
+    if (!chosen.has(clip.id)) continue;
+    count++;
+    from = Math.min(from, clip.start);
+    to = Math.max(to, clip.start + clip.duration);
+    total += clip.duration;
+  }
+  if (!count) return null;
+  const round = (n: number) => Math.round(n * 1e6) / 1e6;
+  return { count, from: round(from), to: round(to), span: round(to - from), total: round(total) };
+}
