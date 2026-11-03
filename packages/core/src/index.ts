@@ -45,3 +45,8 @@ export * from './ops/markertools';
 export * from './ops/mediatools';
 export * from './stats';
 export * from './ops/creative';
+export * from './ops/markersync';
+export * from './ops/selection';
+export * from './ops/transitions';
+export * from './ops/captiontools';
+export * from './ops/sorting';
