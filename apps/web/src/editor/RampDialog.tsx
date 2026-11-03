@@ -4,7 +4,7 @@ import { Modal } from '../components/controls';
 import { Icon } from '../components/Icon';
 import { useEditor } from '../store/editor';
 
-const fmtSpeed = (v: number) => v.toFixed(2).replace(/0$/, '').replace(/\.$/, '').replace('.', ',') + '×';
+const fmtSpeed = (v: number) => v.toFixed(2).replace(/\.?0+$/, '').replace('.', ',') + '×';
 const fmtSec = (v: number) => v.toFixed(1).replace('.', ',') + ' s';
 /** O controle desliza em potências de 2 (−3 a 4): 0,125× … 16×, com a mesma sensibilidade para ir e para voltar. */
 const toSpeed = (exp: number) => Math.round(2 ** exp * 100) / 100;
