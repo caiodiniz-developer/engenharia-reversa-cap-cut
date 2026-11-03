@@ -147,6 +147,11 @@ export function LoginPage() {
                     <Icon name={reveal ? 'eyeOff' : 'eye'} size={14} />
                   </button>
                 </div>
+                {caps && (
+                  <p role="status" className="mt-1 flex items-center gap-1 text-2xs text-warn" data-testid="caps-warning">
+                    <Icon name="alert" size={12} /> Caps Lock está ligado.
+                  </p>
+                )}
                 {mode === 'register' && <p className="mt-1 text-2xs text-mute">Mínimo de 8 caracteres.</p>}
               </div>
               {error && (
