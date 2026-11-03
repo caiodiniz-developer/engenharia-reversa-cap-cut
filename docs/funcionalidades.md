@@ -209,6 +209,19 @@ Operações puras em `packages/core/src/ops` (testadas) ligadas a comandos da pa
 | **Tela dividida** (lado a lado ou empilhado): cada clipe cobre metade do quadro, cortado no centro sem deformar | 🟨 | core `ops/creative.test`, E2E `criativo` mede o **preview** (esquerda azul, direita vermelho); a exportação usa a mesma transformação, mas não foi medida no arquivo |
 | **Imagem dentro da imagem** (4 cantos, 30%, margem de 3%) | ✅ | core `ops/creative.test` (posição conferida com a proporção da mídia); sem medição de pixel |
 
+### Sincronia, seleção e legendas em lote
+
+| Recurso | Estado | Verificação |
+|---|---|---|
+| Puxar o início dos clipes para o marcador mais próximo (até 0,5 s); esticar ou encurtar até o próximo marcador | ✅ | core `ops/markersync.test` (colisões contadas, mídia curta ignorada) |
+| **Carimbar** um clipe em cada marcador livre (efeitos sonoros, selos) | ✅ | core `ops/markersync.test`, web `creativeCommands.test` |
+| **Selecionar por critério** (silenciados, com efeitos, keyframes, transição, ligados, agrupados, velocidade alterada, invertidos, mais curtos que 1 s, mais longos que 5 s) e **inverter a seleção** (Alt + I) | ✅ | core `ops/selection.test`, E2E `criativo` |
+| Transição em todos os cortes da faixa (dissolver, deslizar, cortina) e remover todas | ✅ | core `ops/transitions.test` (a timeline encurta pela sobreposição de cada corte), E2E `criativo` |
+| Ordenar os clipes da faixa por duração (crescente/decrescente) ou por nome, mantendo os vãos | ✅ | core `ops/sorting.test` |
+| Quebrar legendas longas em várias, sem vãos, respeitando o tempo de cada palavra | ✅ | core `ops/captiontools.test` |
+| Cor de destaque da palavra falada em várias legendas | ✅ | core `ops/captiontools.test` |
+| Atalhos Alt + I, Alt + B e Alt + R, listados na ajuda e na paleta | ✅ | web `creativeShortcuts.test`, E2E `criativo` |
+
 ## Plataforma
 
 | Recurso | Estado | Verificação |
