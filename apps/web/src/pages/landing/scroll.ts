@@ -8,3 +8,14 @@ export function scrollToSection(id: string): void {
   el.setAttribute('tabindex', '-1');
   el.focus({ preventScroll: true });
 }
+
+
+/**
+ * Seção "atual" para destacar no menu: a última cuja borda de cima já passou de ${offset} px abaixo do topo da área rolável.
+ * ${tops} vem na ordem em que as seções aparecem na página; antes da primeira não há seção atual (null).
+ */
+export function activeSectionId(tops: Array<{ id: string; top: number }>, offset: number): string | null {
+  let current: string | null = null;
+  for (const s of tops) if (s.top <= offset) current = s.id;
+  return current;
+}
