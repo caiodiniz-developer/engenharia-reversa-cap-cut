@@ -119,6 +119,15 @@ body {
       inset 0 1px 0 var(--glass-hi),
       var(--glass-shadow);
   }
+  /* Reflexo de luz na metade de cima, como numa gota de vidro. */
+  .btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.2), rgb(255 255 255 / 0.04) 48%, transparent 52%);
+  }
   .btn:hover:not(:disabled) {
     background: var(--glass-bg-hover);
   }
