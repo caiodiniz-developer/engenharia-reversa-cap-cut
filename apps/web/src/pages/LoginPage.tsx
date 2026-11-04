@@ -99,7 +99,7 @@ export function LoginPage() {
           <p className="mb-5 hidden text-sm text-mute lg:block">{mode === 'login' ? 'Entre para continuar seus projetos.' : 'Leva menos de um minuto.'}</p>
 
           <div className="card p-5">
-            <div className="mb-4 grid grid-cols-2 gap-1 rounded-lg bg-panel-2 p-1" role="tablist">
+            <div className="seg mb-4 grid w-full grid-cols-2" role="tablist">
               {(['login', 'register'] as const).map((m) => (
                 <button
                   key={m}
@@ -110,7 +110,7 @@ export function LoginPage() {
                     setMode(m);
                     setError(null);
                   }}
-                  className={`rounded-md py-1.5 text-xs font-medium transition-colors ${mode === m ? 'bg-panel-3 text-ink shadow-sm' : 'text-mute hover:text-ink'}`}
+                  className={`seg-item py-1.5 text-xs font-medium ${mode === m ? 'text-ink' : 'text-mute hover:text-ink'}`}
                 >
                   {m === 'login' ? 'Entrar' : 'Criar conta'}
                 </button>
