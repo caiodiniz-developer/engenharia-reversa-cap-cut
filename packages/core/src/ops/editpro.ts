@@ -23,3 +23,10 @@ export function jCut(p: Project, clipId: string, seconds: number): Project {
   const a = linkedAudioOf(p, clipId);
   return trimClip(p, a.id, 'start', round6(a.start - seconds));
 }
+
+/** L-cut: o áudio do clipe termina ${seconds} s depois da imagem (precisa de mídia sobrando no fim). O par continua ligado. */
+export function lCut(p: Project, clipId: string, seconds: number): Project {
+  if (!(seconds >= 0.05 && seconds <= 10)) throw new TimelineError('O prolongamento vai de 0,05 s a 10 s', 'OUT_OF_RANGE');
+  const a = linkedAudioOf(p, clipId);
+  return trimClip(p, a.id, 'end', round6(clipEnd(a) + seconds));
+}
