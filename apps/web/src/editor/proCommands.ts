@@ -37,3 +37,14 @@ export function projectFadeCommands(): Command[] {
     ...[1, 2].map((sec) => cmd('project-fade-out-' + sec, 'Encerramento suave: tudo o que termina o projeto some em ' + sec + ' s', G, 'moon', fade('out', sec), { keywords: 'fade out fim final saída terminar escurecer' })),
   ];
 }
+
+export function textConvertCommands(): Command[] {
+  const sel1 = (kind: string) => () => sel().length === 1 && kindOf(sel()[0]!) === kind;
+  const some = (kind: string) => () => sel().some((id) => kindOf(id) === kind);
+  return [
+    cmd('split-text-lines', 'Dividir o texto em um texto por linha', G, 'list', createAndSelect('Dividir texto em linhas', (p, ids) => core.splitTextLines(p, ids[0]!)), { enabled: sel1('text'), keywords: 'lista aparecer um a um quebrar enter parágrafo' }),
+    cmd('text-to-captions', 'Converter textos selecionados em legendas', G, 'captions', createAndSelect('Textos em legendas', (p, ids) => core.textToCaptions(p, ids)), { enabled: some('text'), keywords: 'transformar título legenda palavra' }),
+    cmd('captions-to-text', 'Converter legendas selecionadas em textos', G, 'type', createAndSelect('Legendas em textos', (p, ids) => core.captionsToText(p, ids)), { enabled: some('caption'), keywords: 'transformar legenda título editar estilo' }),
+    cmd('markers-captions', 'Marcar o início de cada legenda', G, 'flag', () => applyCounted('Marcar legendas', core.markersAtCaptions, (r) => r.added, 'Não há legendas novas para marcar (ou já há marcadores nelas)', (n) => noun(n, 'marcador criado', 'marcadores criados')), { keywords: 'capítulos falas navegar marcadores legendas' }),
+  ];
+}
