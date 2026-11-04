@@ -82,3 +82,39 @@ describe('matchVolumeToFirst', () => {
     expect(() => ops.matchVolumeToFirst(s.p, [s.a])).toThrow(/dois clipes/);
   });
 });
+
+describe('holdLastFrame', () => {
+  it('cria o quadro parado logo depois, do último instante da mídia, e empurra o clipe seguinte', () => {
+    const { project, trackId } = fixtureProject();
+    const a = mediaClip('m1', 0, 4, { sourceIn: 1 });
+    const b = mediaClip('m1', 4, 2);
+    const p = addClip(addClip(project, trackId, a), trackId, b);
+    const r = ops.holdLastFrame(p, a.id, 2);
+    const hold = media(r.project, r.freezeId);
+    expect(hold).toMatchObject({ start: 4, duration: 2, freeze: true, speed: 1, reverse: false });
+    expect(hold.sourceIn).toBeCloseTo(1 + 4 - 1 / 30, 5);
+    expect(hold.audio.muted).toBe(true);
+    expect(media(r.project, b.id).start).toBe(6);
+    expect(projectDuration(r.project)).toBe(8);
+  });
+
+  it('em clipe invertido o último quadro visível é o início da mídia usada', () => {
+    const { project, trackId } = fixtureProject();
+    const a = mediaClip('m1', 0, 2, { sourceIn: 3, reverse: true });
+    const r = ops.holdLastFrame(addClip(project, trackId, a), a.id, 1);
+    expect(media(r.project, r.freezeId).sourceIn).toBe(3);
+  });
+
+  it('recusa quadro já parado, imagem, tempo fora de 0,1–30 e texto', () => {
+    const { project, trackId } = fixtureProject();
+    const a = mediaClip('m1', 0, 2, { freeze: true });
+    const p = addClip(project, trackId, a);
+    expect(() => ops.holdLastFrame(p, a.id)).toThrow(/já é um quadro parado/);
+    const b = mediaClip('m2', 5, 2);
+    const q = addClip(project, trackId, b);
+    expect(() => ops.holdLastFrame(q, b.id, 0.05)).toThrow(/0,1/);
+    expect(() => ops.holdLastFrame(q, b.id, 31)).toThrow();
+    const img = { ...q, media: { ...q.media, m2: { ...q.media.m2!, kind: 'image' as const } } };
+    expect(() => ops.holdLastFrame(img, b.id)).toThrow(/vídeo/);
+  });
+});
