@@ -45,3 +45,12 @@ export function removeEmptyTracks(p: Project): { project: Project; removed: numb
   const keep = p.tracks.filter((t) => t.clips.length > 0);
   return { project: keep.length === p.tracks.length ? p : { ...p, tracks: keep }, removed: p.tracks.length - keep.length };
 }
+
+/** Deixa todos os clipes escolhidos com a mesma duração: a do mais curto, a do mais longo ou a média (arredondada ao quadro). */
+export function matchDuration(p: Project, ids: string[], mode: 'shortest' | 'longest' | 'average'): Project {
+  const clips = [...new Set(ids)].map((id) => requireClip(p, id).clip);
+  if (clips.length < 2) throw new TimelineError('Selecione pelo menos dois clipes', 'OUT_OF_RANGE');
+  const durations = clips.map((c) => c.duration);
+  const target = mode === 'shortest' ? Math.min(...durations) : mode === 'longest' ? Math.max(...durations) : snapToFrame(durations.reduce((a, b) => a + b, 0) / durations.length, p.settings.fps);
+  return setClipsDuration(p, clips.map((c) => c.id), round6(target));
+}
