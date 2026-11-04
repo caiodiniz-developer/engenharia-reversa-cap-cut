@@ -39,3 +39,21 @@ describe('jCut', () => {
     expect(() => ops.jCut(s.p, s.video, 0.01)).toThrow(/0,05/);
   });
 });
+
+describe('lCut', () => {
+  it('o áudio termina depois da imagem', () => {
+    const s = withAudio();
+    const out = ops.lCut(s.p, s.video, 1);
+    expect(media(out, s.audio)).toMatchObject({ start: 2, duration: 4, sourceIn: 1.5 });
+    expect(media(out, s.video).duration).toBe(3);
+  });
+
+  it('falha quando a mídia acaba e quando bate no próximo clipe de áudio', () => {
+    const s = withAudio();
+    expect(() => ops.lCut(s.p, s.video, 6)).toThrow(); // 1,5 + 3 + 6 passa dos 10 s da mídia
+    const other = mediaClip('m2', 5.5, 1);
+    const t = s.p.tracks.find((x) => x.kind === 'audio')!;
+    const blocked = addClip(s.p, t.id, other);
+    expect(() => ops.lCut(blocked, s.video, 1)).toThrow();
+  });
+});
