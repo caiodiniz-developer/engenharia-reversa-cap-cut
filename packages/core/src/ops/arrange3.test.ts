@@ -111,3 +111,35 @@ describe('matchDuration', () => {
     expect(() => ops.matchDuration(s.p, [s.ids[0]!], 'shortest')).toThrow(/dois clipes/);
   });
 });
+
+describe('staggerClips', () => {
+  it('em faixas diferentes: o mais cedo fica e os outros entram a cada intervalo', () => {
+    const s = twoTracks();
+    const a = mediaClip('m1', 1, 2);
+    const b = mediaClip('m1', 1, 2);
+    const c = mediaClip('m2', 1, 2);
+    const t3 = addTrack(s.p, 'video');
+    let p = addClip(addClip(t3.project, s.top, a), s.bottom, b);
+    p = addClip(p, t3.track.id, c);
+    const r = ops.staggerClips(p, [c.id, a.id, b.id], 0.5);
+    expect([a.id, b.id, c.id].map((id) => findClip(r, id)!.clip.start)).toEqual([1, 1.5, 2]);
+  });
+
+  it('na mesma faixa pode colidir e então falha sem alterar nada', () => {
+    const { project, trackId } = fixtureProject();
+    const a = mediaClip('m1', 0, 2);
+    const b = mediaClip('m1', 3, 2);
+    const p = addClip(addClip(project, trackId, a), trackId, b);
+    expect(() => ops.staggerClips(p, [a.id, b.id], 0.5)).toThrow(); // b iria para 0,5 e bateria em a
+    expect(findClip(p, b.id)!.clip.start).toBe(3);
+  });
+
+  it('recusa intervalo fora de 0,05–5 s e menos de dois clipes', () => {
+    const s = twoTracks();
+    const a = mediaClip('m1', 0, 1);
+    const b = mediaClip('m1', 0, 1);
+    const p = addClip(addClip(s.p, s.top, a), s.bottom, b);
+    expect(() => ops.staggerClips(p, [a.id, b.id], 0.01)).toThrow(/0,05/);
+    expect(() => ops.staggerClips(p, [a.id], 1)).toThrow(/dois clipes/);
+  });
+});
