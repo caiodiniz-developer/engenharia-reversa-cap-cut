@@ -143,3 +143,55 @@ describe('staggerClips', () => {
     expect(() => ops.staggerClips(p, [a.id], 1)).toThrow(/dois clipes/);
   });
 });
+
+describe('clipIdsInRange', () => {
+  function scene() {
+    const { project, trackId } = fixtureProject();
+    const a = mediaClip('m1', 0, 2); // 0–2
+    const b = mediaClip('m1', 3, 2); // 3–5
+    const c = mediaClip('m1', 4.5, 3); // 4,5–7,5
+    const p = [a, b, c].reduce<Project>((acc, x) => addClip(acc, trackId, x.id === c.id ? { ...x, start: 6 } : x), project);
+    return { p, trackId, a: a.id, b: b.id, c: c.id };
+  }
+
+  it('"dentro" pede o clipe inteiro; "tocando" aceita parte dele', () => {
+    const s = scene(); // c ficou em 6–9
+    expect(ops.clipIdsInRange(s.p, 2.5, 7)).toEqual([s.b]);
+    expect(ops.clipIdsInRange(s.p, 2.5, 7, 'touching')).toEqual([s.b, s.c]);
+    expect(ops.clipIdsInRange(s.p, 0, 20)).toEqual([s.a, s.b, s.c]);
+  });
+
+  it('bordas encostadas não contam como "tocando" e faixa bloqueada fica de fora', () => {
+    const s = scene();
+    expect(ops.clipIdsInRange(s.p, 2, 3, 'touching')).toEqual([]);
+    const locked: Project = { ...s.p, tracks: s.p.tracks.map((t) => ({ ...t, locked: true })) };
+    expect(ops.clipIdsInRange(locked, 0, 20)).toEqual([]);
+    expect(() => ops.clipIdsInRange(s.p, 5, 5)).toThrow(/depois do início/);
+  });
+});
+
+describe('markersAtCaptions', () => {
+  function withCaptions(...texts: Array<[string, number]>) {
+    const { project } = fixtureProject();
+    const t = addTrack(project, 'caption');
+    let p: Project = t.project;
+    texts.forEach(([text, start], i) => {
+      p = addClip(p, t.track.id, CaptionClipSchema.parse({ id: 'cap' + i, type: 'caption', text, start, duration: 1.5 }));
+    });
+    return p;
+  }
+
+  it('um marcador por legenda, com o texto como nome (cortado se longo)', () => {
+    const p = withCaptions(['Olá, pessoal', 1], ['Uma legenda muito mais comprida que o limite do nome', 4]);
+    const r = ops.markersAtCaptions(p);
+    expect(r.added).toBe(2);
+    expect(r.project.markers.map((m) => [m.time, m.label])).toEqual([[1, 'Olá, pessoal'], [4, 'Uma legenda muito mais comprida…']]);
+    expect(r.project.markers[1]!.label.length).toBe(32);
+  });
+
+  it('não duplica onde já há marcador e ignora projeto sem legendas', () => {
+    const p = addMarker(withCaptions(['Um', 1], ['Dois', 3]), 3).project;
+    expect(ops.markersAtCaptions(p).added).toBe(1);
+    expect(ops.markersAtCaptions(fixtureProject().project)).toEqual({ project: fixtureProject().project, added: 0 });
+  });
+});
