@@ -57,3 +57,23 @@ describe('sendToAdjacentTrack', () => {
     expect(r.project.tracks.find((t) => t.id === r.trackId)!.kind).toBe('audio');
   });
 });
+
+describe('removeEmptyTracks', () => {
+  it('apaga só as faixas sem clipes e mantém a ordem das outras', () => {
+    const s = twoTracks();
+    const a = mediaClip('m1', 0, 2);
+    const withClip = addClip(s.p, s.bottom, a);
+    const extra = addTrack(withClip, 'audio');
+    const r = ops.removeEmptyTracks(extra.project);
+    expect(r.removed).toBe(2); // a faixa de cima e a de áudio
+    expect(r.project.tracks.map((t) => t.id)).toEqual([s.bottom]);
+  });
+
+  it('sem faixas vazias devolve o mesmo projeto', () => {
+    const s = twoTracks();
+    const p = addClip(addClip(s.p, s.top, mediaClip('m1', 0, 1)), s.bottom, mediaClip('m2', 0, 1));
+    const r = ops.removeEmptyTracks(p);
+    expect(r.removed).toBe(0);
+    expect(r.project).toBe(p);
+  });
+});
