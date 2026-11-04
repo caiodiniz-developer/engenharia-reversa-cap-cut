@@ -25,7 +25,7 @@ export function ToolRail({ value, onChange }: { value: PanelTab; onChange: (t: P
   const { attention } = useReview();
   const reduce = useReducedMotion();
   return (
-    <nav className="flex w-[78px] shrink-0 flex-col items-stretch gap-0.5 overflow-y-auto border-r border-line bg-panel py-2" role="tablist" aria-label="Ferramentas" aria-orientation="vertical">
+    <nav className="flex w-[78px] shrink-0 flex-col items-stretch gap-0.5 glass-rail overflow-y-auto py-2" role="tablist" aria-label="Ferramentas" aria-orientation="vertical">
       {TOOLS.map((t) => {
         const active = value === t.id;
         return (
