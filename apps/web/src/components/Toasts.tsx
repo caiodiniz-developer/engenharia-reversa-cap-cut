@@ -16,7 +16,7 @@ export function Toasts() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 24 }}
             transition={{ duration: 0.16 }}
-            className={`pointer-events-auto relative flex items-start gap-2.5 overflow-hidden rounded-xl border border-l-4 bg-panel-2 px-3 py-2.5 text-xs shadow-pop ${
+            className={`pointer-events-auto relative flex items-start gap-2.5 glass-strong overflow-hidden rounded-xl border border-l-4 px-3 py-2.5 text-xs ${
               t.kind === 'error' ? 'border-danger/40 border-l-danger' : t.kind === 'success' ? 'border-ok/40 border-l-ok' : 'border-line border-l-accent'
             }`}
           >
