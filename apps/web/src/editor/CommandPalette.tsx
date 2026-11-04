@@ -71,7 +71,7 @@ export function CommandPalette({ open, onClose, onExport, onHelp }: { open: bool
     <AnimatePresence>
       {open && (
         <motion.div className="fixed inset-0 z-[70] flex items-start justify-center bg-black/55 px-4 pt-[14vh] backdrop-blur-[2px]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-          <motion.div className="w-full max-w-xl overflow-hidden rounded-2xl border border-line bg-panel shadow-pop" role="dialog" aria-modal="true" aria-label="Paleta de comandos" initial={{ y: -10, scale: 0.98 }} animate={{ y: 0, scale: 1 }} exit={{ y: -6, opacity: 0 }} transition={{ duration: 0.14 }}>
+          <motion.div className="glass-strong w-full max-w-xl overflow-hidden rounded-2xl" role="dialog" aria-modal="true" aria-label="Paleta de comandos" initial={{ y: -10, scale: 0.98 }} animate={{ y: 0, scale: 1 }} exit={{ y: -6, opacity: 0 }} transition={{ duration: 0.14 }}>
             <div className="flex items-center gap-3 border-b border-line px-4">
               <Icon name="search" size={16} className="text-mute" />
               <input
