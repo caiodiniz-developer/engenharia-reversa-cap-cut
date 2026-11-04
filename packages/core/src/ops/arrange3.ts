@@ -39,3 +39,9 @@ export function sendToAdjacentTrack(p: Project, ids: string[], dir: -1 | 1): { p
   assertTracksValid(next, [source.id, target.id]);
   return { project: next, trackId: target.id };
 }
+
+/** Remove todas as faixas que não têm nenhum clipe. */
+export function removeEmptyTracks(p: Project): { project: Project; removed: number } {
+  const keep = p.tracks.filter((t) => t.clips.length > 0);
+  return { project: keep.length === p.tracks.length ? p : { ...p, tracks: keep }, removed: p.tracks.length - keep.length };
+}
