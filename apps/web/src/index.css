@@ -51,6 +51,12 @@
   --clip-text: 204 140 50;
   --clip-caption: 146 110 224;
   --stage: 222 227 234;
+  --glass-bg: rgb(255 255 255 / 0.62);
+  --glass-bg-hover: rgb(255 255 255 / 0.86);
+  --glass-bg-strong: rgb(255 255 255 / 0.74);
+  --glass-border: rgb(255 255 255 / 0.85);
+  --glass-hi: rgb(255 255 255 / 1);
+  --glass-shadow: 0 0 0 1px rgb(15 23 42 / 0.07), 0 8px 22px -12px rgb(15 23 42 / 0.28);
   color-scheme: light;
 }
 
