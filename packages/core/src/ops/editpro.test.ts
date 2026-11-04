@@ -57,3 +57,28 @@ describe('lCut', () => {
     expect(() => ops.lCut(blocked, s.video, 1)).toThrow();
   });
 });
+
+describe('matchVolumeToFirst', () => {
+  function three() {
+    const { project, trackId } = fixtureProject();
+    const a = mediaClip('m1', 0, 1, { audio: { ...mediaClip('m1', 0, 1).audio, volume: 0.6 } });
+    const b = mediaClip('m1', 1, 1);
+    const c = mediaClip('m1', 2, 1, { audio: { ...mediaClip('m1', 0, 1).audio, volume: 2 } });
+    const p = [a, b, c].reduce<Project>((acc, x) => addClip(acc, trackId, x), project);
+    return { p, a: a.id, b: b.id, c: c.id };
+  }
+
+  it('todos passam a ter o volume do primeiro da lista, e a ordem da lista manda', () => {
+    const s = three();
+    const out = ops.matchVolumeToFirst(s.p, [s.a, s.b, s.c]);
+    expect([s.a, s.b, s.c].map((id) => media(out, id).audio.volume)).toEqual([0.6, 0.6, 0.6]);
+    const other = ops.matchVolumeToFirst(s.p, [s.c, s.a]);
+    expect(media(other, s.a).audio.volume).toBe(2);
+    expect(media(other, s.c).audio.volume).toBe(2);
+  });
+
+  it('exige pelo menos dois clipes de mídia', () => {
+    const s = three();
+    expect(() => ops.matchVolumeToFirst(s.p, [s.a])).toThrow(/dois clipes/);
+  });
+});
