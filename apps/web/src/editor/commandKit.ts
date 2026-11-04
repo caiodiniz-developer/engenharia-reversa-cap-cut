@@ -51,3 +51,16 @@ export function applyCounted<R extends { project: Project }>(label: string, comp
 export function cmd(id: string, label: string, group: string, icon: IconName, run: () => void, extra: Partial<Command> = {}): Command {
   return { id, label, group, icon, run, ...extra };
 }
+
+/** Aplica uma operação que cria clipes novos e deixa os criados selecionados. */
+export const createAndSelect = (label: string, make: (p: Project, ids: string[]) => { project: Project; ids: string[] }) => () => {
+  let created: string[] = [];
+  const ok = s().run(label, (p) => {
+    const r = make(p, sel());
+    created = r.ids;
+    return r.project;
+  });
+  if (ok && created.length) s().select(created);
+};
+
+export const oneMedia = () => sel().length === 1 && findClip(s().project, sel()[0]!)?.clip.type === 'media';
