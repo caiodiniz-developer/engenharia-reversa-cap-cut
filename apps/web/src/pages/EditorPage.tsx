@@ -194,7 +194,7 @@ export function EditorPage() {
   const showProps = !focusMode && !propsCollapsed;
 
   return (
-    <div className="flex h-full flex-col bg-bg" data-testid="editor">
+    <div className="flex h-full flex-col bg-transparent" data-testid="editor">
       <TopBar onExport={() => setExporting(true)} onHelp={openHelp} onPalette={openPalette} onToggleProps={() => setPropsOpen(!propsOpen)} />
 
       {saveState === 'conflict' && (
@@ -230,7 +230,7 @@ export function EditorPage() {
 
           {showSide && panelOpen && (
             <>
-              <aside className="flex shrink-0 flex-col bg-panel" style={{ width: left.size }} aria-label="Biblioteca e ferramentas">
+              <aside className="flex shrink-0 flex-col bg-panel/75" style={{ width: left.size }} aria-label="Biblioteca e ferramentas">
                 <header className="flex h-11 shrink-0 items-center justify-between border-b border-line px-3">
                   <div className="min-w-0">
                     <h2 className="truncate text-sm font-semibold">{tool.label}</h2>
@@ -262,7 +262,7 @@ export function EditorPage() {
 
           {showProps && <Divider axis="x" onPointerDown={right.startDrag} onNudge={(d) => right.nudge(-d)} label="Redimensionar painel de propriedades" />}
           {!focusMode && (
-            <aside className={`${propsOpen ? 'absolute bottom-0 right-0 top-0 z-40 shadow-pop' : 'hidden'} shrink-0 bg-panel ${propsCollapsed ? '' : 'lg:static lg:block lg:shadow-none'}`} style={{ width: right.size }} aria-label="Propriedades">
+            <aside className={`${propsOpen ? 'absolute bottom-0 right-0 top-0 z-40 shadow-pop' : 'hidden'} shrink-0 bg-panel/75 ${propsCollapsed ? '' : 'lg:static lg:block lg:shadow-none'}`} style={{ width: right.size }} aria-label="Propriedades">
               <Properties />
             </aside>
           )}
@@ -274,7 +274,7 @@ export function EditorPage() {
         </div>
 
         <Divider axis="y" onPointerDown={timeline.startDrag} onNudge={(d) => timeline.nudge(-d)} label="Redimensionar timeline" />
-        <section className="shrink-0 bg-bg" style={{ height: timeline.size }} aria-label="Timeline">
+        <section className="shrink-0 bg-bg/80" style={{ height: timeline.size }} aria-label="Timeline">
           <Timeline />
         </section>
       </div>
