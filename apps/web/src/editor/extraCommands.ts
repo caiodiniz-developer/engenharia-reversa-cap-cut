@@ -5,6 +5,7 @@ import type { IconName } from '../components/Icon';
 import { toast } from '../store/toasts';
 import type { Command } from './commands';
 import { buildCreativeCommands } from './creativeCommands';
+import { buildProCommands } from './proCommands';
 import { applyCounted, atLeast, cmd, focusTrackId, hasSel, hasTrack, onSelection, onTrack, pt, s, sel } from './commandKit';
 
 export function arrangeCommands(): Command[] {
@@ -210,5 +211,5 @@ export function projectCommands(): Command[] {
 
 /** Todos os comandos extras, na ordem em que aparecem na paleta. */
 export function buildExtraCommands(): Command[] {
-  return [...arrangeCommands(), ...audioCommands(), ...frameCommands(), ...textCommands(), ...markerCommands(), ...projectCommands(), ...buildCreativeCommands()];
+  return [...arrangeCommands(), ...audioCommands(), ...frameCommands(), ...textCommands(), ...markerCommands(), ...projectCommands(), ...buildCreativeCommands(), ...buildProCommands()];
 }
