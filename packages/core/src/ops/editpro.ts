@@ -74,3 +74,42 @@ export function holdLastFrame(p: Project, clipId: string, seconds = 2): { projec
   const shifted = withTrackClips(p, track.id, (cs) => shiftFrom(cs, clipEnd(clip) - EPS, seconds));
   return { project: addClip(shifted, track.id, freeze), freezeId: freeze.id };
 }
+
+const visual = (c: Clip, p: Project) => c.type !== 'media' || p.media[c.mediaId]?.kind !== 'audio';
+const hasOpacityKeys = (c: Clip) => (c.keyframes.opacity?.length ?? 0) > 0;
+
+function projectFade(p: Project, seconds: number, edge: 'in' | 'out'): { project: Project; affected: number; skipped: number } {
+  if (!(seconds >= 0.1 && seconds <= 10)) throw new TimelineError('O fade vai de 0,1 s a 10 s', 'OUT_OF_RANGE');
+  const total = projectDuration(p);
+  let next = p;
+  let affected = 0;
+  let skipped = 0;
+  for (const { clip, track } of allClips(p)) {
+    if (track.locked) continue;
+    const touches = edge === 'in' ? clip.start <= 1e-3 : clipEnd(clip) >= total - 1e-3;
+    if (!touches || total <= 0) continue;
+    const s = Math.min(seconds, clip.duration);
+    let done = false;
+    if (clip.type === 'media') {
+      next = withTrackClips(next, track.id, (cs) =>
+        cs.map((c) => (c.id === clip.id ? ({ ...c, audio: { ...(c as MediaClip).audio, [edge === 'in' ? 'fadeIn' : 'fadeOut']: round6(Math.min(s, clip.duration / 2)) } } as Clip) : c)),
+      );
+      done = true;
+    }
+    if (visual(clip, p)) {
+      if (hasOpacityKeys(clip)) skipped++;
+      else {
+        next = edge === 'in' ? fadeOpacity(next, [clip.id], s, 0) : fadeOpacity(next, [clip.id], 0, s);
+        done = true;
+      }
+    }
+    if (done) affected++;
+  }
+  return { project: next, affected, skipped };
+}
+
+/** Abertura suave: tudo o que começa em 0 aparece (imagem) e sobe (áudio) em ${seconds} s. Clipes que já têm keyframes de opacidade não são tocados na imagem. */
+export const fadeInProject = (p: Project, seconds = 1) => projectFade(p, seconds, 'in');
+
+/** Encerramento suave: tudo o que termina junto com o projeto some (imagem) e desce (áudio) nos últimos ${seconds} s. */
+export const fadeOutProject = (p: Project, seconds = 1) => projectFade(p, seconds, 'out');
