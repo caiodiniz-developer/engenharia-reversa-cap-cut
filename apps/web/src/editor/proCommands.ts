@@ -22,3 +22,18 @@ export function audioAndHoldCommands(): Command[] {
     ),
   ];
 }
+
+export function projectFadeCommands(): Command[] {
+  const fade = (edge: 'in' | 'out', sec: number) => () =>
+    applyCounted(
+      edge === 'in' ? 'Abertura suave' : 'Encerramento suave',
+      (p) => (edge === 'in' ? core.fadeInProject(p, sec) : core.fadeOutProject(p, sec)),
+      (r) => r.affected,
+      'Nenhum clipe ' + (edge === 'in' ? 'começa' : 'termina') + ' junto com o projeto',
+      (n) => noun(n, 'clipe suavizado', 'clipes suavizados'),
+    );
+  return [
+    ...[1, 2].map((sec) => cmd('project-fade-in-' + sec, 'Abertura suave: tudo o que começa o projeto aparece em ' + sec + ' s', G, 'sun', fade('in', sec), { keywords: 'fade in começo entrada início escurecer' })),
+    ...[1, 2].map((sec) => cmd('project-fade-out-' + sec, 'Encerramento suave: tudo o que termina o projeto some em ' + sec + ' s', G, 'moon', fade('out', sec), { keywords: 'fade out fim final saída terminar escurecer' })),
+  ];
+}
