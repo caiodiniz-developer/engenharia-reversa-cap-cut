@@ -16,3 +16,10 @@ function linkedAudioOf(p: Project, clipId: string): MediaClip {
   if (!partner || partner.type !== 'media') throw new TimelineError('Extraia o áudio do vídeo antes (comando "Extrair áudio")', 'INVALID');
   return partner;
 }
+
+/** J-cut: o áudio do clipe começa ${seconds} s antes da imagem (usa mídia que vem antes do trecho). O par continua ligado. */
+export function jCut(p: Project, clipId: string, seconds: number): Project {
+  if (!(seconds >= 0.05 && seconds <= 10)) throw new TimelineError('A antecipação vai de 0,05 s a 10 s', 'OUT_OF_RANGE');
+  const a = linkedAudioOf(p, clipId);
+  return trimClip(p, a.id, 'start', round6(a.start - seconds));
+}
