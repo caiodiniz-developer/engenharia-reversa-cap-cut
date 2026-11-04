@@ -57,7 +57,7 @@ function ProjectCard({ p, index, pinned, onPin, onOpen, onRename, onDuplicate, o
           <Icon name="more" size={16} />
         </button>
         {menu && (
-          <div role="menu" className="absolute right-0 top-8 z-20 w-44 overflow-hidden rounded-xl border border-line bg-panel py-1 shadow-pop">
+          <div role="menu" className="glass-strong absolute right-0 top-8 z-20 w-44 overflow-hidden rounded-xl py-1">
             {[
               { label: 'Abrir', icon: 'play' as const, run: onOpen },
               { label: pinned ? 'Desafixar' : 'Fixar no topo', icon: 'pin' as const, run: onPin },
