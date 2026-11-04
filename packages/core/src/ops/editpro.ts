@@ -30,3 +30,16 @@ export function lCut(p: Project, clipId: string, seconds: number): Project {
   const a = linkedAudioOf(p, clipId);
   return trimClip(p, a.id, 'end', round6(clipEnd(a) + seconds));
 }
+
+/** Aplica a todos os clipes de mídia escolhidos o volume do primeiro da lista (para nivelar falas ou músicas). */
+export function matchVolumeToFirst(p: Project, ids: string[]): Project {
+  const media = [...new Set(ids)].map((id) => requireClip(p, id)).filter((x): x is { track: typeof x.track; clip: MediaClip; trackIndex: number } => x.clip.type === 'media');
+  if (media.length < 2) throw new TimelineError('Selecione pelo menos dois clipes de áudio ou vídeo', 'OUT_OF_RANGE');
+  const volume = media[0]!.clip.audio.volume;
+  let next = p;
+  for (const { track, clip } of media.slice(1)) {
+    assertUnlocked(track);
+    next = withTrackClips(next, track.id, (cs) => cs.map((c) => (c.id === clip.id ? ({ ...c, audio: { ...(c as MediaClip).audio, volume } } as Clip) : c)));
+  }
+  return next;
+}
