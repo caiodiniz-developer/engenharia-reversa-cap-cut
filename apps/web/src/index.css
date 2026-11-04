@@ -22,6 +22,13 @@
   --clip-text: 176 118 32;
   --clip-caption: 124 88 208;
   --stage: 6 8 10;
+  /* Vidro: preenchimento translúcido, borda de luz, realce no topo e sombra suave (estilo Liquid Glass). */
+  --glass-bg: rgb(255 255 255 / 0.07);
+  --glass-bg-hover: rgb(255 255 255 / 0.13);
+  --glass-bg-strong: rgb(24 28 36 / 0.62);
+  --glass-border: rgb(255 255 255 / 0.15);
+  --glass-hi: rgb(255 255 255 / 0.3);
+  --glass-shadow: 0 1px 2px rgb(0 0 0 / 0.35), 0 10px 26px -12px rgb(0 0 0 / 0.55);
   color-scheme: dark;
 }
 
