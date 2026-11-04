@@ -597,3 +597,31 @@ input[type='range']:focus-visible::-webkit-slider-thumb {
     transition: none !important;
   }
 }
+
+
+/* Acessibilidade e compatibilidade: sem backdrop-filter, ou com "reduzir transparência" no sistema, o vidro usa cores sólidas. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root {
+    --glass-bg: rgb(var(--panel-2));
+    --glass-bg-hover: rgb(var(--panel-3));
+    --glass-bg-strong: rgb(var(--panel));
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --glass-bg: rgb(var(--panel-2));
+    --glass-bg-hover: rgb(var(--panel-3));
+    --glass-bg-strong: rgb(var(--panel));
+  }
+  .btn,
+  .btn-icon,
+  .chip,
+  .glass,
+  .glass-strong {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  .btn::before {
+    display: none;
+  }
+}
