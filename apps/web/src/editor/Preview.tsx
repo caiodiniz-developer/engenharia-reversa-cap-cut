@@ -141,7 +141,7 @@ export function Preview() {
             <Icon name="film" size={11} /> {settings.width}×{settings.height} · {settings.fps} fps · {aspectLabel(settings.width, settings.height)}
           </span>
         </div>
-        <div className="absolute right-3 top-3 z-10 flex items-center gap-0.5 rounded-lg border border-line bg-panel/80 p-0.5 backdrop-blur">
+        <div className="glass absolute right-3 top-3 z-10 flex items-center gap-0.5 rounded-xl p-0.5">
           <button type="button" className="btn-icon" aria-label="Guias de composição" aria-pressed={guides} title="Guias de composição" onClick={st.toggleGuides}>
             <Icon name="grid" />
           </button>
@@ -196,7 +196,7 @@ export function Preview() {
         </div>
       </div>
 
-      <div className="grid h-14 shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3 border-t border-line bg-panel px-4">
+      <div className="glass-top grid h-14 shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3 px-4">
         <Timecode />
         <div className="flex items-center gap-1">
           <button type="button" className="btn-icon" aria-label="Início" title="Início (Home)" onClick={() => { st.setPlaying(false); st.setPlayhead(0); }}>
