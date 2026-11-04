@@ -205,7 +205,7 @@ export function Preview() {
           <button type="button" className="btn-icon" aria-label="Quadro anterior" title="Quadro anterior (←)" onClick={() => st.stepFrames(-1)}>
             <Icon name="stepBack" />
           </button>
-          <button type="button" className="mx-1 flex h-10 w-10 items-center justify-center rounded-full bg-accent text-accent-ink shadow-md transition-transform hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent" aria-label={playing ? 'Pausar' : 'Reproduzir'} title="Reproduzir/Pausar (Espaço)" onClick={() => st.togglePlay()} data-testid="play-button">
+          <button type="button" className="play-orb mx-1 flex h-10 w-10 items-center justify-center rounded-full text-accent-ink transition-transform hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent" aria-label={playing ? 'Pausar' : 'Reproduzir'} title="Reproduzir/Pausar (Espaço)" onClick={() => st.togglePlay()} data-testid="play-button">
             <Icon name={playing ? 'pause' : 'play'} size={18} />
           </button>
           <button type="button" className="btn-icon" aria-label="Próximo quadro" title="Próximo quadro (→)" onClick={() => st.stepFrames(1)}>
