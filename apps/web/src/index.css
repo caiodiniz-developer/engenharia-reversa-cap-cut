@@ -66,6 +66,15 @@ body,
   height: 100%;
 }
 
+/* Brilhos suaves atrás de tudo: o vidro desfoca e realça estas cores. */
+body {
+  background-image:
+    radial-gradient(900px 560px at 12% -8%, rgb(var(--accent) / 0.14), transparent 62%),
+    radial-gradient(760px 520px at 100% 4%, rgb(124 88 208 / 0.13), transparent 58%),
+    radial-gradient(700px 520px at 60% 108%, rgb(52 98 168 / 0.1), transparent 60%);
+  background-attachment: fixed;
+}
+
 body {
   @apply bg-bg font-sans text-ink antialiased;
   overflow: hidden;
