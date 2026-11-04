@@ -38,7 +38,7 @@ export function MarkersPopover() {
         {markers.length > 0 && <span className="absolute -right-0.5 -top-0.5 min-w-[14px] rounded-full bg-accent px-1 text-center text-[9px] font-semibold leading-[14px] text-accent-ink">{markers.length}</span>}
       </button>
       {open && (
-        <div role="dialog" aria-label="Marcadores" className="absolute left-0 top-9 z-50 w-72 overflow-hidden rounded-xl border border-line bg-panel shadow-pop" data-testid="markers-popover">
+        <div role="dialog" aria-label="Marcadores" className="glass-strong absolute left-0 top-9 z-50 w-72 overflow-hidden rounded-xl" data-testid="markers-popover">
           <div className="flex items-center justify-between border-b border-line px-3 py-2">
             <p className="text-xs font-semibold">Marcadores</p>
             <button type="button" className="btn h-6 px-2 text-2xs" onClick={() => useEditor.getState().addMarkerAtPlayhead()}>
