@@ -50,3 +50,4 @@ export * from './ops/selection';
 export * from './ops/transitions';
 export * from './ops/captiontools';
 export * from './ops/sorting';
+export * from './ops/editpro';
