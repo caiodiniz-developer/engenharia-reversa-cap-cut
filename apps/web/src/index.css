@@ -243,6 +243,27 @@ body {
     -webkit-backdrop-filter: blur(18px) saturate(170%);
     backdrop-filter: blur(18px) saturate(170%);
   }
+/* Barra de vidro presa à borda: realce no topo e uma linha de luz embaixo. */
+  .glass-bar {
+    background: var(--glass-bg);
+    border-bottom: 1px solid var(--glass-border);
+    box-shadow: inset 0 1px 0 var(--glass-hi);
+    -webkit-backdrop-filter: blur(22px) saturate(170%);
+    backdrop-filter: blur(22px) saturate(170%);
+  }
+  .glass-top {
+    background: var(--glass-bg);
+    border-top: 1px solid var(--glass-border);
+    box-shadow: inset 0 1px 0 var(--glass-hi);
+    -webkit-backdrop-filter: blur(22px) saturate(170%);
+    backdrop-filter: blur(22px) saturate(170%);
+  }
+  .glass-rail {
+    background: var(--glass-bg);
+    border-right: 1px solid var(--glass-border);
+    -webkit-backdrop-filter: blur(22px) saturate(170%);
+    backdrop-filter: blur(22px) saturate(170%);
+  }
   /* Vidro mais denso, para texto longo ficar legível: diálogos, menus e a paleta. */
   .glass-strong {
     background: var(--glass-bg-strong);
