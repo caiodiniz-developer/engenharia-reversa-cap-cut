@@ -279,14 +279,14 @@ export function Modal({ open, onClose, title, children, width = 480 }: { open: b
             role="dialog"
             aria-modal="true"
             aria-label={title}
-            className="max-h-[90vh] w-full overflow-auto rounded-2xl border border-line bg-panel shadow-pop outline-none"
+            className="glass-strong max-h-[90vh] w-full overflow-auto rounded-2xl outline-none"
             style={{ maxWidth: width }}
             initial={{ y: 12, scale: 0.98, opacity: 0 }}
             animate={{ y: 0, scale: 1, opacity: 1 }}
             exit={{ y: 8, opacity: 0 }}
             transition={{ duration: 0.16 }}
           >
-            <header className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-panel px-5 py-3.5">
+            <header className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-panel/55 px-5 py-3.5 backdrop-blur-md">
               <h2 className="text-sm font-semibold">{title}</h2>
               <button type="button" className="btn-icon" aria-label="Fechar" onClick={onClose}>
                 <Icon name="x" />
