@@ -99,7 +99,7 @@ export function Segmented<T extends string>({
   label: string;
 }) {
   return (
-    <div role="radiogroup" aria-label={label} className="inline-flex rounded-lg bg-bg p-0.5">
+    <div role="radiogroup" aria-label={label} className="seg">
       {options.map((o) => (
         <button
           key={o.value}
@@ -107,7 +107,7 @@ export function Segmented<T extends string>({
           role="radio"
           aria-checked={value === o.value}
           onClick={() => onChange(o.value)}
-          className={`inline-flex h-6 items-center gap-1 rounded-md px-2.5 text-2xs font-medium transition-colors ${value === o.value ? 'bg-panel-3 text-ink shadow-sm' : 'text-mute hover:text-ink'}`}
+          className={`seg-item inline-flex h-6 items-center gap-1 px-2.5 text-2xs font-medium ${value === o.value ? 'text-ink' : 'text-mute hover:text-ink'}`}
         >
           {o.icon && <Icon name={o.icon} size={12} />}
           {o.label}
