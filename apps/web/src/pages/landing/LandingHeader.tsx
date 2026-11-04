@@ -38,7 +38,7 @@ export function LandingHeader({ scroller }: { scroller: React.RefObject<HTMLElem
   };
 
   return (
-    <header className={`sticky top-0 z-40 border-b transition-colors ${raised || open ? 'border-line bg-bg/85 backdrop-blur-md' : 'border-transparent bg-transparent'}`} data-testid="landing-header">
+    <header className={`sticky top-0 z-40 border-b transition-colors ${raised || open ? 'glass-bar' : 'border-transparent bg-transparent'}`} data-testid="landing-header">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-5">
         <Link to="/" className="flex items-center gap-2.5" aria-label="Editor de Vídeo — início">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent text-accent-ink shadow-sm">
