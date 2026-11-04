@@ -666,6 +666,10 @@ input[type='range']:focus-visible::-webkit-slider-thumb {
   .btn-icon,
   .chip,
   .glass,
+  .glass-bar,
+  .glass-top,
+  .glass-rail,
+  .seg,
   .glass-strong {
     -webkit-backdrop-filter: none !important;
     backdrop-filter: none !important;
