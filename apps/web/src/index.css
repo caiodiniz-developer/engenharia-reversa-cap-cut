@@ -149,7 +149,18 @@ body {
     background: linear-gradient(180deg, rgb(var(--accent)), rgb(var(--accent) / 0.84));
   }
   .btn-ghost {
-    @apply border-transparent bg-transparent hover:bg-panel-3;
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .btn-ghost::before {
+    display: none;
+  }
+  .btn-ghost:hover:not(:disabled) {
+    background: var(--glass-bg);
+    border-color: var(--glass-border);
   }
   .btn-danger {
     @apply text-white;
