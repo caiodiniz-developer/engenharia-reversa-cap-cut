@@ -73,3 +73,28 @@ export function staggerClips(p: Project, ids: string[], offset: number): Project
   assertTracksValid(next, touched);
   return next;
 }
+
+/** Ids dos clipes (em faixas desbloqueadas) inteiros dentro de [from, to] ('inside') ou que tocam o trecho ('touching'). */
+export function clipIdsInRange(p: Project, from: number, to: number, mode: 'inside' | 'touching' = 'inside'): string[] {
+  if (!(to > from)) throw new TimelineError('O fim do trecho precisa vir depois do início', 'OUT_OF_RANGE');
+  return allClips(p)
+    .filter(({ clip, track }) => !track.locked && (mode === 'inside' ? clip.start >= from - EPS && clipEnd(clip) <= to + EPS : clip.start < to - EPS && clipEnd(clip) > from + EPS))
+    .map(({ clip }) => clip.id);
+}
+
+/** Põe um marcador no início de cada legenda (com o começo do texto como nome), pulando onde já há marcador. */
+export function markersAtCaptions(p: Project): { project: Project; added: number } {
+  const caps = allClips(p)
+    .filter(({ clip }) => clip.type === 'caption')
+    .map(({ clip }) => clip)
+    .sort((a, b) => a.start - b.start);
+  let markers: Marker[] = p.markers;
+  let added = 0;
+  for (const c of caps) {
+    if (markers.some((m) => Math.abs(m.time - c.start) < 1e-3)) continue;
+    const text = c.type === 'caption' ? c.text.trim() : '';
+    markers = [...markers, { id: newId('mk'), time: round6(c.start), label: text.length > 32 ? text.slice(0, 31) + '…' : text, color: '#60a5fa' }];
+    added++;
+  }
+  return { project: { ...p, markers: [...markers].sort((a, b) => a.time - b.time) }, added };
+}
