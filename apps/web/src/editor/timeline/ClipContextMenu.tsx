@@ -46,7 +46,7 @@ export function ClipContextMenu({ x, y, onClose }: { x: number; y: number; onClo
   }, [onClose]);
 
   return (
-    <div ref={ref} role="menu" aria-label="Ações do clipe" className="fixed z-[80] w-64 overflow-hidden rounded-xl border border-line bg-panel py-1 shadow-pop" style={{ left: pos.x, top: pos.y }} data-testid="clip-menu" onContextMenu={(e) => e.preventDefault()}>
+    <div ref={ref} role="menu" aria-label="Ações do clipe" className="glass-strong fixed z-[80] w-64 overflow-hidden rounded-xl py-1" style={{ left: pos.x, top: pos.y }} data-testid="clip-menu" onContextMenu={(e) => e.preventDefault()}>
       {groups.map((group, gi) => (
         <div key={gi} className={gi > 0 ? 'mt-1 border-t border-line pt-1' : ''}>
           {group.map((c) => {
