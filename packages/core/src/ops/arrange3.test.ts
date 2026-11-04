@@ -77,3 +77,37 @@ describe('removeEmptyTracks', () => {
     expect(r.project).toBe(p);
   });
 });
+
+describe('matchDuration', () => {
+  function three() {
+    const { project, trackId } = fixtureProject();
+    const a = mediaClip('m1', 0, 2);
+    const b = mediaClip('m1', 6, 4);
+    const c = mediaClip('m1', 12, 3);
+    const p = [a, b, c].reduce<Project>((acc, x) => addClip(acc, trackId, x), project);
+    return { p, ids: [a.id, b.id, c.id] };
+  }
+  const durs = (p: Project, ids: string[]) => ids.map((id) => findClip(p, id)!.clip.duration);
+
+  it('todos ficam com a duração do mais curto, do mais longo ou a média', () => {
+    const s = three();
+    expect(durs(ops.matchDuration(s.p, s.ids, 'shortest'), s.ids)).toEqual([2, 2, 2]);
+    expect(durs(ops.matchDuration(s.p, s.ids, 'longest'), s.ids)).toEqual([4, 4, 4]);
+    expect(durs(ops.matchDuration(s.p, s.ids, 'average'), s.ids)).toEqual([3, 3, 3]);
+  });
+
+  it('é atômico: se um clipe não pode crescer, nada muda', () => {
+    const { project, trackId } = fixtureProject();
+    const a = mediaClip('m1', 0, 2);
+    const b = mediaClip('m1', 2, 4); // colado no seguinte
+    const c = mediaClip('m1', 6, 1);
+    const p = [a, b, c].reduce<Project>((acc, x) => addClip(acc, trackId, x), project);
+    expect(() => ops.matchDuration(p, [a.id, b.id], 'longest')).toThrow(); // a bateria em b
+    expect(durs(p, [a.id, b.id])).toEqual([2, 4]);
+  });
+
+  it('exige pelo menos dois clipes', () => {
+    const s = three();
+    expect(() => ops.matchDuration(s.p, [s.ids[0]!], 'shortest')).toThrow(/dois clipes/);
+  });
+});
