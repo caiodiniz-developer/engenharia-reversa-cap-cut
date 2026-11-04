@@ -174,10 +174,22 @@ body {
     background: linear-gradient(180deg, rgb(var(--danger)), rgb(var(--danger) / 0.84));
   }
   .btn-icon {
-    @apply inline-flex h-7 w-7 items-center justify-center rounded-md text-mute transition-colors hover:bg-panel-3 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-30;
+    @apply inline-flex h-7 w-7 items-center justify-center rounded-lg border border-transparent text-mute transition-[background-color,box-shadow,color,border-color] duration-150 hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-30;
+  }
+  .btn-icon:hover:not(:disabled) {
+    background: var(--glass-bg-hover);
+    border-color: var(--glass-border);
+    box-shadow: inset 0 1px 0 var(--glass-hi);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
   }
   .btn-icon[aria-pressed='true'] {
-    @apply bg-accent/15 text-accent;
+    @apply text-accent;
+    background: linear-gradient(180deg, rgb(var(--accent) / 0.26), rgb(var(--accent) / 0.12));
+    border-color: rgb(var(--accent) / 0.4);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.28),
+      0 6px 14px -8px rgb(var(--accent) / 0.6);
   }
   .field {
     @apply h-8 w-full rounded-lg border border-line bg-bg px-2.5 text-xs text-ink outline-none transition-colors placeholder:text-mute/60 hover:border-mute/40 focus:border-accent focus:ring-2 focus:ring-accent/20;
