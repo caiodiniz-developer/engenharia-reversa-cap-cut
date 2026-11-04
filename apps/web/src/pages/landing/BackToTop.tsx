@@ -15,7 +15,7 @@ export function BackToTop({ container }: { container: RefObject<HTMLElement | nu
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.8 }}
-          className="fixed bottom-5 right-5 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-line bg-panel text-ink shadow-pop hover:bg-panel-3 max-md:bottom-20"
+          className="fixed bottom-5 right-5 z-40 flex h-11 w-11 items-center justify-center glass rounded-full text-ink hover:brightness-125 max-md:bottom-20"
           aria-label="Voltar ao topo"
           data-testid="back-to-top"
           onClick={() => container.current?.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' })}
