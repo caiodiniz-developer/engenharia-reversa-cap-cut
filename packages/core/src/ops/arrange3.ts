@@ -54,3 +54,22 @@ export function matchDuration(p: Project, ids: string[], mode: 'shortest' | 'lon
   const target = mode === 'shortest' ? Math.min(...durations) : mode === 'longest' ? Math.max(...durations) : snapToFrame(durations.reduce((a, b) => a + b, 0) / durations.length, p.settings.fps);
   return setClipsDuration(p, clips.map((c) => c.id), round6(target));
 }
+
+/** Escalona a entrada: o clipe mais cedo fica onde está e cada um dos seguintes começa ${offset} s depois do anterior (mesmo em faixas diferentes). */
+export function staggerClips(p: Project, ids: string[], offset: number): Project {
+  if (!(offset >= 0.05 && offset <= 5)) throw new TimelineError('O intervalo vai de 0,05 s a 5 s', 'OUT_OF_RANGE');
+  const found = [...new Set(ids)].map((id) => requireClip(p, id));
+  if (found.length < 2) throw new TimelineError('Selecione pelo menos dois clipes', 'OUT_OF_RANGE');
+  for (const f of found) assertUnlocked(f.track);
+  const order = [...found].sort((a, b) => a.clip.start - b.clip.start || a.trackIndex - b.trackIndex);
+  const first = order[0]!.clip.start;
+  const starts = new Map(order.map((f, i) => [f.clip.id, round6(first + i * offset)]));
+  let next = p;
+  const touched = new Set<string>();
+  for (const f of found) {
+    touched.add(f.track.id);
+    next = withTrackClips(next, f.track.id, (cs) => cs.map((c) => (starts.has(c.id) ? { ...c, start: starts.get(c.id)! } : c)));
+  }
+  assertTracksValid(next, touched);
+  return next;
+}
