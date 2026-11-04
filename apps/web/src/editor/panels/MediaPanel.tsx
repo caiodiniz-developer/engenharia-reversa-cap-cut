@@ -133,9 +133,9 @@ export function MediaPanel({ projectId }: { projectId: string }) {
           ))}
         </div>
         </div>
-        <div className="flex gap-1 rounded-lg bg-panel-2 p-1" role="tablist" aria-label="Filtrar por tipo">
+        <div className="seg flex w-full" role="tablist" aria-label="Filtrar por tipo">
           {(['all', 'video', 'audio', 'image'] as Filter[]).map((f) => (
-            <button key={f} type="button" role="tab" aria-selected={filter === f} onClick={() => setFilter(f)} className={`flex-1 rounded-md px-2 py-1 text-2xs font-medium transition-colors ${filter === f ? 'bg-panel-3 text-ink shadow-sm' : 'text-mute hover:text-ink'}`}>
+            <button key={f} type="button" role="tab" aria-selected={filter === f} onClick={() => setFilter(f)} className={`seg-item flex-1 px-2 py-1 text-2xs font-medium ${filter === f ? 'text-ink' : 'text-mute hover:text-ink'}`}>
               {{ all: 'Tudo', video: 'Vídeo', audio: 'Áudio', image: 'Imagem' }[f]}
             </button>
           ))}
