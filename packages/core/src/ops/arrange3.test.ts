@@ -192,6 +192,7 @@ describe('markersAtCaptions', () => {
   it('não duplica onde já há marcador e ignora projeto sem legendas', () => {
     const p = addMarker(withCaptions(['Um', 1], ['Dois', 3]), 3).project;
     expect(ops.markersAtCaptions(p).added).toBe(1);
-    expect(ops.markersAtCaptions(fixtureProject().project)).toEqual({ project: fixtureProject().project, added: 0 });
+    const empty = fixtureProject().project;
+    expect(ops.markersAtCaptions(empty)).toEqual({ project: empty, added: 0 });
   });
 });
