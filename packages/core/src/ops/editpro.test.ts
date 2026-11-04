@@ -118,3 +118,60 @@ describe('holdLastFrame', () => {
     expect(() => ops.holdLastFrame(img, b.id)).toThrow(/vídeo/);
   });
 });
+
+import { evaluateKeyframes } from '../keyframes';
+import { TextClipSchema } from '../schema';
+import { addTrack } from './tracks';
+
+describe('fade do projeto', () => {
+  function scene() {
+    const { project, trackId } = fixtureProject();
+    const a = mediaClip('m1', 0, 4);
+    const b = mediaClip('m1', 4, 4); // termina com o projeto (8 s)
+    const t = addTrack(addClip(addClip(project, trackId, a), trackId, b), 'text');
+    const title = TextClipSchema.parse({ id: 'tit', type: 'text', text: 'Fim', start: 6, duration: 2 });
+    return { p: addClip(t.project, t.track.id, title), a: a.id, b: b.id };
+  }
+  const opacityAt = (p: Project, id: string, t: number) => {
+    const c = findClip(p, id)!.clip;
+    return evaluateKeyframes(c.keyframes.opacity, t, c.transform.opacity);
+  };
+
+  it('encerramento: só o que termina com o projeto, imagem e áudio', () => {
+    const s = scene();
+    const r = ops.fadeOutProject(s.p, 1);
+    expect(r.affected).toBe(2); // o segundo vídeo e o título
+    expect(opacityAt(r.project, s.b, 3.99)).toBeLessThan(0.05);
+    expect(opacityAt(r.project, s.b, 2)).toBe(1);
+    expect(opacityAt(r.project, 'tit', 1.99)).toBeLessThan(0.05);
+    expect(media(r.project, s.b).audio.fadeOut).toBe(1);
+    expect(media(r.project, s.a).audio.fadeOut).toBe(0);
+    expect(findClip(r.project, s.a)!.clip.keyframes.opacity).toBeUndefined();
+  });
+
+  it('abertura: só o que começa em 0', () => {
+    const s = scene();
+    const r = ops.fadeInProject(s.p, 0.5);
+    expect(r.affected).toBe(1);
+    expect(opacityAt(r.project, s.a, 0)).toBe(0);
+    expect(opacityAt(r.project, s.a, 1)).toBe(1);
+    expect(media(r.project, s.a).audio.fadeIn).toBe(0.5);
+    expect(media(r.project, s.b).audio.fadeIn).toBe(0);
+  });
+
+  it('clipe com keyframes de opacidade fica sem fade de imagem (conta como ignorado) e valores inválidos falham', () => {
+    const s = scene();
+    const keyed = { ...s.p, tracks: s.p.tracks.map((t) => ({ ...t, clips: t.clips.map((c) => (c.id === s.b ? { ...c, keyframes: { opacity: [{ time: 0, value: 0.5, easing: 'linear' as const }] } } : c)) })) } as Project;
+    const r = ops.fadeOutProject(keyed, 1);
+    expect(r.skipped).toBe(1);
+    expect(findClip(r.project, s.b)!.clip.keyframes.opacity).toHaveLength(1);
+    expect(media(r.project, s.b).audio.fadeOut).toBe(1); // o áudio ainda recebe o fade
+    expect(() => ops.fadeInProject(s.p, 0.01)).toThrow(/0,1/);
+    expect(() => ops.fadeOutProject(s.p, 20)).toThrow();
+  });
+
+  it('projeto vazio não muda nada', () => {
+    const { project } = fixtureProject();
+    expect(ops.fadeOutProject(project, 1)).toEqual({ project, affected: 0, skipped: 0 });
+  });
+});
