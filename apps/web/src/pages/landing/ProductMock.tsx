@@ -107,11 +107,11 @@ export function ProductMock() {
       </div>
 
       {/* cartões flutuantes */}
-      <motion.div className="absolute -left-4 -top-6 hidden rounded-xl border border-line bg-panel p-3 shadow-pop md:block" animate={reduce ? undefined : { y: [0, -6, 0] }} transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}>
+      <motion.div className="absolute -left-4 -top-6 glass hidden rounded-xl p-3 md:block" animate={reduce ? undefined : { y: [0, -6, 0] }} transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}>
         <p className="text-[10px] font-semibold text-mute">Zonas seguras</p>
         <p className="text-xs font-semibold">Reels · Shorts · TikTok</p>
       </motion.div>
-      <motion.div className="absolute -right-3 bottom-28 hidden rounded-xl border border-line bg-panel p-3 shadow-pop md:block" animate={reduce ? undefined : { y: [0, 6, 0] }} transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}>
+      <motion.div className="absolute -right-3 bottom-28 glass hidden rounded-xl p-3 md:block" animate={reduce ? undefined : { y: [0, 6, 0] }} transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}>
         <p className="mb-1.5 text-[10px] font-semibold text-mute">Exportando MP4…</p>
         <div className="h-1.5 w-32 rounded-full bg-panel-3">
           <div className="h-full w-[72%] rounded-full bg-accent" />
