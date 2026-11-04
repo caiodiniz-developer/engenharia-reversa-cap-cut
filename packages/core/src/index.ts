@@ -51,3 +51,5 @@ export * from './ops/transitions';
 export * from './ops/captiontools';
 export * from './ops/sorting';
 export * from './ops/editpro';
+export * from './ops/convert';
+export * from './ops/arrange3';
