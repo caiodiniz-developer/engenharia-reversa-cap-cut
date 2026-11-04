@@ -32,7 +32,7 @@ export function TimelineToolbar() {
   const linked = s.selection.some((id) => findClip(s.project, id)?.clip.linkId);
 
   return (
-    <div className="flex h-10 shrink-0 items-center gap-0.5 border-b border-line bg-panel px-3" role="toolbar" aria-label="Ferramentas da timeline">
+    <div className="glass-bar flex h-10 shrink-0 items-center gap-0.5 px-3" role="toolbar" aria-label="Ferramentas da timeline">
       <Tool icon="undo" label="Desfazer" shortcut="Ctrl+Z" onClick={s.undo} disabled={!canUndo} />
       <Tool icon="redo" label="Refazer" shortcut="Ctrl+Shift+Z" onClick={s.redo} disabled={!canRedo} />
       <Sep />
@@ -61,7 +61,7 @@ export function TimelineToolbar() {
           <Icon name="plus" size={13} /> Faixa
         </button>
         {adding && (
-          <div role="menu" className="absolute left-0 top-9 z-50 w-40 overflow-hidden rounded-xl border border-line bg-panel py-1 shadow-pop">
+          <div role="menu" className="glass-strong absolute left-0 top-9 z-50 w-40 overflow-hidden rounded-xl py-1">
             <p className="px-3 pb-1 pt-1.5 text-2xs font-semibold uppercase tracking-wide text-mute">Adicionar</p>
             {(['video', 'audio', 'text', 'caption'] as TrackKind[]).map((k) => (
               <button
