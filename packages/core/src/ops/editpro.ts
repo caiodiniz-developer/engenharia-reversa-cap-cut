@@ -43,3 +43,34 @@ export function matchVolumeToFirst(p: Project, ids: string[]): Project {
   }
   return next;
 }
+
+/** Congela o último quadro visível do clipe por ${seconds} s logo depois dele e empurra o restante da faixa. */
+export function holdLastFrame(p: Project, clipId: string, seconds = 2): { project: Project; freezeId: string } {
+  if (!(seconds >= 0.1 && seconds <= 30)) throw new TimelineError('O tempo vai de 0,1 s a 30 s', 'OUT_OF_RANGE');
+  const { clip, track } = requireClip(p, clipId);
+  if (clip.type !== 'media') throw new TimelineError('Só é possível congelar clipes de vídeo', 'KIND_MISMATCH');
+  const asset = p.media[clip.mediaId];
+  if (!asset || asset.kind !== 'video') throw new TimelineError('Só é possível congelar quadros de vídeo', 'KIND_MISMATCH');
+  if (clip.freeze) throw new TimelineError('Este clipe já é um quadro parado', 'INVALID');
+  assertUnlocked(track);
+  const frame = 1 / p.settings.fps;
+  const last = clip.reverse ? clip.sourceIn : round6(clip.sourceIn + clip.duration * clip.speed - frame);
+  const freeze: MediaClip = {
+    ...clip,
+    id: newId('clp'),
+    start: clipEnd(clip),
+    duration: round6(seconds),
+    sourceIn: Math.min(Math.max(clip.sourceIn, last), Math.max(0, asset.duration - 0.001)),
+    speed: 1,
+    reverse: false,
+    freeze: true,
+    linkId: undefined,
+    groupId: undefined,
+    transitionIn: undefined,
+    keyframes: {},
+    effects: clip.effects.map((e) => ({ ...e, id: newId('fx') })),
+    audio: { ...clip.audio, muted: true, fadeIn: 0, fadeOut: 0 },
+  };
+  const shifted = withTrackClips(p, track.id, (cs) => shiftFrom(cs, clipEnd(clip) - EPS, seconds));
+  return { project: addClip(shifted, track.id, freeze), freezeId: freeze.id };
+}
