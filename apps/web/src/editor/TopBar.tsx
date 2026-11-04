@@ -29,7 +29,7 @@ export function TopBar({ onExport, onHelp, onPalette, onToggleProps }: { onExpor
   };
 
   return (
-    <header className="flex h-12 shrink-0 items-center gap-3 border-b border-line bg-panel px-3" data-testid="topbar">
+    <header className="glass-bar flex h-12 shrink-0 items-center gap-3 px-3" data-testid="topbar">
       <Link to="/" className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-accent-ink transition-transform hover:scale-105" aria-label="Voltar aos projetos" title="Voltar aos projetos">
         <Icon name="play" size={14} />
       </Link>
