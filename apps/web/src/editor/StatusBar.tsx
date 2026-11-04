@@ -26,7 +26,7 @@ export function StatusBar() {
     })),
   );
   return (
-    <footer className="flex h-6 shrink-0 items-center gap-3 border-t border-line bg-panel px-3 text-2xs text-mute" aria-label="Barra de estado" data-testid="status-bar">
+    <footer className="glass-top flex h-6 shrink-0 items-center gap-3 px-3 text-2xs text-mute" aria-label="Barra de estado" data-testid="status-bar">
       <span title="Formato e quadros por segundo do projeto">
         {aspectLabel(s.width, s.height)} · {s.width}×{s.height} · {s.fps} fps
       </span>
