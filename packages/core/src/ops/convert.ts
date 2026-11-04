@@ -29,3 +29,34 @@ export function splitTextLines(p: Project, clipId: string): { project: Project; 
   assertTracksValid(next, [track.id]);
   return { project: next, ids: pieces.map((c) => c.id) };
 }
+
+/** Converte textos em legendas (com as palavras repartidas no tempo) no mesmo instante e duração, em faixas de legenda livres. */
+export function textToCaptions(p: Project, ids: string[]): { project: Project; ids: string[] } {
+  const found = [...new Set(ids)].map((id) => requireClip(p, id)).filter((x) => x.clip.type === 'text');
+  if (!found.length) throw new TimelineError('Selecione clipes de texto', 'KIND_MISMATCH');
+  for (const f of found) assertUnlocked(f.track);
+  const made: CaptionClip[] = found.flatMap(({ clip }) => cuesToCaptionClips([{ start: clip.start, end: clipEnd(clip), text: (clip as TextClip).text.replace(/\s+/g, ' ').trim() }]));
+  let next = deleteClips(p, found.map((f) => f.clip.id), { ripple: false });
+  for (const c of made) {
+    const f = freeTrack(next, 'caption', c.start, clipEnd(c));
+    next = addClip(f.project, f.trackId, c);
+  }
+  return { project: next, ids: made.map((c) => c.id) };
+}
+
+/** Converte legendas em textos comuns (mesmo texto, estilo, posição, animações, instante e duração), em faixas de texto livres. */
+export function captionsToText(p: Project, ids: string[]): { project: Project; ids: string[] } {
+  const found = [...new Set(ids)].map((id) => requireClip(p, id)).filter((x) => x.clip.type === 'caption');
+  if (!found.length) throw new TimelineError('Selecione legendas', 'KIND_MISMATCH');
+  for (const f of found) assertUnlocked(f.track);
+  const made = found.map(({ clip }) => {
+    const c = clip as CaptionClip;
+    return TextClipSchema.parse({ id: newId('clp'), type: 'text', text: c.text, start: c.start, duration: c.duration, style: c.style, transform: c.transform, animationIn: c.animationIn, animationOut: c.animationOut });
+  });
+  let next = deleteClips(p, found.map((f) => f.clip.id), { ripple: false });
+  for (const c of made) {
+    const f = freeTrack(next, 'text', c.start, clipEnd(c));
+    next = addClip(f.project, f.trackId, c);
+  }
+  return { project: next, ids: made.map((c) => c.id) };
+}
