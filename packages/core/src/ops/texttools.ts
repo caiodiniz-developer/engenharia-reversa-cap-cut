@@ -26,7 +26,7 @@ export function mapTexts(p: Project, ids: string[], fn: (c: TextLike) => TextLik
 }
 
 /** Devolve uma faixa do tipo, desbloqueada e livre em [start, end]; cria uma nova se não houver. */
-function freeTrack(p: Project, kind: TrackKind, start: number, end: number): { project: Project; trackId: string } {
+export function freeTrack(p: Project, kind: TrackKind, start: number, end: number): { project: Project; trackId: string } {
   const free = p.tracks.find((t) => t.kind === kind && !t.locked && !t.clips.some((c) => c.start < end - EPS && clipEnd(c) > start + EPS));
   if (free) return { project: p, trackId: free.id };
   const r = addTrack(p, kind);
