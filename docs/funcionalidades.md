@@ -253,6 +253,18 @@ Operações puras em `packages/core/src/ops` (testadas) ligadas a comandos da pa
 | **Abertura e encerramento suaves do projeto**: fade de imagem (opacidade) e de áudio em tudo o que começa/termina com ele; clipes com keyframes de opacidade são contados como ignorados | ✅ | core `ops/editpro.test`, E2E `pro` (com Desfazer); a exportação usa os keyframes de opacidade e os fades de áudio já verificados |
 | Igualar o volume dos clipes ao do primeiro selecionado | ✅ | core `ops/editpro.test`, web `proCommands.test` |
 
+### Textos, faixas e tempo em lote
+
+| Recurso | Estado | Verificação |
+|---|---|---|
+| Dividir um texto de várias linhas em um texto por linha, com fatias iguais do tempo | ✅ | core `ops/convert.test`, web `proCommands.test` |
+| **Converter textos em legendas** (palavras repartidas no tempo) e **legendas em textos** (mantém estilo, posição e animações) | ✅ | core `ops/convert.test`, E2E `pro` (ida e volta) |
+| Marcar o início de cada legenda (nome = começo do texto) | ✅ | core `ops/arrange3.test`, web `proCommands.test` |
+| Mover a seleção para a **faixa vizinha** do mesmo tipo (cria se faltar) e **remover faixas vazias** | ✅ | core `ops/arrange3.test`, E2E `pro` |
+| **Igualar a duração** (mais curto, mais longo ou média), atômico: se um clipe não pode crescer nada muda | ✅ | core `ops/arrange3.test`, E2E `pro` |
+| **Escalonar a entrada** de vários clipes (0,25, 0,5 ou 1 s entre cada um) | ✅ | core `ops/arrange3.test`, web `proCommands.test` |
+| Selecionar os clipes inteiros dentro do trecho marcado (I/O) ou que tocam o trecho | ✅ | core `ops/arrange3.test`, web `proCommands.test` |
+
 ## Plataforma
 
 | Recurso | Estado | Verificação |
