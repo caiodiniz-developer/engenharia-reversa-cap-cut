@@ -19,6 +19,8 @@ describe('aparência', () => {
       expect(loadAccent()).toBe(a);
       expect(loadGlass()).toBe('solid');
     }
+    saveAppearance('teal', 'auto');
+    expect(loadGlass()).toBe('auto');
     localStorage.setItem('editor.accent', 'neon');
     localStorage.setItem('editor.glass', 'talvez');
     expect(loadAccent()).toBe('teal');
@@ -29,6 +31,8 @@ describe('aparência', () => {
     applyAppearance('blue', 'solid');
     expect(document.documentElement.dataset.accent).toBe('blue');
     expect(document.documentElement.dataset.glass).toBe('solid');
+    applyAppearance('teal', 'auto');
+    expect(document.documentElement.dataset.glass).toBe('auto');
     applyAppearance('teal', 'glass');
     expect(document.documentElement.dataset.accent).toBeUndefined();
     expect(document.documentElement.dataset.glass).toBeUndefined();
