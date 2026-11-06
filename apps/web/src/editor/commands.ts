@@ -1,5 +1,6 @@
 import { findClip, POSITION_LABEL, POSITION_PRESETS } from '@editor/core';
 import type { IconName } from '../components/Icon';
+import { parseCommandQuery } from '../lib/commandQuery';
 import { saveNow } from '../store/persist';
 import { useEditor, type PanelTab } from '../store/editor';
 import { useTheme } from '../store/theme';
@@ -24,10 +25,12 @@ const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCa
 
 /** Busca por todos os termos (sem acento, em qualquer ordem). Rótulo que começa com o termo vem primeiro. */
 export function searchCommands(list: Command[], query: string): Command[] {
-  const terms = norm(query).split(/\s+/).filter(Boolean);
-  if (!terms.length) return list;
+  const parsed = parseCommandQuery(query);
+  const base = parsed.group ? list.filter((c) => norm(c.group).includes(parsed.group)) : list;
+  const terms = norm(parsed.text).split(/\s+/).filter(Boolean);
+  if (!terms.length) return base;
   const scored: Array<{ c: Command; score: number }> = [];
-  for (const c of list) {
+  for (const c of base) {
     const label = norm(c.label);
     const hay = `${label} ${norm(c.keywords ?? '')} ${norm(c.group)}`;
     if (!terms.every((t) => hay.includes(t))) continue;
