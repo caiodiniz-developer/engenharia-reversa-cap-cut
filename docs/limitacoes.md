@@ -100,6 +100,10 @@ Listadas para que ninguém descubra em produção. Itens marcados com 🔧 têm 
 - A **cor de destaque** troca `--accent` e `--accent-ink`; cores fixas (cursor de reprodução, cores dos clipes por tipo, avisos) não mudam. A escolha vale por navegador, não por conta.
 - As cores de destaque foram escolhidas e conferidas por contraste, não testadas com pessoas daltônicas além do simulador existente.
 
+## Tooltips e paleta
+- Os **tooltips** aparecem só com mouse ou foco de teclado (não em toque) e não substituem o `aria-label`, que continua sendo o que leitores de tela usam; foram aplicados no trilho, na barra da timeline e em desfazer/refazer, e os demais botões ainda usam a dica nativa do navegador.
+- O filtro **@grupo** compara o nome do grupo sem acento; a paleta só lista comandos habilitados, então um grupo cujos comandos dependem de seleção pode aparecer vazio até haver clipes selecionados. Os **favoritos** ficam no `localStorage` (até 12), por navegador.
+
 ## Edição profissional
 - **J-cut/L-cut** exigem o áudio extraído e ligado ao vídeo e mídia sobrando antes/depois do trecho; o par continua ligado, então mover um move o outro junto, mantendo a defasagem.
 - **Segurar o último quadro** cria um clipe parado de vídeo (sem áudio) e empurra o resto da faixa; não funciona com imagens.
