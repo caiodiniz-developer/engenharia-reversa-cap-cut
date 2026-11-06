@@ -27,7 +27,8 @@ export const NEWS: NewsEntry[] = [
       { text: 'Igualar a duração dos clipes selecionados (mais curto, mais longo ou média).', command: 'match-duration-shortest' },
       { text: 'Escalonar a entrada de vários clipes, um depois do outro.', command: 'stagger-0.5' },
       { text: 'Selecionar os clipes que estão dentro do trecho marcado com I e O.', command: 'select-in-range' },
-      { text: 'Botões e painéis em vidro, com tema claro e escuro, que viram superfícies sólidas se o sistema pedir menos transparência.' },
+      { text: 'Botões e painéis em vidro, com tema claro e escuro, que viram superfícies sólidas se o sistema pedir menos transparência.', command: 'glass-toggle' },
+      { text: 'Cor de destaque à escolha: verde-água, azul, violeta, laranja ou rosa (todas conferidas no contraste).', command: 'accent-violet' },
     ],
   },
   {
