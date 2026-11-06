@@ -690,3 +690,13 @@ input[type='range']:focus-visible::-webkit-slider-thumb {
     inset 0 -6px 12px -6px rgb(0 0 0 / 0.3),
     0 8px 22px -6px rgb(var(--accent) / 0.8);
 }
+
+/* Cores de destaque alternativas: o atributo data-accent no <html> troca só --accent e --accent-ink. */
+:root[data-accent='blue'] {
+  --accent: 96 165 250;
+  --accent-ink: 6 20 40;
+}
+:root[data-theme='light'][data-accent='blue'] {
+  --accent: 29 78 216;
+  --accent-ink: 255 255 255;
+}
