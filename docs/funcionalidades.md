@@ -244,6 +244,15 @@ Operações puras em `packages/core/src/ops` (testadas) ligadas a comandos da pa
 | Biblioteca de mídia em **grade ou lista** (a escolha é lembrada) | ✅ | web `mediaView.test`, E2E `layout` (a lista ocupa a largura toda e continua arrastável) |
 | Busca da biblioteca com botão de limpar, Esc e contagem de itens ("1 de 2 itens") | ✅ | web `countLabel.test`, E2E `layout` |
 
+### Edição profissional (paleta Ctrl+K)
+
+| Recurso | Estado | Verificação |
+|---|---|---|
+| **J-cut** e **L-cut**: o áudio ligado entra antes ou continua depois da imagem (par continua ligado); atalhos Alt + J e Alt + L | ✅ | core `ops/editpro.test` (mídia anterior/posterior, colisão, recusas), web `proCommands.test` |
+| **Segurar o último quadro** por 1, 2 ou 5 s (empurra o resto da faixa; vale para clipe invertido); atalho Alt + H | ✅ | core `ops/editpro.test`, E2E `pro` |
+| **Abertura e encerramento suaves do projeto**: fade de imagem (opacidade) e de áudio em tudo o que começa/termina com ele; clipes com keyframes de opacidade são contados como ignorados | ✅ | core `ops/editpro.test`, E2E `pro` (com Desfazer); a exportação usa os keyframes de opacidade e os fades de áudio já verificados |
+| Igualar o volume dos clipes ao do primeiro selecionado | ✅ | core `ops/editpro.test`, web `proCommands.test` |
+
 ## Plataforma
 
 | Recurso | Estado | Verificação |
