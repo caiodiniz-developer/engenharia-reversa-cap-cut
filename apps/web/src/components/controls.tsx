@@ -79,7 +79,6 @@ export function Tabs<T extends string>({
         >
           {t.label}
           {!!t.badge && <span className="ml-1 rounded-full bg-accent/20 px-1.5 text-2xs text-accent">{t.badge}</span>}
-          {value === t.id && <span className="absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-accent" />}
         </button>
       ))}
     </div>
