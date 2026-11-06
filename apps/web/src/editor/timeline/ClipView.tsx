@@ -121,7 +121,7 @@ function ClipViewBase({ clip, trackKind, trackLocked, pps, selected, media, heig
       title={clipTooltip(clip, label)}
       data-selected={selected}
       className={`group absolute top-1 overflow-hidden rounded-lg text-white outline-none transition-shadow ${COLORS[trackKind] ?? 'bg-clip-video'} ${
-        selected ? 'z-10 shadow-[0_0_0_2px_rgb(var(--ink)),0_4px_14px_rgba(0,0,0,.45)]' : 'shadow-[inset_0_0_0_1px_rgba(0,0,0,.35)] hover:brightness-110'
+        selected ? 'z-10 shadow-[0_0_0_2px_rgb(var(--ink)),0_4px_14px_rgba(0,0,0,.45)]' : 'shadow-[inset_0_1px_0_rgba(255,255,255,.3),inset_0_0_0_1px_rgba(0,0,0,.35)] hover:brightness-110'
       } ${trackLocked ? 'opacity-60' : 'cursor-grab active:cursor-grabbing'}`}
       style={{
         left: clip.start * pps,
