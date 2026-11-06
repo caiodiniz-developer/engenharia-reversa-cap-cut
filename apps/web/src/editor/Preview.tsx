@@ -205,15 +205,19 @@ export function Preview() {
               <Icon name="skipBack" />
             </button>
           </Tooltip>
-          <button type="button" className="btn-icon" aria-label="Quadro anterior" title="Quadro anterior (←)" onClick={() => st.stepFrames(-1)}>
-            <Icon name="stepBack" />
-          </button>
+          <Tooltip label="Quadro anterior" shortcut="←">
+            <button type="button" className="btn-icon" aria-label="Quadro anterior" onClick={() => st.stepFrames(-1)}>
+              <Icon name="stepBack" />
+            </button>
+          </Tooltip>
           <button type="button" className="play-orb mx-1 flex h-10 w-10 items-center justify-center rounded-full text-accent-ink transition-transform hover:scale-105 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent" aria-label={playing ? 'Pausar' : 'Reproduzir'} title="Reproduzir/Pausar (Espaço)" onClick={() => st.togglePlay()} data-testid="play-button">
             <Icon name={playing ? 'pause' : 'play'} size={18} />
           </button>
-          <button type="button" className="btn-icon" aria-label="Próximo quadro" title="Próximo quadro (→)" onClick={() => st.stepFrames(1)}>
-            <Icon name="stepForward" />
-          </button>
+          <Tooltip label="Próximo quadro" shortcut="→">
+            <button type="button" className="btn-icon" aria-label="Próximo quadro" onClick={() => st.stepFrames(1)}>
+              <Icon name="stepForward" />
+            </button>
+          </Tooltip>
           <Tooltip label="Fim" shortcut="End">
             <button type="button" className="btn-icon" aria-label="Fim" onClick={() => { st.setPlaying(false); st.setPlayhead(duration()); }}>
               <Icon name="skipForward" />
