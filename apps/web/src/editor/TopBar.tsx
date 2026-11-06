@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Icon } from '../components/Icon';
+import { Tooltip } from '../components/Tooltip';
 import { saveNow } from '../store/persist';
 import { selectCanRedo, selectCanUndo, useEditor } from '../store/editor';
 import { useJobs } from '../store/jobs';
@@ -69,12 +70,16 @@ export function TopBar({ onExport, onHelp, onPalette, onToggleProps }: { onExpor
         <button type="button" className="btn-icon lg:hidden" aria-label="Buscar comandos" onClick={onPalette}>
           <Icon name="search" />
         </button>
-        <button type="button" className="btn-icon" aria-label="Desfazer" title="Desfazer (Ctrl+Z)" onClick={undo} disabled={!canUndo}>
-          <Icon name="undo" />
-        </button>
-        <button type="button" className="btn-icon" aria-label="Refazer" title="Refazer (Ctrl+Shift+Z)" onClick={redo} disabled={!canRedo}>
-          <Icon name="redo" />
-        </button>
+        <Tooltip label="Desfazer" shortcut="Ctrl+Z">
+          <button type="button" className="btn-icon" aria-label="Desfazer" onClick={undo} disabled={!canUndo}>
+            <Icon name="undo" />
+          </button>
+        </Tooltip>
+        <Tooltip label="Refazer" shortcut="Ctrl+Shift+Z">
+          <button type="button" className="btn-icon" aria-label="Refazer" onClick={redo} disabled={!canRedo}>
+            <Icon name="redo" />
+          </button>
+        </Tooltip>
 
         <div className="relative">
           <button type="button" data-popover-trigger className="btn-icon" aria-label="Histórico de operações" aria-pressed={menu === 'history'} title="Histórico de operações" onClick={() => setMenu(menu === 'history' ? null : 'history')}>
