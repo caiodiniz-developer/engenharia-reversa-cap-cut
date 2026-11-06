@@ -11,7 +11,7 @@ export function FeatureGrid({ items, testId, columns = 3 }: { items: Feature[]; 
         <motion.li
           key={f.title}
           {...(reduce ? {} : { initial: { opacity: 0, y: 20 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true, margin: '-40px' }, transition: { duration: 0.45, delay: (i % 3) * 0.06 } })}
-          className="card card-hover spotlight group p-5"
+          className="glass card-hover spotlight group rounded-2xl p-5"
           onPointerMove={(e) => {
             const r = e.currentTarget.getBoundingClientRect();
             e.currentTarget.style.setProperty('--mx', e.clientX - r.left + 'px');
