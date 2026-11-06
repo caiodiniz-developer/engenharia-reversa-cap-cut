@@ -265,6 +265,16 @@ Operações puras em `packages/core/src/ops` (testadas) ligadas a comandos da pa
 | **Escalonar a entrada** de vários clipes (0,25, 0,5 ou 1 s entre cada um) | ✅ | core `ops/arrange3.test`, web `proCommands.test` |
 | Selecionar os clipes inteiros dentro do trecho marcado (I/O) ou que tocam o trecho | ✅ | core `ops/arrange3.test`, web `proCommands.test` |
 
+### Visual de vidro e aparência
+
+| Recurso | Estado | Verificação |
+|---|---|---|
+| **Vidro** (estilo Liquid Glass): botões, abas, barras, trilho, menus, diálogos, avisos e paleta com desfoque, borda de luz e reflexo curvo; botão principal e de perigo em vidro tingido; esfera de vidro no botão de reproduzir | ✅ | E2E `vidro` (`backdrop-filter` medido no navegador em barra, botões e paleta) |
+| Três modos de vidro: **sempre ligado** (padrão), **seguir o sistema** (respeita "reduzir transparência") e **sólido** — guardados no navegador | ✅ | web `appearance.test`, E2E `vidro` (sólido sem desfoque; "seguir o sistema" confere a mídia do sistema) |
+| **Cor de destaque**: verde-água, azul, violeta, laranja ou rosa, nos dois temas, com troca imediata | ✅ | web `accents.test` (contraste ≥ 4,5:1 do destaque como texto e do texto do botão, por cor e por tema), E2E `vidro` |
+| Texto legível sobre o vidro: preenchimentos conferidos contra o fundo e contra o fundo com o brilho ambiente no pior caso (tema escuro: texto secundário clareado por isso) | ✅ | web `glassContrast.test`, `tokens.test` |
+| Fundo ambiente com brilhos de cor (o que o vidro desfoca); painéis grandes só translúcidos, sem desfoque | 🟨 | visual: conferido em capturas de tela, sem teste automatizado |
+
 ## Plataforma
 
 | Recurso | Estado | Verificação |
