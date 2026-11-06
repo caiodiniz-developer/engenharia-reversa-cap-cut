@@ -67,7 +67,7 @@ export function Tabs<T extends string>({
   className?: string;
 }) {
   return (
-    <div role="tablist" aria-label={label} className={`flex gap-0.5 border-b border-line px-2 ${className}`}>
+    <div role="tablist" aria-label={label} className={`seg mx-2 my-2 flex ${className}`}>
       {tabs.map((t) => (
         <button
           key={t.id}
@@ -75,7 +75,7 @@ export function Tabs<T extends string>({
           role="tab"
           aria-selected={value === t.id}
           onClick={() => onChange(t.id)}
-          className={`relative flex-1 whitespace-nowrap px-1.5 py-2.5 text-xs font-medium transition-colors ${value === t.id ? 'text-ink' : 'text-mute hover:text-ink'}`}
+          className={`seg-item relative flex-1 whitespace-nowrap px-1.5 py-1.5 text-xs font-medium ${value === t.id ? 'text-ink' : 'text-mute hover:text-ink'}`}
         >
           {t.label}
           {!!t.badge && <span className="ml-1 rounded-full bg-accent/20 px-1.5 text-2xs text-accent">{t.badge}</span>}
