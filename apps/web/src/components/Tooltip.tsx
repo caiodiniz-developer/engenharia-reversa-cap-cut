@@ -1,11 +1,14 @@
-import { cloneElement, useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactElement } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { placeTooltip, type Placement } from '../lib/tooltipPlacement';
 
 const DELAY = 450;
 
-/** Tooltip de vidro para um único elemento filho. O filho continua com o próprio aria-label; o tooltip é um complemento visual. */
-export function Tooltip({ label, shortcut, hint, children }: { label: string; shortcut?: string; hint?: string; children: ReactElement<{ onMouseEnter?: (e: never) => void; onMouseLeave?: (e: never) => void; onFocus?: (e: never) => void; onBlur?: (e: never) => void; onPointerDown?: (e: never) => void }> }) {
+/**
+ * Tooltip de vidro para o conteúdo dentro dele. Os eventos vêm de um invólucro (e não do botão), porque botões
+ * desabilitados não disparam eventos de mouse. O botão continua com o próprio aria-label: o tooltip é um complemento visual.
+ */
+export function Tooltip({ label, shortcut, hint, className = 'inline-flex', children }: { label: string; shortcut?: string; hint?: string; className?: string; children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const [place, setPlace] = useState<Placement | null>(null);
   const target = useRef<HTMLElement | null>(null);
@@ -44,32 +47,9 @@ export function Tooltip({ label, shortcut, hint, children }: { label: string; sh
   }, [open, hide]);
   useEffect(() => () => window.clearTimeout(timer.current), []);
 
-  const child = cloneElement(children, {
-    onMouseEnter: (e: never) => {
-      children.props.onMouseEnter?.(e);
-      show((e as { currentTarget: HTMLElement }).currentTarget);
-    },
-    onFocus: (e: never) => {
-      children.props.onFocus?.(e);
-      show((e as { currentTarget: HTMLElement }).currentTarget);
-    },
-    onMouseLeave: (e: never) => {
-      children.props.onMouseLeave?.(e);
-      hide();
-    },
-    onBlur: (e: never) => {
-      children.props.onBlur?.(e);
-      hide();
-    },
-    onPointerDown: (e: never) => {
-      children.props.onPointerDown?.(e);
-      hide();
-    },
-  });
-
   return (
-    <>
-      {child}
+    <span className={className} onMouseEnter={(e) => show(e.currentTarget)} onFocus={(e) => show(e.currentTarget)} onMouseLeave={hide} onBlur={hide} onPointerDown={hide}>
+      {children}
       {open &&
         createPortal(
           <div
@@ -88,6 +68,6 @@ export function Tooltip({ label, shortcut, hint, children }: { label: string; sh
           </div>,
           document.body,
         )}
-    </>
+    </span>
   );
 }
