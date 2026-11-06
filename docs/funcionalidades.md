@@ -273,6 +273,8 @@ Operações puras em `packages/core/src/ops` (testadas) ligadas a comandos da pa
 | Três modos de vidro: **sempre ligado** (padrão), **seguir o sistema** (respeita "reduzir transparência") e **sólido** — guardados no navegador | ✅ | web `appearance.test`, E2E `vidro` (sólido sem desfoque; "seguir o sistema" confere a mídia do sistema) |
 | **Cor de destaque**: verde-água, azul, violeta, laranja ou rosa, nos dois temas, com troca imediata | ✅ | web `accents.test` (contraste ≥ 4,5:1 do destaque como texto e do texto do botão, por cor e por tema), E2E `vidro` |
 | Texto legível sobre o vidro: preenchimentos conferidos contra o fundo e contra o fundo com o brilho ambiente no pior caso (tema escuro: texto secundário clareado por isso) | ✅ | web `glassContrast.test`, `tokens.test` |
+| **Tooltips de vidro** (nome, descrição e atalho em tecla) no trilho, na barra da timeline e na barra superior; aparecem com atraso, ficam dentro da tela, funcionam em botões desabilitados e somem com Esc | ✅ | web `tooltipPlacement.test` (posição e inversão), E2E `vidro` |
+| Paleta: **favoritos** (estrela, primeiros quando não há busca, lembrados) e filtro **@grupo** (por exemplo `@projeto salvar`) | ✅ | web `favoriteCommands.test`, `commandQuery.test`, `commandGroupSearch.test`, E2E `layout` |
 | Fundo ambiente com brilhos de cor (o que o vidro desfoca); painéis grandes só translúcidos, sem desfoque | 🟨 | visual: conferido em capturas de tela, sem teste automatizado |
 
 ## Plataforma
