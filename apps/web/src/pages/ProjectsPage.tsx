@@ -196,7 +196,7 @@ export function ProjectsPage() {
 
   return (
     <div className="flex h-full">
-      <aside className="hidden w-60 shrink-0 flex-col border-r border-line bg-panel p-4 md:flex">
+      <aside className="glass-rail hidden w-60 shrink-0 flex-col p-4 md:flex">
         <div className="mb-6 flex items-center gap-2.5 px-1">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent text-accent-ink">
             <Icon name="play" size={16} />
