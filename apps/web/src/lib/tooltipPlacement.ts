@@ -31,6 +31,6 @@ export function placeTooltip(target: Box, tip: { width: number; height: number }
   if (prefer === 'bottom') side = fitsBelow || !fitsAbove ? 'bottom' : 'top';
   else side = fitsAbove || !fitsBelow ? 'top' : 'bottom';
   if (!fitsBelow && !fitsAbove) side = viewport.height - (target.top + target.height) >= target.top ? 'bottom' : 'top';
-  const y = side === 'bottom' ? Math.min(below, viewport.height - tip.height - margin) : Math.max(above, margin);
+  const y = side === 'bottom' ? Math.max(margin, Math.min(below, viewport.height - tip.height - margin)) : Math.max(above, margin);
   return { x, y, side, arrowX: center - x };
 }
