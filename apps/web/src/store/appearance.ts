@@ -5,7 +5,7 @@ interface AppearanceState {
   accent: Accent;
   glass: GlassMode;
   setAccent(a: Accent): void;
-  toggleGlass(): void;
+  setGlass(mode: GlassMode): void;
 }
 
 export const useAppearance = create<AppearanceState>((set, get) => ({
@@ -16,8 +16,7 @@ export const useAppearance = create<AppearanceState>((set, get) => ({
     saveAppearance(accent, get().glass);
     set({ accent });
   },
-  toggleGlass() {
-    const glass: GlassMode = get().glass === 'glass' ? 'solid' : 'glass';
+  setGlass(glass) {
     applyAppearance(get().accent, glass);
     saveAppearance(get().accent, glass);
     set({ glass });
