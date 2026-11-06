@@ -30,7 +30,7 @@ export function ShortcutsSection() {
             <motion.section
               key={g.category}
               {...(reduce ? {} : { initial: { opacity: 0, y: 16 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true, margin: '-40px' }, transition: { duration: 0.4, delay: i * 0.05 } })}
-              className="card p-5"
+              className="glass rounded-2xl p-5"
               aria-label={g.category}
               data-testid="shortcut-group"
             >
