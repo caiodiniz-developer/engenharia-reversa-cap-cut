@@ -93,5 +93,20 @@ Listadas para que ninguém descubra em produção. Itens marcados com 🔧 têm 
 - O **modo da biblioteca** (grade/lista), a **última predefinição de exportação**, o **e-mail lembrado** e os **projetos fixados** ficam no `localStorage`: valem por navegador e perfil, não acompanham a conta e somem se os dados do site forem limpos. O e-mail é guardado em texto, sem a senha; em computador compartilhado, deixe "Lembrar de mim" desmarcado.
 - A tecla **/** da lista de projetos só funciona fora de campos de texto e com nenhum diálogo aberto.
 
+## Vidro e aparência
+- O vidro usa `backdrop-filter`: testado só no Chrome (Windows). Sem suporte, as superfícies caem para cores sólidas por uma regra `@supports` que **não foi exercitada** em navegador sem o recurso. Em placas de vídeo fracas o desfoque pode pesar; "Vidro: superfícies sólidas" na paleta resolve.
+- O padrão é **vidro sempre ligado**, mesmo que o sistema peça menos transparência (o Windows desta máquina pede, e o Chrome expõe isso); quem quiser respeitar o sistema escolhe "Seguir o sistema". O Chrome não permite emular essa preferência: o teste confere a mídia do sistema real, não simula a mudança.
+- A conferência de contraste usa o **pior caso do fundo** (brilho ambiente a 14% sobre o fundo) e os preenchimentos de vidro; não cobre texto sobre imagens do vídeo nem toda combinação de camadas de vidro empilhadas.
+- A **cor de destaque** troca `--accent` e `--accent-ink`; cores fixas (cursor de reprodução, cores dos clipes por tipo, avisos) não mudam. A escolha vale por navegador, não por conta.
+- As cores de destaque foram escolhidas e conferidas por contraste, não testadas com pessoas daltônicas além do simulador existente.
+
+## Edição profissional
+- **J-cut/L-cut** exigem o áudio extraído e ligado ao vídeo e mídia sobrando antes/depois do trecho; o par continua ligado, então mover um move o outro junto, mantendo a defasagem.
+- **Segurar o último quadro** cria um clipe parado de vídeo (sem áudio) e empurra o resto da faixa; não funciona com imagens.
+- **Abertura/encerramento do projeto** só atuam em clipes que começam em 0 ou terminam junto com o projeto; clipes que já têm keyframes de opacidade ficam sem fade de imagem (o áudio recebe o fade) e o aviso conta quantos foram ignorados.
+- **Texto → legenda** perde o estilo (a legenda nova usa o padrão de legenda); **legenda → texto** mantém estilo, posição e animações, mas perde o tempo por palavra e a cor de destaque.
+- **Mover para a faixa vizinha** exige que os clipes estejam na mesma faixa e não colidam no destino; **igualar duração** é tudo-ou-nada; **escalonar** pode colidir na mesma faixa (e então recusa).
+- Os atalhos **Alt + J/L/H** têm teste de lista e de comando; só o Alt + H tem teste ponta a ponta.
+
 ## Escala
 - Não houve teste de carga nem de vídeos muito longos (horas). Os limites configuráveis (2 GB por arquivo, 2 h por mídia, 200 mídias por projeto, 3000 clipes por exportação) existem para proteger o servidor, não foram calibrados com medições.
