@@ -1,6 +1,8 @@
 export const ACCENTS = ['teal', 'blue', 'violet', 'orange', 'pink'] as const;
 export type Accent = (typeof ACCENTS)[number];
-export type GlassMode = 'glass' | 'solid';
+/** 'glass' = sempre vidro (padrão); 'auto' = respeita "reduzir transparência" do sistema; 'solid' = sempre sólido. */
+export type GlassMode = 'glass' | 'auto' | 'solid';
+export const GLASS_LABEL: Record<GlassMode, string> = { glass: 'Vidro sempre ligado', auto: 'Seguir o sistema (reduzir transparência)', solid: 'Superfícies sólidas' };
 
 export const ACCENT_LABEL: Record<Accent, string> = { teal: 'Verde-água', blue: 'Azul', violet: 'Violeta', orange: 'Laranja', pink: 'Rosa' };
 
@@ -18,7 +20,8 @@ export function loadAccent(): Accent {
 
 export function loadGlass(): GlassMode {
   try {
-    return localStorage.getItem(GLASS_KEY) === 'solid' ? 'solid' : 'glass';
+    const v = localStorage.getItem(GLASS_KEY);
+    return v === 'solid' || v === 'auto' ? v : 'glass';
   } catch {
     return 'glass';
   }
@@ -28,8 +31,8 @@ export function loadGlass(): GlassMode {
 export function applyAppearance(accent: Accent, glass: GlassMode, root: HTMLElement = document.documentElement): void {
   if (accent === 'teal') delete root.dataset.accent;
   else root.dataset.accent = accent;
-  if (glass === 'solid') root.dataset.glass = 'solid';
-  else delete root.dataset.glass;
+  if (glass === 'glass') delete root.dataset.glass;
+  else root.dataset.glass = glass;
 }
 
 export function saveAppearance(accent: Accent, glass: GlassMode): void {
