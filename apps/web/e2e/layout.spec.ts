@@ -215,16 +215,16 @@ test.describe('landing: rodapé', () => {
 
 
 test.describe('paleta: @grupo e favoritos', () => {
-  test('@áudio lista só o grupo e favoritar põe o comando no topo, mesmo depois de recarregar', async ({ page }) => {
+  test('@projeto lista só o grupo e favoritar põe o comando no topo, mesmo depois de recarregar', async ({ page }) => {
     await signup(page);
     await newProject(page, 'Paleta');
     await page.keyboard.press('Control+k');
     const input = page.getByRole('combobox', { name: 'Buscar comandos' });
-    await input.fill('@áudio');
+    await input.fill('@projeto'); // grupos cujos comandos dependem de seleção ficam vazios num projeto novo
     const groups = await page.getByTestId('command-list').locator('li[role="option"] span.rounded').allTextContents();
     expect(groups.length).toBeGreaterThan(5);
-    expect(groups.every((g) => g === 'Áudio')).toBe(true);
-    await input.fill('@audio fade');
+    expect(groups.every((g) => g === 'Projeto')).toBe(true);
+    await input.fill('@projeto salvar');
     await expect(page.getByTestId('palette-count')).not.toHaveText('0 comandos');
     // favoritar um comando comum
     await input.fill('tema claro');
