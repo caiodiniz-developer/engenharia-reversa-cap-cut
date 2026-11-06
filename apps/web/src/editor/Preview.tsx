@@ -226,9 +226,11 @@ export function Preview() {
           <button type="button" className="btn h-7 min-w-[44px] px-1.5 font-mono text-2xs" aria-label={`Velocidade de reprodução ${rate}×`} title="Velocidade do preview (clique para alternar; [ e ] também)" data-testid="rate-button" onClick={() => (rate >= PLAYBACK_RATES[PLAYBACK_RATES.length - 1]! ? st.setRate(PLAYBACK_RATES[0]!) : st.stepRate(1))}>
             {rate}×
           </button>
-          <button type="button" className="btn-icon" aria-label="Repetir" aria-pressed={loop} title="Repetir" onClick={st.toggleLoop}>
-            <Icon name="repeat" />
-          </button>
+          <Tooltip label="Repetir" hint="Volta ao começo quando chega ao fim">
+            <button type="button" className="btn-icon" aria-label="Repetir" aria-pressed={loop} onClick={st.toggleLoop}>
+              <Icon name="repeat" />
+            </button>
+          </Tooltip>
         </div>
         <div className="flex items-center justify-end gap-1.5">
           <svg width="0" height="0" className="absolute" aria-hidden="true" focusable="false">
