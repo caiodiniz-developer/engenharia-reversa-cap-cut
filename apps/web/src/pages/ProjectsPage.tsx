@@ -32,7 +32,7 @@ function ProjectCard({ p, index, pinned, onPin, onOpen, onRename, onDuplicate, o
   const m = p.meta;
   return (
     <motion.li initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(index, 10) * 0.025 }} className="group relative">
-      <div className="card card-hover overflow-hidden transition-shadow group-hover:shadow-pop">
+      <div className="card card-hover overflow-hidden transition-[box-shadow,transform,border-color,background-color] duration-200 group-hover:-translate-y-0.5 group-hover:shadow-pop">
         <button type="button" className="block w-full text-left" onClick={onOpen} aria-label={`Abrir ${p.name}`}>
           <div className="relative flex aspect-video items-center justify-center overflow-hidden bg-gradient-to-br from-panel-3 to-bg text-mute">
             {p.cover ? <img src={p.cover} alt="" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]" loading="lazy" /> : <Icon name="film" size={30} />}
