@@ -22,6 +22,7 @@
 ## Convenções
 - TypeScript estrito. Dependência nova só com justificativa (versão exata fixada).
 - Textos da interface e mensagens de erro em português do Brasil.
+- Interface nova usa os tokens e classes de `docs/aparencia.md` (`glass`, `glass-strong`, `seg`, `btn*`, `<Tooltip>`): nada de `bg-white/10` ou cores de destaque fixas, para os dois temas, as cores de destaque e os modos de vidro funcionarem. Mexeu em token de cor? Rode os testes de contraste de `apps/web/src/lib`.
 - Operações de timeline são funções imutáveis em `packages/core/src/ops`; a interface chama `useEditor.run(...)`, que trata `TimelineError`.
 - Mudou o schema do projeto? Suba `SCHEMA_VERSION` e registre a migração em `packages/core/src/migrate.ts`. Mudou o Prisma? Gere uma migração em `apps/api/prisma/migrations`.
 - Nunca exponha chaves no frontend nem aceite comandos/argumentos do navegador para o FFmpeg.
