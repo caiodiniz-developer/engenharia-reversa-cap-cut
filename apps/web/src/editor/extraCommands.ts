@@ -2,7 +2,7 @@ import * as core from '@editor/core';
 import { findClip } from '@editor/core';
 import type { Project } from '@editor/core';
 import type { IconName } from '../components/Icon';
-import { ACCENTS, ACCENT_LABEL } from '../lib/appearance';
+import { ACCENTS, ACCENT_LABEL, GLASS_LABEL } from '../lib/appearance';
 import { useAppearance } from '../store/appearance';
 import { toast } from '../store/toasts';
 import type { Command } from './commands';
@@ -205,10 +205,12 @@ export function appearanceCommands(): Command[] {
   const G = 'Aparência';
   return [
     ...ACCENTS.map((a) => cmd('accent-' + a, 'Cor de destaque: ' + ACCENT_LABEL[a], G, 'sparkles', () => useAppearance.getState().setAccent(a), { keywords: 'tema cor azul violeta laranja rosa verde personalizar' })),
-    cmd('glass-toggle', 'Alternar vidro e superfícies sólidas', G, 'layers', () => {
-      useAppearance.getState().toggleGlass();
-      toast.info(useAppearance.getState().glass === 'solid' ? 'Superfícies sólidas ligadas' : 'Vidro ligado');
-    }, { keywords: 'transparência desfoque blur liquid glass acessibilidade' }),
+    ...(['glass', 'auto', 'solid'] as const).map((mode) =>
+      cmd('glass-' + mode, 'Vidro: ' + GLASS_LABEL[mode], G, 'layers', () => {
+        useAppearance.getState().setGlass(mode);
+        toast.info(GLASS_LABEL[mode] + ': ligado');
+      }, { keywords: 'transparência desfoque blur liquid glass acessibilidade sólido sistema' }),
+    ),
   ];
 }
 
