@@ -31,7 +31,7 @@ export function ToolRail({ value, onChange }: { value: PanelTab; onChange: (t: P
         const active = value === t.id;
         return (
           <Fragment key={t.id}>
-          <Tooltip label={t.label} hint={t.title}>
+          <Tooltip label={t.label} hint={t.title} className="mx-1.5 flex">
           <button
             type="button"
             role="tab"
@@ -39,7 +39,7 @@ export function ToolRail({ value, onChange }: { value: PanelTab; onChange: (t: P
             aria-controls="left-panel"
             data-testid={`tab-${t.id}`}
             onClick={() => onChange(t.id)}
-            className={`group relative mx-1.5 flex flex-col items-center gap-0.5 rounded-lg px-0.5 py-1.5 text-[10px] font-medium transition-colors ${active ? 'bg-accent/12 text-accent' : 'text-mute hover:bg-panel-3 hover:text-ink'}`}
+            className={`group relative flex w-full flex-col items-center gap-0.5 rounded-lg px-0.5 py-1.5 text-[10px] font-medium transition-colors ${active ? 'bg-accent/12 text-accent' : 'text-mute hover:bg-panel-3 hover:text-ink'}`}
           >
             {active && <motion.span layoutId="tool-active" className="absolute -left-1.5 top-2 h-[calc(100%-16px)] w-0.5 rounded-full bg-accent" transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 420, damping: 34 }} />}
             <Icon name={t.icon} size={19} />
