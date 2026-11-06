@@ -109,4 +109,9 @@ export const TOOLS_MARQUEE: string[] = [
   'Tela dividida',
   'Gagueira',
   'Carimbar nos marcadores',
+  'J-cut e L-cut',
+  'Segurar o último quadro',
+  'Fade do projeto inteiro',
+  'Texto em legendas',
+  'Escalonar entrada',
 ];
