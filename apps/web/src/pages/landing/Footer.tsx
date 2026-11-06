@@ -7,7 +7,7 @@ import { scrollToSection, scrollToTop } from './scroll';
 export function FinalCta() {
   return (
     <section className="px-5 pb-24" aria-labelledby="cta-title" data-testid="final-cta">
-      <div className="relative mx-auto max-w-4xl overflow-hidden rounded-3xl border border-line bg-panel px-6 py-14 text-center shadow-pop">
+      <div className="glass-strong relative mx-auto max-w-4xl overflow-hidden rounded-3xl px-6 py-14 text-center">
         <div className="hero-glow pointer-events-none absolute inset-0" aria-hidden="true" />
         <h2 id="cta-title" className="relative text-balance text-3xl font-bold tracking-tight sm:text-4xl">
           Pronto para editar o seu próximo vídeo?
