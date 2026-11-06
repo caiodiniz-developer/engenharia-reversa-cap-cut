@@ -727,3 +727,26 @@ input[type='range']:focus-visible::-webkit-slider-thumb {
   --accent: 190 24 93;
   --accent-ink: 255 255 255;
 }
+
+
+/* Quem prefere superfícies sólidas liga isto pelo comando "Vidro" da paleta, independente do sistema. */
+:root[data-glass='solid'] {
+  --glass-bg: rgb(var(--panel-2));
+  --glass-bg-hover: rgb(var(--panel-3));
+  --glass-bg-strong: rgb(var(--panel));
+}
+:root[data-glass='solid'] .btn,
+:root[data-glass='solid'] .btn-icon,
+:root[data-glass='solid'] .chip,
+:root[data-glass='solid'] .glass,
+:root[data-glass='solid'] .glass-bar,
+:root[data-glass='solid'] .glass-top,
+:root[data-glass='solid'] .glass-rail,
+:root[data-glass='solid'] .glass-strong,
+:root[data-glass='solid'] .seg {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+:root[data-glass='solid'] .btn::before {
+  display: none;
+}
