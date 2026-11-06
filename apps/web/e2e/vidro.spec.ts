@@ -45,17 +45,29 @@ test.describe('vidro e aparência', () => {
   test('o modo sólido tira o desfoque, avisa, e a escolha é lembrada', async ({ page }) => {
     await signup(page);
     await newProject(page, 'Sólido');
-    await runCommand(page, 'alternar vidro', /Alternar vidro e superfícies sólidas/);
-    await expect(page.getByText('Superfícies sólidas ligadas')).toBeVisible();
+    await runCommand(page, 'vidro superfícies sólidas', /Vidro: Superfícies sólidas/);
+    await expect(page.getByText('Superfícies sólidas: ligado')).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('data-glass', 'solid');
     expect(await blur(page, '[data-testid="topbar"]')).toBe('none');
     expect(await blur(page, '.btn')).toBe('none');
     await page.reload();
     await expect(page.getByTestId('editor')).toBeVisible();
     await expect(page.locator('html')).toHaveAttribute('data-glass', 'solid');
-    await runCommand(page, 'alternar vidro', /Alternar vidro e superfícies sólidas/);
-    await expect(page.getByText('Vidro ligado')).toBeVisible();
+    await runCommand(page, 'vidro sempre ligado', /Vidro: Vidro sempre ligado/);
+    await expect(page.locator('html')).not.toHaveAttribute('data-glass', /.+/);
     expect(await blur(page, '[data-testid="topbar"]')).toContain('blur');
+  });
+
+  test('"seguir o sistema" respeita o pedido de menos transparência; o padrão ignora', async ({ page }) => {
+    await signup(page);
+    await newProject(page, 'Sistema');
+    const reduced = await page.evaluate(() => matchMedia('(prefers-reduced-transparency: reduce)').matches);
+    // padrão: vidro sempre, mesmo que o sistema peça menos transparência
+    expect(await blur(page, '[data-testid="topbar"]')).toContain('blur');
+    await runCommand(page, 'vidro seguir o sistema', /Vidro: Seguir o sistema/);
+    await expect(page.locator('html')).toHaveAttribute('data-glass', 'auto');
+    if (reduced) expect(await blur(page, '[data-testid="topbar"]')).toBe('none');
+    else expect(await blur(page, '[data-testid="topbar"]')).toContain('blur');
   });
 
   test('a regra de "reduzir transparência" do sistema está no CSS carregado', async ({ page }) => {
