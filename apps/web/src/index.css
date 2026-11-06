@@ -700,3 +700,12 @@ input[type='range']:focus-visible::-webkit-slider-thumb {
   --accent: 29 78 216;
   --accent-ink: 255 255 255;
 }
+
+:root[data-accent='violet'] {
+  --accent: 167 139 250;
+  --accent-ink: 20 10 50;
+}
+:root[data-theme='light'][data-accent='violet'] {
+  --accent: 109 40 217;
+  --accent-ink: 255 255 255;
+}
