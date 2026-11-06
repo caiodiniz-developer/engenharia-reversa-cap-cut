@@ -98,7 +98,7 @@ export function LoginPage() {
           <h1 className="mb-1 hidden text-xl font-semibold lg:block">{mode === 'login' ? 'Bem-vindo de volta' : 'Crie sua conta'}</h1>
           <p className="mb-5 hidden text-sm text-mute lg:block">{mode === 'login' ? 'Entre para continuar seus projetos.' : 'Leva menos de um minuto.'}</p>
 
-          <div className="card p-5">
+          <div className="glass-strong rounded-2xl p-5">
             <div className="seg mb-4 grid w-full grid-cols-2" role="tablist">
               {(['login', 'register'] as const).map((m) => (
                 <button
