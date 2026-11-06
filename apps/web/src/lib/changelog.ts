@@ -14,6 +14,23 @@ export interface NewsEntry {
 /** Do mais recente para o mais antigo. Todo item com command é conferido por teste contra a paleta de verdade. */
 export const NEWS: NewsEntry[] = [
   {
+    date: '2026-11-06',
+    title: 'Edição profissional e visual de vidro',
+    items: [
+      { text: 'J-cut e L-cut: o áudio entra antes ou continua depois da imagem, sem desligar o par.', command: 'jcut-1' },
+      { text: 'Segurar o último quadro do clipe por alguns segundos.', command: 'hold-last-2' },
+      { text: 'Abertura e encerramento suaves do projeto inteiro, com um comando.', command: 'project-fade-out-1' },
+      { text: 'Dividir um texto de várias linhas em um texto por linha.', command: 'split-text-lines' },
+      { text: 'Converter textos em legendas (e legendas em textos), mantendo o tempo.', command: 'text-to-captions' },
+      { text: 'Marcar o início de cada legenda para navegar pelas falas.', command: 'markers-captions' },
+      { text: 'Mover a seleção para a faixa de cima ou de baixo e remover as faixas vazias.', command: 'send-track-up' },
+      { text: 'Igualar a duração dos clipes selecionados (mais curto, mais longo ou média).', command: 'match-duration-shortest' },
+      { text: 'Escalonar a entrada de vários clipes, um depois do outro.', command: 'stagger-0.5' },
+      { text: 'Selecionar os clipes que estão dentro do trecho marcado com I e O.', command: 'select-in-range' },
+      { text: 'Botões e painéis em vidro, com tema claro e escuro, que viram superfícies sólidas se o sistema pedir menos transparência.' },
+    ],
+  },
+  {
     date: '2026-11-03',
     title: 'Ferramentas criativas',
     items: [
