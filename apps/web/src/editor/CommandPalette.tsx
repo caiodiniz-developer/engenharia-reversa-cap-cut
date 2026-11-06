@@ -90,7 +90,7 @@ export function CommandPalette({ open, onClose, onExport, onHelp }: { open: bool
                 aria-activedescendant={results[index] ? `cmd-${results[index]!.id}` : undefined}
                 aria-label="Buscar comandos"
                 className="h-12 flex-1 bg-transparent text-sm outline-none placeholder:text-mute/70"
-                placeholder="Digite um comando… (ex.: dividir, exportar, tema)"
+                placeholder="Digite um comando… (ex.: dividir, exportar) ou @grupo para filtrar"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={(e) => {
@@ -154,6 +154,9 @@ export function CommandPalette({ open, onClose, onExport, onHelp }: { open: bool
                 </span>
                 <span className="flex items-center gap-1">
                   <span className="kbd">Enter</span> executar
+                </span>
+                <span className="hidden items-center gap-1 sm:flex">
+                  <span className="kbd">@</span> grupo
                 </span>
               </span>
               <span aria-live="polite" data-testid="palette-count">
