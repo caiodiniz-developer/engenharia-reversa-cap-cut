@@ -718,3 +718,12 @@ input[type='range']:focus-visible::-webkit-slider-thumb {
   --accent: 194 65 12;
   --accent-ink: 255 255 255;
 }
+
+:root[data-accent='pink'] {
+  --accent: 244 114 182;
+  --accent-ink: 45 8 28;
+}
+:root[data-theme='light'][data-accent='pink'] {
+  --accent: 190 24 93;
+  --accent-ink: 255 255 255;
+}
