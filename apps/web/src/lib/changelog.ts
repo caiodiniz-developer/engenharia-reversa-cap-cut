@@ -28,6 +28,8 @@ export const NEWS: NewsEntry[] = [
       { text: 'Escalonar a entrada de vários clipes, um depois do outro.', command: 'stagger-0.5' },
       { text: 'Selecionar os clipes que estão dentro do trecho marcado com I e O.', command: 'select-in-range' },
       { text: 'Botões e painéis em vidro, com tema claro e escuro, e a opção de seguir o pedido do sistema por menos transparência ou de usar superfícies sólidas.', command: 'glass-solid' },
+      { text: 'Tooltips de vidro com o nome, a descrição e o atalho em tecla, inclusive em botões desabilitados.' },
+      { text: 'Paleta com comandos favoritos (estrela) e filtro por grupo: digite @projeto, @texto e assim por diante.' },
       { text: 'Cor de destaque à escolha: verde-água, azul, violeta, laranja ou rosa (todas conferidas no contraste).', command: 'accent-violet' },
     ],
   },
