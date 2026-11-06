@@ -709,3 +709,12 @@ input[type='range']:focus-visible::-webkit-slider-thumb {
   --accent: 109 40 217;
   --accent-ink: 255 255 255;
 }
+
+:root[data-accent='orange'] {
+  --accent: 251 146 60;
+  --accent-ink: 40 18 4;
+}
+:root[data-theme='light'][data-accent='orange'] {
+  --accent: 194 65 12;
+  --accent-ink: 255 255 255;
+}
