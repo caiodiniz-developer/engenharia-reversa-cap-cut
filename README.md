@@ -7,7 +7,7 @@ Editor de vídeo profissional que roda no navegador (React + TypeScript + Node.j
 - **Texto e legendas** (SRT/VTT, destaque da palavra falada), **áudio** (volume, fades, EQ, balanço, normalização, redução de ruído), **efeitos**, **LUTs 3D**, **estabilização**, **máscaras**, chroma key.
 - **IA**: transcrição (Whisper local ou API), detecção de silêncio/cenas, sugestão de cortes e melhores trechos, assistente por linguagem natural. Nada é simulado: sem provedor configurado a API responde 503.
 
-> Veja [docs/funcionalidades.md](docs/funcionalidades.md) para o que está pronto, parcial ou ausente, e [docs/limitacoes.md](docs/limitacoes.md) para as limitações conhecidas.
+> Veja [docs/funcionalidades.md](docs/funcionalidades.md) para o que está pronto, parcial ou ausente, e [docs/limitacoes.md](docs/limitacoes.md) para as limitações conhecidas. O visual de vidro, os temas e as cores de destaque estão em [docs/aparencia.md](docs/aparencia.md).
 
 ## Início rápido (desenvolvimento)
 
