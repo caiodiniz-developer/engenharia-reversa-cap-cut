@@ -77,3 +77,38 @@ test.describe('vidro e aparência', () => {
     expect(hasRule).toBe(true);
   });
 });
+
+
+test.describe('tooltips de vidro', () => {
+  test('aparecem com atraso no trilho e nas ferramentas, com o atalho em tecla, e somem ao sair ou com Esc', async ({ page }) => {
+    await signup(page);
+    await newProject(page, 'Dicas');
+    const tip = page.getByTestId('tooltip');
+    await page.getByTestId('tab-effects').hover();
+    await expect(tip).toBeVisible({ timeout: 3_000 });
+    await expect(tip).toContainText('Efeitos');
+    await expect(tip).toContainText('Efeitos, presets e LUTs');
+    expect(await tip.evaluate((el) => getComputedStyle(el).backdropFilter)).toContain('blur');
+    await page.mouse.move(700, 450);
+    await expect(tip).toHaveCount(0);
+    // o botão de desfazer mostra o atalho como tecla
+    await page.getByRole('button', { name: 'Desfazer' }).first().hover();
+    await expect(tip).toBeVisible({ timeout: 3_000 });
+    await expect(tip.locator('.kbd')).toHaveText('Ctrl+Z');
+    await page.keyboard.press('Escape');
+    await expect(tip).toHaveCount(0);
+  });
+
+  test('o tooltip fica dentro da tela mesmo para botões na borda', async ({ page }) => {
+    await signup(page);
+    await newProject(page, 'Bordas');
+    await page.getByRole('button', { name: 'Atalhos de teclado' }).hover();
+    await page.getByTestId('tab-media').hover();
+    const tip = page.getByTestId('tooltip');
+    await expect(tip).toBeVisible({ timeout: 3_000 });
+    const box = (await tip.boundingBox())!;
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.y).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(1440);
+  });
+});
