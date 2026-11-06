@@ -1,6 +1,7 @@
 import { Fragment } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Icon, type IconName } from '../components/Icon';
+import { Tooltip } from '../components/Tooltip';
 import { useReview } from '../lib/useReview';
 import type { PanelTab } from '../store/editor';
 
@@ -30,12 +31,12 @@ export function ToolRail({ value, onChange }: { value: PanelTab; onChange: (t: P
         const active = value === t.id;
         return (
           <Fragment key={t.id}>
+          <Tooltip label={t.label} hint={t.title}>
           <button
             type="button"
             role="tab"
             aria-selected={active}
             aria-controls="left-panel"
-            title={t.title}
             data-testid={`tab-${t.id}`}
             onClick={() => onChange(t.id)}
             className={`group relative mx-1.5 flex flex-col items-center gap-0.5 rounded-lg px-0.5 py-1.5 text-[10px] font-medium transition-colors ${active ? 'bg-accent/12 text-accent' : 'text-mute hover:bg-panel-3 hover:text-ink'}`}
@@ -49,6 +50,7 @@ export function ToolRail({ value, onChange }: { value: PanelTab; onChange: (t: P
             )}
             <span className="leading-none">{t.label}</span>
           </button>
+          </Tooltip>
           {GROUP_END.has(t.id) && <span className="mx-4 my-0.5 h-px shrink-0 bg-line" aria-hidden="true" />}
           </Fragment>
         );
