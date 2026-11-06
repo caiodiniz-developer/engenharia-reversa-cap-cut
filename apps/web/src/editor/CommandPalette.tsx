@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '../components/Icon';
+import { loadFavorites, saveFavorites, toggleFavorite, withFavoritesFirst } from '../lib/favoriteCommands';
 import { highlightMatch } from '../lib/highlight';
 import { loadRecent, pushRecent, saveRecent, withRecentFirst } from '../lib/recentCommands';
 import { useEditor } from '../store/editor';
@@ -16,6 +17,13 @@ export function CommandPalette({ open, onClose, onExport, onHelp }: { open: bool
   const input = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const [recent, setRecent] = useState<string[]>(() => loadRecent());
+  const [favorites, setFavorites] = useState<string[]>(() => loadFavorites());
+  const favSet = useMemo(() => new Set(favorites), [favorites]);
+  const toggleFav = (id: string) => {
+    const next = toggleFavorite(favorites, id);
+    setFavorites(next);
+    saveFavorites(next);
+  };
 
   const commands = useMemo(
     () =>
@@ -40,8 +48,8 @@ export function CommandPalette({ open, onClose, onExport, onHelp }: { open: bool
     if (!open) return [];
     const found = searchCommands(commands, query).filter((c) => c.enabled?.() ?? true);
     // Sem busca, os comandos usados há pouco aparecem primeiro.
-    return query.trim() ? found : withRecentFirst(found, recent);
-  }, [commands, query, open, recent]);
+    return query.trim() ? found : withFavoritesFirst(withRecentFirst(found, recent), favorites);
+  }, [commands, query, open, recent, favorites]);
   const recentSet = useMemo(() => new Set(query.trim() ? [] : recent), [query, recent]);
 
   useEffect(() => {
@@ -120,6 +128,20 @@ export function CommandPalette({ open, onClose, onExport, onHelp }: { open: bool
                   </span>
                   {recentSet.has(c.id) && <span className="rounded bg-panel-3 px-1.5 py-0.5 text-[10px] font-medium text-accent" data-testid="recent-chip">Recente</span>}
                   <span className="rounded bg-panel-3/70 px-1.5 py-0.5 text-2xs text-mute">{c.group}</span>
+                  <button
+                    type="button"
+                    className={'btn-icon !h-6 !w-6 ' + (favSet.has(c.id) ? '!text-warn' : '')}
+                    aria-label={(favSet.has(c.id) ? 'Remover dos favoritos: ' : 'Favoritar: ') + c.label}
+                    aria-pressed={favSet.has(c.id)}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFav(c.id);
+                    }}
+                    data-testid={'fav-' + c.id}
+                  >
+                    <Icon name="diamond" size={12} />
+                  </button>
                   {c.shortcut && <span className="kbd">{c.shortcut}</span>}
                 </li>
               ))}
