@@ -37,7 +37,7 @@ export function Section({
       <div className="flex items-center justify-between pr-2">
         <button
           type="button"
-          className="flex flex-1 items-center gap-1.5 px-3 py-2.5 text-left text-xs font-semibold text-ink/90 hover:text-ink"
+          className="flex flex-1 items-center gap-1.5 rounded-lg px-3 py-2.5 text-left text-xs font-semibold text-ink/90 transition-colors hover:bg-[color:var(--glass-bg)] hover:text-ink"
           onClick={() => setOpen(!open)}
           aria-expanded={open}
         >
