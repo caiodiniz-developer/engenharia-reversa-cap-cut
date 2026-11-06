@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { formatTimecode, getPlatform, parseTimecode } from '@editor/core';
+import { Tooltip } from '../components/Tooltip';
 import { Icon } from '../components/Icon';
 import { PlayerEngine } from '../engine/player';
 import { getEngine, setEngine } from '../engine/registry';
@@ -199,9 +200,11 @@ export function Preview() {
       <div className="glass-top grid h-14 shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3 px-4">
         <Timecode />
         <div className="flex items-center gap-1">
-          <button type="button" className="btn-icon" aria-label="Início" title="Início (Home)" onClick={() => { st.setPlaying(false); st.setPlayhead(0); }}>
-            <Icon name="skipBack" />
-          </button>
+          <Tooltip label="Início" shortcut="Home">
+            <button type="button" className="btn-icon" aria-label="Início" onClick={() => { st.setPlaying(false); st.setPlayhead(0); }}>
+              <Icon name="skipBack" />
+            </button>
+          </Tooltip>
           <button type="button" className="btn-icon" aria-label="Quadro anterior" title="Quadro anterior (←)" onClick={() => st.stepFrames(-1)}>
             <Icon name="stepBack" />
           </button>
@@ -211,9 +214,11 @@ export function Preview() {
           <button type="button" className="btn-icon" aria-label="Próximo quadro" title="Próximo quadro (→)" onClick={() => st.stepFrames(1)}>
             <Icon name="stepForward" />
           </button>
-          <button type="button" className="btn-icon" aria-label="Fim" title="Fim (End)" onClick={() => { st.setPlaying(false); st.setPlayhead(duration()); }}>
-            <Icon name="skipForward" />
-          </button>
+          <Tooltip label="Fim" shortcut="End">
+            <button type="button" className="btn-icon" aria-label="Fim" onClick={() => { st.setPlaying(false); st.setPlayhead(duration()); }}>
+              <Icon name="skipForward" />
+            </button>
+          </Tooltip>
           <button type="button" className="btn h-7 min-w-[44px] px-1.5 font-mono text-2xs" aria-label={`Velocidade de reprodução ${rate}×`} title="Velocidade do preview (clique para alternar; [ e ] também)" data-testid="rate-button" onClick={() => (rate >= PLAYBACK_RATES[PLAYBACK_RATES.length - 1]! ? st.setRate(PLAYBACK_RATES[0]!) : st.stepRate(1))}>
             {rate}×
           </button>
